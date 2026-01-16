@@ -1,45 +1,150 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { WordDisplay, ProgressBar, Controls } from '@/components/rsvp';
+import { RSVPPlayer } from '@/components/rsvp';
 import { ThemeToggle } from '@/components/ui';
 import styles from './page.module.css';
 
-// Sample text for prototype demonstration
+interface ArticleContent {
+  id: string;
+  title: string;
+  author: string | null;
+  content: string;
+  html: string | null;
+  wordCount: number | null;
+}
+
+interface ArticleResponse {
+  document?: ArticleContent;
+  error?: string;
+}
+
+// Sample text for when no article is loaded (demo mode)
 const sampleText = `The quick brown fox jumps over the lazy dog. This is a sample text that demonstrates the RSVP reading experience. Speed reading is a technique that allows readers to consume text at a much faster rate than traditional reading methods. By presenting words one at a time at a fixed focal point, the reader's eyes don't need to move across the page, eliminating saccades and improving reading speed. The Optimal Recognition Point, or ORP, is the letter in each word that the eye naturally focuses on. By highlighting this letter and aligning it to the center of the display, we can further optimize the reading experience. This prototype demonstrates the core RSVP functionality that will be used to read articles from your Readwise Reader library.`;
 
-const words = sampleText.split(/\s+/);
-
 export default function RSVPPage() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [wpm, setWpm] = useState(300);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const articleId = searchParams.get('id');
 
-  const currentWord = words[currentIndex] || '';
+  const [article, setArticle] = useState<ArticleContent | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handlePlayPause = useCallback(() => {
-    setIsPlaying((prev) => !prev);
+  // Fetch article content
+  const fetchArticle = useCallback(async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/reader/documents/${id}`);
+      const data: ArticleResponse = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to fetch article');
+      }
+
+      if (!data.document) {
+        throw new Error('Article not found');
+      }
+
+      setArticle(data.document);
+    } catch (err) {
+      console.error('Error fetching article:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load article');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const handleRewind = useCallback(() => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
-  }, []);
-
-  const handleForward = useCallback(() => {
-    setCurrentIndex((prev) => Math.min(words.length - 1, prev + 1));
-  }, []);
-
-  const handleWpmChange = useCallback((newWpm: number) => {
-    setWpm(newWpm);
-  }, []);
+  // Fetch article when ID changes
+  useEffect(() => {
+    if (articleId) {
+      fetchArticle(articleId);
+    }
+  }, [articleId, fetchArticle]);
 
   const handleExit = useCallback(() => {
-    // In a real app, this would navigate back
-    // For prototype, we just reset
-    setCurrentIndex(0);
-    setIsPlaying(false);
-  }, []);
+    router.push('/');
+  }, [router]);
+
+  // Get text content - use article content, fall back to HTML stripped of tags, or sample
+  const getTextContent = (): string => {
+    if (article) {
+      // Prefer plain text content if available
+      if (article.content && article.content.trim()) {
+        return article.content;
+      }
+      // Fall back to stripped HTML
+      if (article.html) {
+        // Strip HTML tags to get plain text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = article.html;
+        return tempDiv.textContent || tempDiv.innerText || sampleText;
+      }
+    }
+    return sampleText;
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <Link href="/" className={styles.backLink}>
+              ← Back to Library
+            </Link>
+            <h1 className={styles.title}>Loading...</h1>
+          </div>
+          <ThemeToggle />
+        </header>
+
+        <main className={styles.main}>
+          <div className={styles.loadingState}>
+            <div className={styles.spinner}></div>
+            <p>Loading article...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <Link href="/" className={styles.backLink}>
+              ← Back to Library
+            </Link>
+            <h1 className={styles.title}>Error</h1>
+          </div>
+          <ThemeToggle />
+        </header>
+
+        <main className={styles.main}>
+          <div className={styles.errorState}>
+            <p>Error: {error}</p>
+            <button onClick={() => router.refresh()} className={styles.retryButton}>
+              Try Again
+            </button>
+            <Link href="/" className={styles.backLinkButton}>
+              Back to Library
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Demo mode when no article ID provided
+  const isDemo = !articleId;
+  const title = article?.title || (isDemo ? 'RSVP Demo' : 'Sample Article');
+  const text = getTextContent();
 
   return (
     <div className={styles.container}>
@@ -49,43 +154,19 @@ export default function RSVPPage() {
           <Link href="/" className={styles.backLink}>
             ← Back to Library
           </Link>
-          <h1 className={styles.title}>Sample Article</h1>
+          <h1 className={styles.title}>{title}</h1>
+          {article?.author && <span className={styles.author}>by {article.author}</span>}
         </div>
         <ThemeToggle />
       </header>
 
-      {/* Main RSVP display area */}
-      <main className={styles.main}>
-        <div className={styles.displayArea}>
-          <WordDisplay word={currentWord} />
-
-          {/* Status indicator */}
-          <div className={styles.status}>
-            {isPlaying ? (
-              <span className={styles.playing}>Playing</span>
-            ) : (
-              <span className={styles.paused}>Paused</span>
-            )}
-          </div>
-        </div>
-      </main>
-
-      {/* Controls and progress */}
-      <footer className={styles.footer}>
-        <div className={styles.progressContainer}>
-          <ProgressBar current={currentIndex + 1} total={words.length} />
-        </div>
-
-        <Controls
-          isPlaying={isPlaying}
-          wpm={wpm}
-          onPlayPause={handlePlayPause}
-          onRewind={handleRewind}
-          onForward={handleForward}
-          onWpmChange={handleWpmChange}
-          onExit={handleExit}
-        />
-      </footer>
+      {/* RSVP Player */}
+      <RSVPPlayer
+        text={text}
+        onExit={handleExit}
+        initialWpm={300}
+        className={styles.playerContainer}
+      />
     </div>
   );
 }
