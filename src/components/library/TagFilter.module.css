@@ -1,0 +1,65 @@
+.container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.scrollContainer {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding: var(--space-xs) 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollContainer::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.tag {
+  flex-shrink: 0;
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tag:hover {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-secondary);
+}
+
+.tag:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+}
+
+.tag.active {
+  background-color: var(--accent-secondary);
+  color: white;
+  border-color: var(--accent-secondary);
+}
+
+.tag.active:hover {
+  background-color: var(--accent-secondary);
+  opacity: 0.9;
+}
+
+/* Add some padding on the sides for mobile scroll hint */
+@media (max-width: 768px) {
+  .scrollContainer {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    margin-left: calc(-1 * var(--space-md));
+    margin-right: calc(-1 * var(--space-md));
+  }
+}

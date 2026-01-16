@@ -23,17 +23,12 @@ test.describe('Design Tokens', () => {
   });
 
   test('page loads with design tokens applied', async ({ page }) => {
-    // Verify the page has loaded - use getByRole to be specific
+    // Verify the page has loaded - Library page is now the home
     await expect(page.getByRole('heading', { name: 'RSVP Reader', level: 1 })).toBeVisible();
 
-    // Verify design tokens are being used
+    // Verify body has correct styling from tokens
     const body = page.locator('body');
     await expect(body).toBeVisible();
-
-    // Check that the RSVP demo section exists with ORP highlighting
-    const rsvpCenter = page.locator('[class*="rsvpCenter"]');
-    await expect(rsvpCenter).toBeVisible();
-    await expect(rsvpCenter).toContainText('i');
   });
 
   test('dark mode colors are applied when forced', async ({ page, browserName }) => {
@@ -59,57 +54,70 @@ test.describe('Design Tokens', () => {
     expect(bgColor).toMatch(/rgb\(10,\s*10,\s*11\)/);
   });
 
-  test('accent-primary (ORP red) is applied to highlighted letter', async ({
+  test('light mode colors are applied when theme is set', async ({ page, browserName }) => {
+    test.skip(browserName === 'webkit', 'Color checks unreliable on webkit');
+
+    // Switch to light mode
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'light');
+    });
+
+    // Wait for transition
+    await page.waitForTimeout(300);
+
+    const body = page.locator('body');
+    const bgColor = await body.evaluate((el) => {
+      return getComputedStyle(el).backgroundColor;
+    });
+
+    // Light mode bg-primary: #ffffff = rgb(255, 255, 255)
+    expect(bgColor).toMatch(/rgb\(255,\s*255,\s*255\)/);
+  });
+
+  test('accent-secondary (blue) is used for interactive elements', async ({
     page,
     browserName,
   }) => {
     test.skip(browserName === 'webkit', 'Color checks unreliable on webkit');
 
-    const orpLetter = page.locator('[class*="rsvpCenter"]');
+    // The All button when active should use accent-secondary color
+    const allButton = page.getByRole('button', { name: 'All' });
+    await expect(allButton).toBeVisible();
 
-    const color = await orpLetter.evaluate((el) => {
-      return getComputedStyle(el).color;
+    // Get background color of active filter
+    const bgColor = await allButton.evaluate((el) => {
+      return getComputedStyle(el).backgroundColor;
     });
 
-    // accent-primary: #ef4444 = rgb(239, 68, 68)
-    expect(color).toMatch(/rgb\(239,\s*68,\s*68\)/);
+    // accent-secondary: #3b82f6 = rgb(59, 130, 246)
+    expect(bgColor).toMatch(/rgb\(59,\s*130,\s*246\)/);
   });
 
-  test('typography tokens are applied', async ({ page }) => {
-    // Check heading 1 exists and has correct structure
-    const h1 = page.locator('h1').first();
+  test('typography tokens are applied to headings', async ({ page }) => {
+    // Check heading exists and is styled
+    const h1 = page.getByRole('heading', { name: 'RSVP Reader', level: 1 });
     await expect(h1).toBeVisible();
 
-    // Check heading 2 exists
-    const h2 = page.locator('h2').first();
-    await expect(h2).toBeVisible();
+    // Verify font is applied
+    const fontFamily = await h1.evaluate((el) => {
+      return getComputedStyle(el).fontFamily;
+    });
 
-    // Check body text exists
-    const paragraph = page.locator('p').first();
-    await expect(paragraph).toBeVisible();
+    // Should include Inter font
+    expect(fontFamily.toLowerCase()).toContain('inter');
   });
 
-  test('spacing tokens create visual hierarchy', async ({ page }) => {
-    // Check spacing demo boxes exist
-    const spacingBoxes = page.locator('[class*="spacingBox"]');
-    await expect(spacingBoxes).toHaveCount(5);
-
-    // Verify they're visible
-    await expect(spacingBoxes.first()).toBeVisible();
-    await expect(spacingBoxes.last()).toBeVisible();
-  });
-
-  test('color swatches display correctly', async ({ page }) => {
-    // Check color swatches exist
-    const colorSwatches = page.locator('[class*="colorSwatch"]');
-    await expect(colorSwatches).toHaveCount(5);
-  });
-
-  test('screenshot: design tokens page - dark mode', async ({ page, browserName }, testInfo) => {
+  test('screenshot: design tokens - dark mode', async ({ page, browserName }, testInfo) => {
     // Only take screenshots on one browser per viewport type
     if (browserName !== 'chromium') {
       test.skip();
     }
+
+    // Force dark mode
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    });
+    await page.waitForTimeout(300);
 
     const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
@@ -120,7 +128,7 @@ test.describe('Design Tokens', () => {
     });
   });
 
-  test('screenshot: design tokens page - light mode', async ({ page, browserName }, testInfo) => {
+  test('screenshot: design tokens - light mode', async ({ page, browserName }, testInfo) => {
     // Only take screenshots on one browser per viewport type
     if (browserName !== 'chromium') {
       test.skip();
@@ -141,25 +149,5 @@ test.describe('Design Tokens', () => {
       path: path.join(dir, `design-tokens-${viewport}-light.png`),
       fullPage: true,
     });
-  });
-
-  test('light mode colors are applied when theme is set', async ({ page, browserName }) => {
-    test.skip(browserName === 'webkit', 'Color checks unreliable on webkit');
-
-    // Switch to light mode
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-
-    // Wait for transition
-    await page.waitForTimeout(300);
-
-    const body = page.locator('body');
-    const bgColor = await body.evaluate((el) => {
-      return getComputedStyle(el).backgroundColor;
-    });
-
-    // Light mode bg-primary: #ffffff = rgb(255, 255, 255)
-    expect(bgColor).toMatch(/rgb\(255,\s*255,\s*255\)/);
   });
 });

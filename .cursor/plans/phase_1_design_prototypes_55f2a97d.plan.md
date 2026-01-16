@@ -4,10 +4,10 @@ overview: 'Implement Phase 1 of the RSVP Reader project: create design tokens, b
 todos:
   - id: '1.1'
     content: Create design tokens CSS file with colors, typography, spacing, and animations
-    status: in_progress
+    status: completed
   - id: '1.2'
     content: Build mobile Library view prototype with article cards, tab bar, and tag filter
-    status: pending
+    status: in_progress
   - id: '1.3'
     content: Build mobile RSVP view prototype with ORP display and playback controls
     status: pending

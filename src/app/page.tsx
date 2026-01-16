@@ -1,92 +1,163 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  ArticleCard,
+  TabBar,
+  TagFilter,
+  defaultTabs,
+  type Article,
+  type TabId,
+} from '@/components/library';
 import styles from './page.module.css';
 
-export default function Home() {
+// Mock data for prototype
+const mockArticles: Article[] = [
+  {
+    id: '1',
+    title: 'Understanding React Server Components',
+    author: 'Dan Abramov',
+    siteName: 'react.dev',
+    readingTime: 12,
+    tags: ['react', 'javascript', 'webdev'],
+    imageUrl: 'https://picsum.photos/seed/1/400/200',
+  },
+  {
+    id: '2',
+    title: 'The Future of CSS: What to Expect in 2026',
+    author: 'Lea Verou',
+    siteName: 'css-tricks.com',
+    readingTime: 8,
+    tags: ['css', 'webdev'],
+  },
+  {
+    id: '3',
+    title: 'TypeScript 6.0: Breaking Changes and New Features',
+    author: 'Ryan Cavanaugh',
+    siteName: 'devblogs.microsoft.com',
+    readingTime: 15,
+    tags: ['typescript', 'javascript'],
+    imageUrl: 'https://picsum.photos/seed/3/400/200',
+  },
+  {
+    id: '4',
+    title: 'Building Accessible Web Applications',
+    author: 'Marcy Sutton',
+    siteName: 'a11yproject.com',
+    readingTime: 10,
+    tags: ['accessibility', 'webdev', 'html'],
+  },
+  {
+    id: '5',
+    title: 'The Complete Guide to Speed Reading',
+    author: 'Tim Ferriss',
+    siteName: 'medium.com',
+    readingTime: 20,
+    tags: ['productivity', 'reading'],
+    imageUrl: 'https://picsum.photos/seed/5/400/200',
+  },
+  {
+    id: '6',
+    title: 'Next.js 16 Deep Dive',
+    author: 'Vercel Team',
+    siteName: 'nextjs.org',
+    readingTime: 18,
+    tags: ['nextjs', 'react', 'webdev'],
+  },
+];
+
+const mockFeedArticles: Article[] = [
+  {
+    id: '7',
+    title: 'Weekly JavaScript Newsletter #423',
+    author: 'JavaScript Weekly',
+    siteName: 'javascriptweekly.com',
+    readingTime: 5,
+    tags: ['newsletter', 'javascript'],
+  },
+  {
+    id: '8',
+    title: 'Morning Brew: Tech Edition',
+    author: 'Morning Brew',
+    siteName: 'morningbrew.com',
+    readingTime: 3,
+    tags: ['newsletter', 'tech'],
+  },
+];
+
+const mockHistoryArticles: Article[] = [
+  {
+    id: '9',
+    title: 'How to Write Clean Code',
+    author: 'Robert C. Martin',
+    siteName: 'cleancoders.com',
+    readingTime: 25,
+    tags: ['programming', 'best-practices'],
+  },
+];
+
+// Extract unique tags from all articles
+const allTags = Array.from(new Set(mockArticles.flatMap((article) => article.tags))).sort();
+
+export default function LibraryPage() {
+  const [activeTab, setActiveTab] = useState<TabId>('library');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  // Get articles based on active tab
+  const getArticles = (): Article[] => {
+    switch (activeTab) {
+      case 'library':
+        return mockArticles;
+      case 'feed':
+        return mockFeedArticles;
+      case 'history':
+        return mockHistoryArticles;
+      default:
+        return mockArticles;
+    }
+  };
+
+  // Filter articles by selected tag
+  const articles = getArticles().filter(
+    (article) => selectedTag === null || article.tags.includes(selectedTag)
+  );
+
+  const handleArticleClick = (article: Article) => {
+    // In a real app, this would navigate to the RSVP reader
+    console.log('Opening article:', article.title);
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>RSVP Reader</h1>
-        <p>Speed reading with Readwise Reader integration</p>
+        <h1 className={styles.title}>RSVP Reader</h1>
       </header>
 
-      <main className={styles.main}>
-        {/* Design tokens demonstration */}
-        <section className={styles.section} aria-labelledby="colors-heading">
-          <h2 id="colors-heading">Colors</h2>
-          <div className={styles.colorGrid}>
-            <div className={styles.colorSwatch} style={{ backgroundColor: 'var(--bg-primary)' }}>
-              <span>bg-primary</span>
-            </div>
-            <div className={styles.colorSwatch} style={{ backgroundColor: 'var(--bg-secondary)' }}>
-              <span>bg-secondary</span>
-            </div>
-            <div className={styles.colorSwatch} style={{ backgroundColor: 'var(--bg-elevated)' }}>
-              <span>bg-elevated</span>
-            </div>
-            <div
-              className={styles.colorSwatch}
-              style={{ backgroundColor: 'var(--accent-primary)' }}
-            >
-              <span>accent-primary</span>
-            </div>
-            <div
-              className={styles.colorSwatch}
-              style={{ backgroundColor: 'var(--accent-secondary)' }}
-            >
-              <span>accent-secondary</span>
-            </div>
-          </div>
-        </section>
+      <nav className={styles.tabBarContainer}>
+        <TabBar tabs={defaultTabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      </nav>
 
-        <section className={styles.section} aria-labelledby="typography-heading">
-          <h2 id="typography-heading">Typography</h2>
-          <div className={styles.typographyDemo}>
-            <h1>Heading 1</h1>
-            <h2>Heading 2</h2>
-            <h3>Heading 3</h3>
-            <p>
-              This is body text using the Inter font family. It demonstrates the default text
-              styling with proper line height and color.
-            </p>
-            <p className={styles.secondaryText}>
-              This is secondary text with a muted color for less important content.
-            </p>
-          </div>
-        </section>
+      <div className={styles.filterContainer}>
+        <TagFilter tags={allTags} selectedTag={selectedTag} onTagSelect={setSelectedTag} />
+      </div>
 
-        <section className={styles.section} aria-labelledby="rsvp-heading">
-          <h2 id="rsvp-heading">RSVP Display Preview</h2>
-          <div className={styles.rsvpDemo}>
-            <div className={styles.rsvpWord}>
-              <span className={styles.rsvpLeft}>Read</span>
-              <span className={styles.rsvpCenter}>i</span>
-              <span className={styles.rsvpRight}>ng</span>
-            </div>
-            <p className={styles.rsvpCaption}>
-              The red letter is the Optimal Recognition Point (ORP)
-            </p>
+      <main
+        className={styles.main}
+        id={`panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+      >
+        {articles.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No articles found{selectedTag ? ` with tag "${selectedTag}"` : ''}.</p>
           </div>
-        </section>
-
-        <section className={styles.section} aria-labelledby="spacing-heading">
-          <h2 id="spacing-heading">Spacing Scale</h2>
-          <div className={styles.spacingDemo}>
-            <div className={styles.spacingBox} style={{ padding: 'var(--space-xs)' }}>
-              xs
-            </div>
-            <div className={styles.spacingBox} style={{ padding: 'var(--space-sm)' }}>
-              sm
-            </div>
-            <div className={styles.spacingBox} style={{ padding: 'var(--space-md)' }}>
-              md
-            </div>
-            <div className={styles.spacingBox} style={{ padding: 'var(--space-lg)' }}>
-              lg
-            </div>
-            <div className={styles.spacingBox} style={{ padding: 'var(--space-xl)' }}>
-              xl
-            </div>
+        ) : (
+          <div className={styles.articleGrid}>
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} onClick={handleArticleClick} />
+            ))}
           </div>
-        </section>
+        )}
       </main>
     </div>
   );
