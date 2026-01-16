@@ -578,7 +578,7 @@ tests/
 ## 5. Task Breakdown
 
 ### Phase 0: Project Setup
-- [ ] **0.1** Initialize Next.js project with TypeScript
+- [x] **0.1** Initialize Next.js project with TypeScript
 - [ ] **0.2** Configure Vitest + React Testing Library
 - [ ] **0.3** Configure Playwright for E2E
 - [ ] **0.4** Set up Supabase project and database schema
