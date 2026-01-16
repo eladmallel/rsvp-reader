@@ -3,12 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Playwright configuration for RSVP Reader E2E tests.
  * See https://playwright.dev/docs/test-configuration
- *
- * Port is automatically detected by scripts/run-e2e.ts to avoid conflicts
- * when multiple agents run tests in different git worktrees.
  */
-const TEST_PORT = process.env.TEST_PORT || '3099';
-
 export default defineConfig({
   testDir: './tests/e2e',
 
@@ -30,7 +25,7 @@ export default defineConfig({
   /* Shared settings for all the projects below */
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */
-    baseURL: `http://localhost:${TEST_PORT}`,
+    baseURL: 'http://localhost:3094',
 
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
@@ -70,8 +65,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `npm run dev -- --port ${TEST_PORT}`,
-    url: `http://localhost:${TEST_PORT}`,
+    command: 'npm run dev -- --port 3094',
+    url: 'http://localhost:3094',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

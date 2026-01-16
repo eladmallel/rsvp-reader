@@ -88,6 +88,62 @@ test.describe('Design Tokens', () => {
   }) => {
     test.skip(browserName === 'webkit', 'Color checks unreliable on webkit');
 
+    // Mock the API to show the library page with articles
+    await page.route('/api/auth/connect-reader', (route) => {
+      if (route.request().method() === 'GET') {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ connected: true }),
+        });
+      } else {
+        route.continue();
+      }
+    });
+
+    await page.route('/api/reader/documents*', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          documents: [
+            {
+              id: 'doc-1',
+              title: 'Test Article',
+              author: 'Test Author',
+              source: 'test.com',
+              siteName: 'Test',
+              url: 'https://test.com',
+              sourceUrl: 'https://test.com',
+              category: 'article',
+              location: 'later',
+              tags: ['test'],
+              wordCount: 1000,
+              readingProgress: 0,
+              summary: null,
+              imageUrl: null,
+              publishedDate: null,
+              createdAt: '2026-01-15T10:00:00Z',
+            },
+          ],
+          nextCursor: null,
+          count: 1,
+        }),
+      });
+    });
+
+    await page.route('/api/reader/tags', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ tags: [{ name: 'test', count: 1 }] }),
+      });
+    });
+
+    // Reload to pick up the mocks
+    await page.reload();
+    await page.waitForSelector('article');
+
     // The All button when active should use accent-secondary color
     const allButton = page.getByRole('button', { name: 'All' });
     await expect(allButton).toBeVisible();
