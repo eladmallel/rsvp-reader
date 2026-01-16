@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { WordDisplay, ProgressBar, Controls } from '@/components/rsvp';
+import { ThemeToggle } from '@/components/ui';
 import styles from './page.module.css';
 
 // Sample text for prototype demonstration
@@ -44,10 +45,13 @@ export default function RSVPPage() {
     <div className={styles.container}>
       {/* Header */}
       <header className={styles.header}>
-        <Link href="/" className={styles.backLink}>
-          ← Back to Library
-        </Link>
-        <h1 className={styles.title}>Sample Article</h1>
+        <div className={styles.headerLeft}>
+          <Link href="/" className={styles.backLink}>
+            ← Back to Library
+          </Link>
+          <h1 className={styles.title}>Sample Article</h1>
+        </div>
+        <ThemeToggle />
       </header>
 
       {/* Main RSVP display area */}

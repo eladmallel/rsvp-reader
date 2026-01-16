@@ -305,3 +305,23 @@ a:hover {
   white-space: nowrap;
   border: 0;
 }
+
+/* ==========================================================================
+   RTL (Right-to-Left) Support
+   ========================================================================== */
+
+/* Base RTL container */
+[dir='rtl'] {
+  text-align: right;
+}
+
+/* Ensure proper direction inheritance */
+.rtl-content {
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+/* Isolated RTL text within LTR context */
+.rtl-isolate {
+  unicode-bidi: isolate;
+}

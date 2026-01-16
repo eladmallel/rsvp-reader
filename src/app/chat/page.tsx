@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { MessageBubble, ChatInput, SuggestedPrompts, type Message } from '@/components/chat';
+import { ThemeToggle } from '@/components/ui';
 import styles from './page.module.css';
 
 // Mock article context for prototype
@@ -86,6 +87,7 @@ export default function ChatPage() {
           <h1 className={styles.title}>Chat</h1>
           <p className={styles.subtitle}>{mockArticle.title}</p>
         </div>
+        <ThemeToggle />
       </header>
 
       {/* Messages area */}

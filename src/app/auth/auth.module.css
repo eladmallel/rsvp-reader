@@ -1,6 +1,7 @@
 /* Auth Pages Styles - Mobile First */
 
 .container {
+  position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -12,6 +13,12 @@
   background-image:
     radial-gradient(ellipse at top, var(--bg-secondary) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 40%);
+}
+
+.themeToggle {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
 }
 
 .content {

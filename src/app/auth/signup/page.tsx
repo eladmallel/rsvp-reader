@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ui';
 import styles from '../auth.module.css';
 
 export default function SignupPage() {
@@ -44,6 +45,7 @@ export default function SignupPage() {
 
   return (
     <div className={styles.container}>
+      <ThemeToggle className={styles.themeToggle} />
       <div className={styles.content}>
         {/* Logo/Brand */}
         <header className={styles.header}>

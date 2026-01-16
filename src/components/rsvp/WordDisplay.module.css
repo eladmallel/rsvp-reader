@@ -18,6 +18,11 @@
   user-select: none;
 }
 
+/* RTL support */
+.word.rtl {
+  flex-direction: row-reverse;
+}
+
 .left {
   text-align: right;
   min-width: 4ch;

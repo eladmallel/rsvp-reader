@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import './globals.css';
 
 const inter = Inter({
@@ -36,7 +37,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable}`}>{children}</body>
+      <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
+        <ThemeProvider defaultTheme="system">{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -9,6 +9,7 @@ import {
   type Article,
   type TabId,
 } from '@/components/library';
+import { ThemeToggle } from '@/components/ui';
 import styles from './page.module.css';
 
 // Mock data for prototype
@@ -131,6 +132,7 @@ export default function LibraryPage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>RSVP Reader</h1>
+        <ThemeToggle />
       </header>
 
       <nav className={styles.tabBarContainer}>
