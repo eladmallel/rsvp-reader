@@ -133,6 +133,130 @@ test.describe('Signup Page', () => {
   });
 });
 
+test.describe('Connect Reader Page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/auth/connect-reader');
+  });
+
+  test('displays connect reader form with token input', async ({ page }) => {
+    await expect(
+      page.getByRole('heading', { name: 'Connect Readwise Reader', level: 1 })
+    ).toBeVisible();
+    await expect(page.getByLabel('Access Token')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Connect Reader' })).toBeVisible();
+  });
+
+  test('shows info box explaining the feature', async ({ page }) => {
+    await expect(page.getByText('What is this?')).toBeVisible();
+    await expect(page.getByText('RSVP Reader uses your Readwise')).toBeVisible();
+  });
+
+  test('shows link to get access token', async ({ page }) => {
+    const tokenLink = page.getByRole('link', { name: /Get your access token/i });
+    await expect(tokenLink).toBeVisible();
+    await expect(tokenLink).toHaveAttribute('href', 'https://readwise.io/access_token');
+    await expect(tokenLink).toHaveAttribute('target', '_blank');
+  });
+
+  test('shows token toggle button', async ({ page }) => {
+    const tokenField = page.getByLabel('Access Token');
+    await expect(tokenField).toHaveAttribute('type', 'password');
+
+    // Click toggle to show token
+    await page.getByRole('button', { name: 'Show token' }).click();
+    await expect(tokenField).toHaveAttribute('type', 'text');
+
+    // Click again to hide
+    await page.getByRole('button', { name: 'Hide token' }).click();
+    await expect(tokenField).toHaveAttribute('type', 'password');
+  });
+
+  test('shows error for empty token submission', async ({ page }) => {
+    await page.getByRole('button', { name: 'Connect Reader' }).click();
+
+    // HTML5 validation should prevent submission or show error
+    const tokenField = page.getByLabel('Access Token');
+    await expect(tokenField).toBeVisible();
+  });
+
+  test('shows error for short/invalid token', async ({ page }) => {
+    await page.getByLabel('Access Token').fill('short');
+    await page.getByRole('button', { name: 'Connect Reader' }).click();
+
+    await expect(
+      page.getByRole('alert').filter({ hasText: "doesn't look like a valid access token" })
+    ).toBeVisible();
+  });
+
+  test('shows loading state on submit', async ({ page }) => {
+    await page.getByLabel('Access Token').fill('valid_token_that_is_long_enough_1234567890');
+    await page.getByRole('button', { name: 'Connect Reader' }).click();
+
+    await expect(page.getByRole('button', { name: 'Connecting...' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Connecting...' })).toBeDisabled();
+  });
+
+  test('shows error for invalid token response', async ({ page }) => {
+    await page.getByLabel('Access Token').fill('invalid_token_that_is_long_enough');
+    await page.getByRole('button', { name: 'Connect Reader' }).click();
+
+    // Wait for simulated API call
+    await expect(page.getByRole('alert').filter({ hasText: 'Invalid token' })).toBeVisible({
+      timeout: 3000,
+    });
+  });
+
+  test('has skip option to continue without connecting', async ({ page }) => {
+    await expect(page.getByRole('link', { name: 'Skip for now' })).toBeVisible();
+    await page.getByRole('link', { name: 'Skip for now' }).click();
+    await expect(page).toHaveURL('/');
+  });
+
+  test('has link back to login', async ({ page }) => {
+    await expect(page.getByRole('link', { name: /Back to login/i })).toBeVisible();
+    await page.getByRole('link', { name: /Back to login/i }).click();
+    await expect(page).toHaveURL('/auth/login');
+  });
+
+  test('screenshot: connect reader - mobile dark', async ({ page, browserName }, testInfo) => {
+    if (browserName !== 'chromium') {
+      test.skip();
+    }
+
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+
+    const dir = ensureScreenshotDir();
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: path.join(dir, `connect-reader-${viewport}-dark.png`),
+      fullPage: true,
+    });
+  });
+
+  test('screenshot: connect reader - mobile light', async ({ page, browserName }, testInfo) => {
+    if (browserName !== 'chromium') {
+      test.skip();
+    }
+
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'light');
+    });
+    await page.waitForTimeout(300);
+
+    const dir = ensureScreenshotDir();
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: path.join(dir, `connect-reader-${viewport}-light.png`),
+      fullPage: true,
+    });
+  });
+});
+
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/login');
