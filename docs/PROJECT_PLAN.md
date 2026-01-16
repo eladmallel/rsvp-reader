@@ -601,6 +601,7 @@ tests/
 - [x] **0.4** Set up Supabase project and database schema
 - [x] **0.5** Configure ESLint, Prettier, and husky pre-commit hooks
 - [x] **0.6** Set up GitHub Actions CI/CD pipeline
+- [ ] **0.7** Measure CI baseline time and document in this file
 
 > **📋 Review Point**: Project scaffolding complete, CI green
 
@@ -613,6 +614,7 @@ tests/
 - [ ] **1.5** Build desktop layouts (Library, RSVP)
 - [ ] **1.6** Implement dark/light mode toggle
 - [ ] **1.7** Add RTL support for Hebrew text
+- [ ] **1.8** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: Interactive prototypes for all screens
 
@@ -626,6 +628,7 @@ tests/
 - [ ] **2.6** Add WPM control (slider + gestures)
 - [ ] **2.7** Add progress tracking
 - [ ] **2.8** Write component tests for RSVPPlayer
+- [ ] **2.9** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: RSVP engine fully functional with tests
 
@@ -641,6 +644,7 @@ tests/
 - [ ] **3.8** Build Feed page (separate tab)
 - [ ] **3.9** Implement tag filtering
 - [ ] **3.10** E2E test: Connect + Browse + Filter
+- [ ] **3.11** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: Reader integration complete with E2E tests
 
@@ -652,6 +656,7 @@ tests/
 - [ ] **4.4** Build post-read rating modal
 - [ ] **4.5** Build reading history page
 - [ ] **4.6** E2E test: Complete reading + rating flow
+- [ ] **4.7** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: History and ratings working end-to-end
 
@@ -664,6 +669,7 @@ tests/
 - [ ] **5.5** Implement chat history persistence
 - [ ] **5.6** Add suggested prompts
 - [ ] **5.7** E2E test: Open chat, send message, verify response
+- [ ] **5.8** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: LLM chat functional with history
 
@@ -675,6 +681,7 @@ tests/
 - [ ] **6.4** Implement font customization
 - [ ] **6.5** Add loading states and error boundaries
 - [ ] **6.6** Performance optimization (code splitting, lazy loading)
+- [ ] **6.7** Measure CI time; optimize if >10% increase from baseline
 
 ### Phase 7: Final Testing & Launch Prep
 
@@ -685,6 +692,7 @@ tests/
 - [ ] **7.5** Security review
 - [ ] **7.6** Documentation (README, setup guide)
 - [ ] **7.7** Production deployment
+- [ ] **7.8** Final CI time audit and optimization
 
 > **📋 Review Point**: App ready for production use
 
