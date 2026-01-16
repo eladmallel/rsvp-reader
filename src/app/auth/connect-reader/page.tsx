@@ -2,11 +2,18 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui';
 import styles from '../auth.module.css';
 import connectStyles from './connect-reader.module.css';
 
+interface ConnectResponse {
+  success: boolean;
+  error?: string;
+}
+
 export default function ConnectReaderPage() {
+  const router = useRouter();
   const [token, setToken] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,17 +37,29 @@ export default function ConnectReaderPage() {
 
     setIsLoading(true);
 
-    // Simulate API validation for prototype
-    setTimeout(() => {
-      setIsLoading(false);
-      // Simulate error for demo purposes
-      if (token.includes('invalid')) {
-        setError('Invalid token. Please check your access token and try again.');
+    try {
+      const response = await fetch('/api/auth/connect-reader', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: token.trim() }),
+      });
+
+      const data: ConnectResponse = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Failed to connect. Please try again.');
         return;
       }
-      console.log('Token validated:', { tokenLength: token.length });
-      // In real app, would store token and redirect to library
-    }, 1500);
+
+      // Success - redirect to library
+      router.push('/');
+    } catch {
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

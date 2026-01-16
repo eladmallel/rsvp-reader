@@ -40,6 +40,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       reading_sessions: {
         Row: {
@@ -93,6 +94,15 @@ export interface Database {
           rating?: number | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'reading_sessions_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       chat_conversations: {
         Row: {
@@ -119,6 +129,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_conversations_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       chat_messages: {
         Row: {
@@ -142,6 +161,15 @@ export interface Database {
           content?: string;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_messages_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'chat_conversations';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       cached_articles: {
         Row: {
@@ -171,6 +199,15 @@ export interface Database {
           word_count?: number | null;
           cached_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'cached_articles_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {
@@ -182,5 +219,16 @@ export interface Database {
     Enums: {
       [_ in never]: never;
     };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
 }
+
+// Helper types for easier usage
+export type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row'];
+export type TablesInsert<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Insert'];
+export type TablesUpdate<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Update'];
