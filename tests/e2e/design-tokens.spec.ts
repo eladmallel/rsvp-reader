@@ -35,10 +35,14 @@ test.describe('Design Tokens', () => {
     // Skip color checks on webkit as computed colors may differ
     test.skip(browserName === 'webkit', 'Color checks unreliable on webkit');
 
-    // Force dark mode by setting data-theme attribute
+    // Force dark mode via localStorage (ThemeProvider reads from here)
     await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('rsvp-reader-theme', 'dark');
     });
+
+    // Reload to apply the theme from localStorage
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
 
     // Wait for transition
     await page.waitForTimeout(300);
@@ -57,10 +61,14 @@ test.describe('Design Tokens', () => {
   test('light mode colors are applied when theme is set', async ({ page, browserName }) => {
     test.skip(browserName === 'webkit', 'Color checks unreliable on webkit');
 
-    // Switch to light mode
+    // Switch to light mode via localStorage
     await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('rsvp-reader-theme', 'light');
     });
+
+    // Reload to apply the theme from localStorage
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
 
     // Wait for transition
     await page.waitForTimeout(300);
@@ -113,10 +121,12 @@ test.describe('Design Tokens', () => {
       test.skip();
     }
 
-    // Force dark mode
+    // Force dark mode via localStorage
     await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('rsvp-reader-theme', 'dark');
     });
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(300);
 
     const dir = ensureScreenshotDir();
@@ -134,12 +144,12 @@ test.describe('Design Tokens', () => {
       test.skip();
     }
 
-    // Switch to light mode
+    // Switch to light mode via localStorage
     await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('rsvp-reader-theme', 'light');
     });
-
-    // Wait for transition
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(300);
 
     const dir = ensureScreenshotDir();
