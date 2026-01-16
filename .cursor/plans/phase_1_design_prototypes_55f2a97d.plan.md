@@ -7,10 +7,10 @@ todos:
     status: completed
   - id: '1.2'
     content: Build mobile Library view prototype with article cards, tab bar, and tag filter
-    status: in_progress
+    status: completed
   - id: '1.3'
     content: Build mobile RSVP view prototype with ORP display and playback controls
-    status: pending
+    status: in_progress
   - id: '1.4'
     content: Build mobile Chat view prototype with message bubbles and input
     status: pending
