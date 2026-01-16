@@ -20,6 +20,10 @@ function ensureScreenshotDir(): string {
 test.describe('Library Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    // Hide Next.js dev overlay to prevent it from intercepting clicks on mobile
+    await page.addStyleTag({
+      content: 'nextjs-portal { display: none !important; pointer-events: none !important; }',
+    });
   });
 
   test('displays the page title', async ({ page }) => {

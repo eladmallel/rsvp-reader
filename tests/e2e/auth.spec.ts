@@ -20,6 +20,10 @@ function ensureScreenshotDir(): string {
 test.describe('Signup Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/signup');
+    // Hide Next.js dev overlay to prevent it from intercepting clicks on mobile
+    await page.addStyleTag({
+      content: 'nextjs-portal { display: none !important; pointer-events: none !important; }',
+    });
   });
 
   test('displays signup form with all fields', async ({ page }) => {
@@ -136,6 +140,10 @@ test.describe('Signup Page', () => {
 test.describe('Connect Reader Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/connect-reader');
+    // Hide Next.js dev overlay to prevent it from intercepting clicks on mobile
+    await page.addStyleTag({
+      content: 'nextjs-portal { display: none !important; pointer-events: none !important; }',
+    });
   });
 
   test('displays connect reader form with token input', async ({ page }) => {
@@ -260,6 +268,10 @@ test.describe('Connect Reader Page', () => {
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/login');
+    // Hide Next.js dev overlay to prevent it from intercepting clicks on mobile
+    await page.addStyleTag({
+      content: 'nextjs-portal { display: none !important; pointer-events: none !important; }',
+    });
   });
 
   test('displays login form with all fields', async ({ page }) => {

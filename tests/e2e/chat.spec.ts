@@ -5,6 +5,10 @@ const screenshotDir = `screenshots/${new Date().toISOString().split('T')[0]}`;
 test.describe('Chat Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/chat');
+    // Hide Next.js dev overlay to prevent it from intercepting clicks on mobile
+    await page.addStyleTag({
+      content: 'nextjs-portal { display: none !important; pointer-events: none !important; }',
+    });
   });
 
   test('displays chat interface elements', async ({ page }) => {
