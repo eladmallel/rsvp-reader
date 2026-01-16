@@ -39,9 +39,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
-  /* Configure projects for major browsers
-   * Chrome-only in CI for speed; Safari can be tested locally or in nightly runs
-   */
+  /* Configure projects for Chrome (mobile + desktop viewports) */
   projects: [
     // Mobile viewport
     {
@@ -53,19 +51,6 @@ export default defineConfig({
       name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
-    // Safari - skip in CI for faster runs (test locally or in nightly)
-    ...(process.env.CI
-      ? []
-      : [
-          {
-            name: 'Mobile Safari',
-            use: { ...devices['iPhone 12'] },
-          },
-          {
-            name: 'Desktop Safari',
-            use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
-          },
-        ]),
   ],
 
   /* Run your local dev server before starting the tests */

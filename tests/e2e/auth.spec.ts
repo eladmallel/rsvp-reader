@@ -98,11 +98,7 @@ test.describe('Signup Page', () => {
     await expect(page.getByRole('link', { name: 'Privacy Policy' })).toBeVisible();
   });
 
-  test('screenshot: signup page - mobile dark', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: signup page - mobile dark', async ({ page }, testInfo) => {
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
     });
@@ -117,11 +113,7 @@ test.describe('Signup Page', () => {
     });
   });
 
-  test('screenshot: signup page - mobile light', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: signup page - mobile light', async ({ page }, testInfo) => {
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'light');
     });
@@ -265,11 +257,7 @@ test.describe('Connect Reader Page', () => {
     await expect(page).toHaveURL('/auth/login');
   });
 
-  test('screenshot: connect reader - mobile dark', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: connect reader - mobile dark', async ({ page }, testInfo) => {
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
     });
@@ -284,11 +272,7 @@ test.describe('Connect Reader Page', () => {
     });
   });
 
-  test('screenshot: connect reader - mobile light', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: connect reader - mobile light', async ({ page }, testInfo) => {
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'light');
     });
@@ -376,11 +360,7 @@ test.describe('Login Page', () => {
     await expect(page).toHaveURL('/auth/signup');
   });
 
-  test('screenshot: login page - mobile dark', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: login page - mobile dark', async ({ page }, testInfo) => {
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
     });
@@ -395,11 +375,7 @@ test.describe('Login Page', () => {
     });
   });
 
-  test('screenshot: login page - mobile light', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: login page - mobile light', async ({ page }, testInfo) => {
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'light');
     });

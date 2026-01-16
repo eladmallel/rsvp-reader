@@ -133,11 +133,7 @@ test.describe('RSVP Page', () => {
     await expect(orpElement).toBeVisible();
   });
 
-  test('screenshot: rsvp page - mobile dark', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: rsvp page - mobile dark', async ({ page }, testInfo) => {
     // Force dark mode
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -153,11 +149,7 @@ test.describe('RSVP Page', () => {
     });
   });
 
-  test('screenshot: rsvp page - mobile light', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: rsvp page - mobile light', async ({ page }, testInfo) => {
     // Switch to light mode
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'light');

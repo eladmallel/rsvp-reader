@@ -314,11 +314,7 @@ test.describe('Library Page - Connected', () => {
     expect(ariaLabel).toContain('Read');
   });
 
-  test('screenshot: library page - mobile dark', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: library page - mobile dark', async ({ page }, testInfo) => {
     await page.waitForSelector('article');
 
     // Force dark mode
@@ -336,11 +332,7 @@ test.describe('Library Page - Connected', () => {
     });
   });
 
-  test('screenshot: library page - mobile light', async ({ page, browserName }, testInfo) => {
-    if (browserName !== 'chromium') {
-      test.skip();
-    }
-
+  test('screenshot: library page - mobile light', async ({ page }, testInfo) => {
     await page.waitForSelector('article');
 
     // Switch to light mode
