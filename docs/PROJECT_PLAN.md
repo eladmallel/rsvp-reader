@@ -601,7 +601,7 @@ tests/
 - [x] **0.4** Set up Supabase project and database schema
 - [x] **0.5** Configure ESLint, Prettier, and husky pre-commit hooks
 - [x] **0.6** Set up GitHub Actions CI/CD pipeline
-- [ ] **0.7** Measure CI baseline time and document in this file
+- [x] **0.7** Measure CI baseline time and document in this file
 
 > **📋 Review Point**: Project scaffolding complete, CI green
 
@@ -743,3 +743,43 @@ tests/
 | **Mobile Controls** | On-screen buttons/menus, no touch gestures                   |
 | **Offline Mode**    | Not needed for initial version                               |
 | **Reader Sync**     | Keep reading progress separate (no sync back to Reader)      |
+
+---
+
+## Appendix C: CI Performance Baseline
+
+**Baseline Date:** 2026-01-16 (Phase 0 complete)
+
+**Total CI Time:** ~1m18s
+
+### Step Breakdown
+
+| Step                  | Duration |
+| --------------------- | -------- |
+| Initialize containers | 24s      |
+| Checkout              | 1s       |
+| Setup Node.js         | 3s       |
+| npm ci                | 12s      |
+| Lint                  | 3s       |
+| Type check            | 2s       |
+| Unit tests            | 2s       |
+| E2E tests             | 15s      |
+| Upload artifacts      | 1s       |
+| Cleanup               | ~5s      |
+
+### Configuration
+
+- **Runner:** `ubuntu-latest` with Playwright container
+- **Container:** `mcr.microsoft.com/playwright:v1.57.0-noble`
+- **Node.js:** v20 with npm caching
+- **E2E browsers:** Mobile Chrome, Mobile Safari, Desktop Chrome, Desktop Safari
+
+### Optimization Notes
+
+- Playwright container eliminates browser download (~57s savings vs cache miss)
+- Container init (24s) is faster than cache restore + apt install (~33s)
+- npm caching enabled via `actions/setup-node`
+
+### Threshold
+
+**Alert if CI exceeds:** 1m27s (10% increase from 1m18s baseline)
