@@ -16,8 +16,8 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
 
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Run with 4 workers in CI for faster execution */
+  workers: process.env.CI ? 4 : undefined,
 
   /* Reporter to use */
   reporter: [['html', { open: 'never' }], ['list']],
@@ -34,27 +34,33 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for major browsers
+   * Chrome-only in CI for speed; Safari can be tested locally or in nightly runs
+   */
   projects: [
-    // Mobile viewports (primary)
+    // Mobile viewport
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-
-    // Desktop viewports
+    // Desktop viewport
     {
       name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
-    {
-      name: 'Desktop Safari',
-      use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
-    },
+    // Safari - skip in CI for faster runs (test locally or in nightly)
+    ...(process.env.CI
+      ? []
+      : [
+          {
+            name: 'Mobile Safari',
+            use: { ...devices['iPhone 12'] },
+          },
+          {
+            name: 'Desktop Safari',
+            use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
+          },
+        ]),
   ],
 
   /* Run your local dev server before starting the tests */
