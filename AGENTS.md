@@ -90,6 +90,33 @@ This document defines how I (the AI agent) should work on the RSVP Reader projec
 
 **Don't just re-run and hope.** Diagnose the root cause first.
 
+### Before Running E2E Tests (CRITICAL)
+
+**Always kill and restart dev servers before running Playwright tests.** Stale or unresponsive servers cause tests to hang indefinitely.
+
+```bash
+# Kill any processes on the test port (3099) and dev port (3000)
+lsof -ti:3099 | xargs kill -9 2>/dev/null || true
+lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+
+# Then run E2E tests (Playwright will start fresh server via webServer config)
+npm run test:e2e
+```
+
+**Why this matters:**
+
+- Dev servers can become unresponsive after code changes
+- Port conflicts cause silent failures
+- Playwright's `reuseExistingServer` option can connect to a broken server
+- Waiting for timeouts wastes significant time
+
+**Signs you need to restart servers:**
+
+- Tests hang with no output for >10 seconds
+- "EADDRINUSE: address already in use" errors
+- Tests that passed before suddenly timeout
+- Playwright reports waiting for server indefinitely
+
 ---
 
 ## 4. Task Management
