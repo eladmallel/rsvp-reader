@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArticleCard,
@@ -64,6 +65,7 @@ function documentToArticle(doc: DocumentFromApi): Article {
 }
 
 export default function LibraryPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('library');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
@@ -181,7 +183,7 @@ export default function LibraryPage() {
 
   const handleArticleClick = (article: Article) => {
     // Navigate to the RSVP reader with the article
-    window.location.href = `/rsvp?id=${article.id}`;
+    router.push(`/rsvp?id=${article.id}`);
   };
 
   // Not connected state
@@ -238,7 +240,7 @@ export default function LibraryPage() {
         <main className={styles.main}>
           <div className={styles.errorState}>
             <p>Error: {error}</p>
-            <button onClick={() => window.location.reload()} className={styles.retryButton}>
+            <button onClick={() => router.refresh()} className={styles.retryButton}>
               Try Again
             </button>
           </div>
