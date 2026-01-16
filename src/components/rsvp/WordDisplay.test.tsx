@@ -1,74 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { WordDisplay, calculateORPIndex } from './WordDisplay';
+import { WordDisplay } from './WordDisplay';
 
-describe('calculateORPIndex', () => {
-  describe('LTR (default)', () => {
-    it('returns 0 for empty strings', () => {
-      expect(calculateORPIndex(0)).toBe(0);
-    });
-
-    it('returns 0 for single character words', () => {
-      expect(calculateORPIndex(1)).toBe(0);
-    });
-
-    it('returns 1 for 2-5 character words', () => {
-      expect(calculateORPIndex(2)).toBe(1);
-      expect(calculateORPIndex(3)).toBe(1);
-      expect(calculateORPIndex(4)).toBe(1);
-      expect(calculateORPIndex(5)).toBe(1);
-    });
-
-    it('returns 2 for 6-9 character words', () => {
-      expect(calculateORPIndex(6)).toBe(2);
-      expect(calculateORPIndex(7)).toBe(2);
-      expect(calculateORPIndex(8)).toBe(2);
-      expect(calculateORPIndex(9)).toBe(2);
-    });
-
-    it('returns 3 for 10-13 character words', () => {
-      expect(calculateORPIndex(10)).toBe(3);
-      expect(calculateORPIndex(11)).toBe(3);
-      expect(calculateORPIndex(12)).toBe(3);
-      expect(calculateORPIndex(13)).toBe(3);
-    });
-
-    it('returns 4 for words longer than 13 characters', () => {
-      expect(calculateORPIndex(14)).toBe(4);
-      expect(calculateORPIndex(20)).toBe(4);
-      expect(calculateORPIndex(100)).toBe(4);
-    });
-  });
-
-  describe('RTL', () => {
-    it('returns last index for single character RTL words', () => {
-      expect(calculateORPIndex(1, true)).toBe(0);
-    });
-
-    it('calculates ORP from right for 2-5 character RTL words', () => {
-      // For length 2: offset=1, so index = 2-1-1 = 0
-      expect(calculateORPIndex(2, true)).toBe(0);
-      // For length 3: offset=1, so index = 3-1-1 = 1
-      expect(calculateORPIndex(3, true)).toBe(1);
-      // For length 4: offset=1, so index = 4-1-1 = 2
-      expect(calculateORPIndex(4, true)).toBe(2);
-      // For length 5: offset=1, so index = 5-1-1 = 3
-      expect(calculateORPIndex(5, true)).toBe(3);
-    });
-
-    it('calculates ORP from right for 6-9 character RTL words', () => {
-      // For length 6: offset=2, so index = 6-1-2 = 3
-      expect(calculateORPIndex(6, true)).toBe(3);
-      // For length 7: offset=2, so index = 7-1-2 = 4
-      expect(calculateORPIndex(7, true)).toBe(4);
-    });
-
-    it('handles very long RTL words', () => {
-      // For length 20: returns length - 5 = 15
-      expect(calculateORPIndex(20, true)).toBe(15);
-    });
-  });
-});
+// Note: calculateORPIndex unit tests have been moved to src/lib/rsvp/orp.test.ts
 
 describe('WordDisplay', () => {
   it('renders placeholder when no word is provided', () => {
