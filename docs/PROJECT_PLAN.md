@@ -615,9 +615,9 @@ tests/
 - [x] **1.4b** Build mobile login screen prototype
 - [x] **1.4c** Build mobile onboarding/connect Reader screen prototype
 - [x] **1.5** Build desktop layouts (Library, RSVP, Auth screens)
-- [ ] **1.6** Implement dark/light mode toggle
-- [ ] **1.7** Add RTL support for Hebrew text
-- [ ] **1.8** Measure CI time; optimize if >10% increase from baseline
+- [x] **1.6** Implement dark/light mode toggle
+- [x] **1.7** Add RTL support for Hebrew text
+- [x] **1.8** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: Interactive prototypes for all screens
 
