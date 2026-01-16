@@ -1,25 +1,10 @@
 import { isRTLWord } from '@/lib/rtl';
+import { calculateORPIndex } from '@/lib/rsvp';
 import styles from './WordDisplay.module.css';
 
 export interface WordDisplayProps {
   word: string;
   orpIndex?: number; // If not provided, calculated automatically
-}
-
-/**
- * Calculate the Optimal Recognition Point (ORP) index for a word.
- * Based on speedread's lookup table approach.
- * For RTL text, the ORP is calculated from the right side.
- */
-export function calculateORPIndex(wordLength: number, isRtl: boolean = false): number {
-  if (wordLength <= 0) return 0;
-  if (wordLength > 13) return isRtl ? wordLength - 5 : 4;
-
-  const orpTable = [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
-  const orpOffset = orpTable[wordLength] || 0;
-
-  // For RTL, count from the right
-  return isRtl ? wordLength - 1 - orpOffset : orpOffset;
 }
 
 export function WordDisplay({ word, orpIndex }: WordDisplayProps) {

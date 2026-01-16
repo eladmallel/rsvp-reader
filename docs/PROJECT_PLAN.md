@@ -623,17 +623,17 @@ tests/
 
 ### Phase 2: RSVP Engine (Core)
 
-- [ ] **2.1** Implement ORP calculation algorithm + unit tests
-- [ ] **2.2** Implement timing algorithm (punctuation, length) + unit tests
-- [ ] **2.3** Implement word tokenizer with RTL detection + unit tests
-- [ ] **2.4** Build RSVPPlayer React component (state machine)
-- [ ] **2.5** Add playback controls (play/pause/rewind/forward)
-- [ ] **2.6** Add WPM control (slider + gestures)
-- [ ] **2.7** Add progress tracking
-- [ ] **2.8** Write component tests for RSVPPlayer
-- [ ] **2.9** Measure CI time; optimize if >10% increase from baseline
+- [x] **2.1** Implement ORP calculation algorithm + unit tests
+- [x] **2.2** Implement timing algorithm (punctuation, length) + unit tests
+- [x] **2.3** Implement word tokenizer with RTL detection + unit tests
+- [x] **2.4** Build RSVPPlayer React component (state machine)
+- [x] **2.5** Add playback controls (play/pause/rewind/forward)
+- [x] **2.6** Add WPM control (slider + gestures)
+- [x] **2.7** Add progress tracking
+- [x] **2.8** Write component tests for RSVPPlayer
+- [x] **2.9** Measure CI time; optimize if >10% increase from baseline
 
-> **📋 Review Point**: RSVP engine fully functional with tests
+> **📋 Review Point**: RSVP engine fully functional with tests (345 tests passing in ~2s)
 
 ### Phase 3: Readwise Reader Integration
 
