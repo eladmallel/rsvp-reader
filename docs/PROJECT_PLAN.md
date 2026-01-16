@@ -613,8 +613,8 @@ tests/
 - [x] **1.4** Build mobile Chat view prototype
 - [x] **1.4a** Build mobile signup/registration screen prototype
 - [x] **1.4b** Build mobile login screen prototype
-- [ ] **1.4c** Build mobile onboarding/connect Reader screen prototype
-- [ ] **1.5** Build desktop layouts (Library, RSVP, Auth screens)
+- [x] **1.4c** Build mobile onboarding/connect Reader screen prototype
+- [x] **1.5** Build desktop layouts (Library, RSVP, Auth screens)
 - [ ] **1.6** Implement dark/light mode toggle
 - [ ] **1.7** Add RTL support for Hebrew text
 - [ ] **1.8** Measure CI time; optimize if >10% increase from baseline
