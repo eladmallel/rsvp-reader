@@ -1,0 +1,76 @@
+/* Connect Reader Page - Specific Styles */
+
+/* Info box */
+.infoBox {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
+}
+
+.infoIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--accent-secondary);
+  margin-top: 2px;
+}
+
+.infoTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.infoText {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+/* Token link */
+.tokenLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--accent-secondary);
+  text-decoration: none;
+  padding: var(--space-sm) 0;
+  transition: color var(--transition-fast);
+}
+
+.tokenLink:hover {
+  color: var(--text-primary);
+}
+
+.externalIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Skip section */
+.skipSection {
+  text-align: center;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-primary);
+}
+
+.skipNote {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-xs);
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .infoBox {
+    padding: var(--space-lg);
+  }
+}
