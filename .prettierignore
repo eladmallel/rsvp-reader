@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Test outputs
+coverage/
+test-results/
+playwright-report/
+
+# Generated files
+*.tsbuildinfo
+next-env.d.ts
+
+# Package manager
+package-lock.json
+
+# Screenshots (binary files)
+screenshots/

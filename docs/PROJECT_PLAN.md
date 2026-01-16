@@ -22,56 +22,56 @@ RSVP Reader is a speed-reading web application that enables users to consume the
 
 #### 1.2.1 RSVP Reading Engine
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| **ORP Highlighting** | Highlight the Optimal Recognition Point of each word in red, aligning that letter to a fixed center point | P0 |
-| **Word-by-Word Display** | Present single words in a fixed screen location | P0 |
-| **Adaptive Timing** | Adjust display time based on word length and punctuation | P0 |
-| **Speed Control** | WPM slider (100–1000 WPM, default 300) | P0 |
-| **Playback Controls** | Play/Pause, Rewind (word/sentence), Forward (word/sentence) | P0 |
-| **Progress Tracking** | Visual progress bar + percentage/word count display | P0 |
-| **Paragraph Navigation** | Jump to start of previous/next paragraph | P1 |
+| Feature                  | Description                                                                                               | Priority |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- | -------- |
+| **ORP Highlighting**     | Highlight the Optimal Recognition Point of each word in red, aligning that letter to a fixed center point | P0       |
+| **Word-by-Word Display** | Present single words in a fixed screen location                                                           | P0       |
+| **Adaptive Timing**      | Adjust display time based on word length and punctuation                                                  | P0       |
+| **Speed Control**        | WPM slider (100–1000 WPM, default 300)                                                                    | P0       |
+| **Playback Controls**    | Play/Pause, Rewind (word/sentence), Forward (word/sentence)                                               | P0       |
+| **Progress Tracking**    | Visual progress bar + percentage/word count display                                                       | P0       |
+| **Paragraph Navigation** | Jump to start of previous/next paragraph                                                                  | P1       |
 
 #### 1.2.2 Readwise Reader Integration
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| **OAuth/Token Connection** | Connect Reader account via access token | P0 |
-| **Library View** | Display saved articles from Reader Library (save-for-later items) | P0 |
-| **Feed View** | Display Feed items (RSS, email subscriptions) | P0 |
-| **Tag Filtering** | Filter articles by Reader tags (e.g., "dev") | P0 |
-| **Article Sync** | Pull article HTML content for RSVP reading | P0 |
-| **Reading Progress Sync** | Sync reading progress back to Reader | P1 |
+| Feature                    | Description                                                       | Priority |
+| -------------------------- | ----------------------------------------------------------------- | -------- |
+| **OAuth/Token Connection** | Connect Reader account via access token                           | P0       |
+| **Library View**           | Display saved articles from Reader Library (save-for-later items) | P0       |
+| **Feed View**              | Display Feed items (RSS, email subscriptions)                     | P0       |
+| **Tag Filtering**          | Filter articles by Reader tags (e.g., "dev")                      | P0       |
+| **Article Sync**           | Pull article HTML content for RSVP reading                        | P0       |
+| **Reading Progress Sync**  | Sync reading progress back to Reader                              | P1       |
 
 #### 1.2.3 LLM Integration
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| **Article Chat** | Chat with LLM about the current article | P0 |
-| **Multi-Provider Support** | Support Claude, GPT, Gemini via user-supplied API keys | P0 |
-| **Context Injection** | System prompt includes full article content | P0 |
-| **Chat History** | Persist chat history per article | P1 |
-| **Pre/Post Read Chat** | Access chat before or after RSVP reading | P0 |
+| Feature                    | Description                                            | Priority |
+| -------------------------- | ------------------------------------------------------ | -------- |
+| **Article Chat**           | Chat with LLM about the current article                | P0       |
+| **Multi-Provider Support** | Support Claude, GPT, Gemini via user-supplied API keys | P0       |
+| **Context Injection**      | System prompt includes full article content            | P0       |
+| **Chat History**           | Persist chat history per article                       | P1       |
+| **Pre/Post Read Chat**     | Access chat before or after RSVP reading               | P0       |
 
 #### 1.2.4 History and Ratings
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| **Reading History** | Track every read session (article, WPM, mode, duration, completion %) | P0 |
-| **Post-Read Rating** | Prompt user to rate articles (1–5 stars) after reading | P0 |
-| **Rating Storage** | Store ratings in backend database | P0 |
-| **History Browse** | View reading history with filters | P1 |
+| Feature              | Description                                                           | Priority |
+| -------------------- | --------------------------------------------------------------------- | -------- |
+| **Reading History**  | Track every read session (article, WPM, mode, duration, completion %) | P0       |
+| **Post-Read Rating** | Prompt user to rate articles (1–5 stars) after reading                | P0       |
+| **Rating Storage**   | Store ratings in backend database                                     | P0       |
+| **History Browse**   | View reading history with filters                                     | P1       |
 
 #### 1.2.5 User Interface
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| **Minimalist RSVP Display** | Clean, distraction-free word presentation | P0 |
-| **Dark/Light Mode** | Theme toggle with system preference detection | P0 |
-| **Font Customization** | Adjustable font size, family, and color | P1 |
-| **Mobile-First Design** | Responsive layout optimized for mobile | P0 |
-| **Desktop Support** | Fully functional on desktop browsers | P0 |
-| **RTL Support** | Proper rendering of Hebrew and other RTL content | P0 |
+| Feature                     | Description                                      | Priority |
+| --------------------------- | ------------------------------------------------ | -------- |
+| **Minimalist RSVP Display** | Clean, distraction-free word presentation        | P0       |
+| **Dark/Light Mode**         | Theme toggle with system preference detection    | P0       |
+| **Font Customization**      | Adjustable font size, family, and color          | P1       |
+| **Mobile-First Design**     | Responsive layout optimized for mobile           | P0       |
+| **Desktop Support**         | Fully functional on desktop browsers             | P0       |
+| **RTL Support**             | Proper rendering of Hebrew and other RTL content | P0       |
 
 ### 1.3 User Stories
 
@@ -116,13 +116,13 @@ function calculateORP(wordLength) {
 
 **Timing Algorithm:**
 
-| Condition | Time Multiplier |
-|-----------|-----------------|
-| Base word time | 60000 / WPM (ms) |
-| Sentence-ending punctuation (. ! ?) | 3x base |
-| Clause punctuation (, : ;) | 2x base |
-| Long words (>8 chars) | 1.5x base |
-| Word length factor | +√(length) × 0.04 × base |
+| Condition                           | Time Multiplier          |
+| ----------------------------------- | ------------------------ |
+| Base word time                      | 60000 / WPM (ms)         |
+| Sentence-ending punctuation (. ! ?) | 3x base                  |
+| Clause punctuation (, : ;)          | 2x base                  |
+| Long words (>8 chars)               | 1.5x base                |
+| Word length factor                  | +√(length) × 0.04 × base |
 
 **Display Alignment:**
 
@@ -144,12 +144,14 @@ function calculateORP(wordLength) {
 ### 2.2 Screen Inventory
 
 #### Screen 1: Onboarding / Connect Reader
+
 - Single-purpose screen to input Readwise access token
 - Link to "Get your token" page
 - "Connect" CTA button
 - Error handling for invalid tokens
 
 #### Screen 2: Library (Home)
+
 - Tab bar: Library | Feed | History
 - Article cards with: title, author, site, reading time, tags
 - Pull-to-refresh
@@ -157,6 +159,7 @@ function calculateORP(wordLength) {
 - Floating action button or tap-to-read
 
 #### Screen 3: Article Detail / Reader View
+
 - Full article display (optional traditional read mode)
 - "Start RSVP" prominent CTA
 - Article metadata header
@@ -164,6 +167,7 @@ function calculateORP(wordLength) {
 - Settings gear icon
 
 #### Screen 4: RSVP Reading Mode
+
 - **Center focus zone**: Large word display with ORP highlighting
 - **Minimal chrome**: Only essential controls visible
 - **Bottom bar**: Progress indicator, current WPM
@@ -171,23 +175,27 @@ function calculateORP(wordLength) {
 - **Swipe gestures**: Up = faster, Down = slower
 
 #### Screen 5: Article Chat (LLM)
+
 - Chat interface with message bubbles
 - System context (article) hidden but active
 - Suggested prompts: "Summarize this", "Key takeaways", "Explain X"
 - Input field with send button
 
 #### Screen 6: Post-Read Rating
+
 - Modal/overlay after article completion
 - 5-star rating UI
 - Optional comment field
 - "Skip" and "Submit" buttons
 
 #### Screen 7: Reading History
+
 - Chronological list of read articles
 - Each entry: title, date, WPM used, completion %, rating
 - Filter by date range, rating
 
 #### Screen 8: Settings
+
 - Theme toggle (dark/light/system)
 - Default WPM setting
 - Font size and family
@@ -203,8 +211,8 @@ function calculateORP(wordLength) {
 --bg-elevated: #1c1c1f;
 --text-primary: #ffffff;
 --text-secondary: #a1a1aa;
---accent-primary: #ef4444;      /* ORP highlight red */
---accent-secondary: #3b82f6;    /* Interactive blue */
+--accent-primary: #ef4444; /* ORP highlight red */
+--accent-secondary: #3b82f6; /* Interactive blue */
 --success: #22c55e;
 --warning: #f59e0b;
 
@@ -246,6 +254,7 @@ The Design Phase will produce interactive HTML/CSS/JS prototypes for:
 ### 2.5 Interaction Patterns
 
 **RSVP Controls (On-Screen Buttons)**
+
 - **Play/Pause Button**: Center, prominently displayed
 - **Rewind Button**: Skip back one word or sentence
 - **Forward Button**: Skip forward one word or sentence
@@ -254,6 +263,7 @@ The Design Phase will produce interactive HTML/CSS/JS prototypes for:
 - **Exit Button**: Close RSVP mode and return to article
 
 **RSVP Controls (Keyboard - Desktop)**
+
 - **Space**: Pause/Resume
 - **Left Arrow**: Rewind one word
 - **Right Arrow**: Forward one word
@@ -274,19 +284,19 @@ graph TB
         State[State Management]
         RSVP[RSVP Engine]
     end
-    
+
     subgraph "Backend (Next.js API Routes)"
         Auth[Auth Middleware]
         API[API Routes]
         LLM[LLM Integration]
     end
-    
+
     subgraph "External Services"
         RW[Readwise Reader API]
         AI[LLM Provider - Anthropic/OpenAI]
         DB[(PostgreSQL - Supabase)]
     end
-    
+
     UI --> State
     State --> RSVP
     UI --> API
@@ -298,15 +308,15 @@ graph TB
 
 ### 3.2 Technology Stack
 
-| Layer | Choice | Rationale |
-|-------|--------|-----------|
-| **Framework** | Next.js 14+ (App Router) | Full-stack React, API routes, SSR/SSG, great DX |
-| **Language** | TypeScript | Type safety for complex state management |
-| **Styling** | Vanilla CSS + CSS Modules | Maximum control, no build dependencies |
-| **Database** | Supabase (PostgreSQL) | Managed Postgres, auth, real-time, free tier |
-| **Hosting** | Vercel | Zero-config Next.js deployment, edge functions |
-| **LLM** | Multi-provider (Claude/GPT/Gemini) | User supplies their own API keys |
-| **Auth** | Supabase Auth (email/password) | Simple auth for fast testing + Reader token |
+| Layer         | Choice                             | Rationale                                       |
+| ------------- | ---------------------------------- | ----------------------------------------------- |
+| **Framework** | Next.js 14+ (App Router)           | Full-stack React, API routes, SSR/SSG, great DX |
+| **Language**  | TypeScript                         | Type safety for complex state management        |
+| **Styling**   | Vanilla CSS + CSS Modules          | Maximum control, no build dependencies          |
+| **Database**  | Supabase (PostgreSQL)              | Managed Postgres, auth, real-time, free tier    |
+| **Hosting**   | Vercel                             | Zero-config Next.js deployment, edge functions  |
+| **LLM**       | Multi-provider (Claude/GPT/Gemini) | User supplies their own API keys                |
+| **Auth**      | Supabase Auth (email/password)     | Simple auth for fast testing + Reader token     |
 
 ### 3.3 Database Schema
 
@@ -386,17 +396,17 @@ CREATE INDEX idx_cached_articles_user_doc ON cached_articles(user_id, reader_doc
 
 #### Internal API Routes (Next.js)
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/connect-reader` | POST | Validate and store Reader token |
-| `/api/reader/documents` | GET | Fetch user's documents (with caching) |
-| `/api/reader/documents/[id]` | GET | Get single document with HTML content |
-| `/api/reader/tags` | GET | Fetch user's tags |
-| `/api/sessions` | GET/POST | CRUD for reading sessions |
-| `/api/sessions/[id]/complete` | POST | Mark session complete, trigger rating |
-| `/api/chat/[documentId]` | GET | Get chat history for document |
-| `/api/chat/[documentId]/message` | POST | Send message and get LLM response |
-| `/api/settings` | GET/PATCH | User settings |
+| Endpoint                         | Method    | Description                           |
+| -------------------------------- | --------- | ------------------------------------- |
+| `/api/auth/connect-reader`       | POST      | Validate and store Reader token       |
+| `/api/reader/documents`          | GET       | Fetch user's documents (with caching) |
+| `/api/reader/documents/[id]`     | GET       | Get single document with HTML content |
+| `/api/reader/tags`               | GET       | Fetch user's tags                     |
+| `/api/sessions`                  | GET/POST  | CRUD for reading sessions             |
+| `/api/sessions/[id]/complete`    | POST      | Mark session complete, trigger rating |
+| `/api/chat/[documentId]`         | GET       | Get chat history for document         |
+| `/api/chat/[documentId]/message` | POST      | Send message and get LLM response     |
+| `/api/settings`                  | GET/PATCH | User settings                         |
 
 #### Readwise Reader API Integration
 
@@ -419,22 +429,26 @@ interface ReaderDocument {
 }
 
 // Fetch with pagination
-async function fetchDocuments(token: string, location?: string, tag?: string): Promise<ReaderDocument[]>
+async function fetchDocuments(
+  token: string,
+  location?: string,
+  tag?: string
+): Promise<ReaderDocument[]>;
 
 // Fetch with HTML content
-async function fetchDocumentContent(token: string, documentId: string): Promise<string>
+async function fetchDocumentContent(token: string, documentId: string): Promise<string>;
 ```
 
 ### 3.5 Security Considerations
 
-| Concern | Mitigation |
-|---------|------------|
-| **Reader Token Storage** | Encrypt at rest using Supabase Vault or environment-based encryption |
-| **API Authentication** | Supabase JWT for all API routes |
-| **LLM API Keys** | User provides their own key OR app uses server-side key with rate limiting |
-| **XSS in Article Content** | Sanitize HTML with DOMPurify before rendering |
-| **CSRF** | Next.js built-in protections + SameSite cookies |
-| **Rate Limiting** | Implement per-user rate limiting on LLM endpoints |
+| Concern                    | Mitigation                                                                 |
+| -------------------------- | -------------------------------------------------------------------------- |
+| **Reader Token Storage**   | Encrypt at rest using Supabase Vault or environment-based encryption       |
+| **API Authentication**     | Supabase JWT for all API routes                                            |
+| **LLM API Keys**           | User provides their own key OR app uses server-side key with rate limiting |
+| **XSS in Article Content** | Sanitize HTML with DOMPurify before rendering                              |
+| **CSRF**                   | Next.js built-in protections + SameSite cookies                            |
+| **Rate Limiting**          | Implement per-user rate limiting on LLM endpoints                          |
 
 ### 3.6 DevOps and Infrastructure
 
@@ -490,16 +504,17 @@ jobs:
 
 ### 4.1 Testing Strategy
 
-| Test Type | Tools | Coverage Target |
-|-----------|-------|-----------------|
-| **Unit Tests** | Vitest + React Testing Library | 80%+ for utilities, hooks, components |
-| **Integration Tests** | Vitest + MSW (API mocking) | All API routes |
-| **E2E Tests** | Playwright | Critical user flows on mobile + desktop |
-| **Visual Regression** | Playwright screenshots | Key UI states |
+| Test Type             | Tools                          | Coverage Target                         |
+| --------------------- | ------------------------------ | --------------------------------------- |
+| **Unit Tests**        | Vitest + React Testing Library | 80%+ for utilities, hooks, components   |
+| **Integration Tests** | Vitest + MSW (API mocking)     | All API routes                          |
+| **E2E Tests**         | Playwright                     | Critical user flows on mobile + desktop |
+| **Visual Regression** | Playwright screenshots         | Key UI states                           |
 
 ### 4.2 Test Categories
 
 #### Unit Tests
+
 - ORP calculation algorithm
 - Timing calculation algorithm
 - Text parsing (word tokenization)
@@ -508,12 +523,14 @@ jobs:
 - Utility functions
 
 #### Integration Tests
+
 - Reader API wrapper (mocked responses)
 - Database operations (reading sessions CRUD)
 - Chat message flow
 - Settings persistence
 
 #### E2E Tests (Playwright)
+
 - **Mobile viewport (375x667)**:
   1. Connect Reader account flow
   2. Browse Library, filter by tag
@@ -521,7 +538,6 @@ jobs:
   4. Control RSVP (pause, rewind, speed change)
   5. Complete reading and submit rating
   6. Open LLM chat and send message
-  
 - **Desktop viewport (1440x900)**:
   1. Same flows with keyboard controls
 
@@ -578,16 +594,18 @@ tests/
 ## 5. Task Breakdown
 
 ### Phase 0: Project Setup
+
 - [x] **0.1** Initialize Next.js project with TypeScript
 - [x] **0.2** Configure Vitest + React Testing Library
 - [x] **0.3** Configure Playwright for E2E
 - [ ] **0.4** Set up Supabase project and database schema
-- [ ] **0.5** Configure ESLint, Prettier, and husky pre-commit hooks
+- [x] **0.5** Configure ESLint, Prettier, and husky pre-commit hooks
 - [ ] **0.6** Set up GitHub Actions CI/CD pipeline
 
 > **📋 Review Point**: Project scaffolding complete, CI green
 
 ### Phase 1: Design Phase (UX Prototypes)
+
 - [ ] **1.1** Create design tokens CSS file
 - [ ] **1.2** Build mobile Library view prototype (HTML/CSS/JS)
 - [ ] **1.3** Build mobile RSVP view prototype with ORP display
@@ -599,6 +617,7 @@ tests/
 > **📋 Review Point**: Interactive prototypes for all screens
 
 ### Phase 2: RSVP Engine (Core)
+
 - [ ] **2.1** Implement ORP calculation algorithm + unit tests
 - [ ] **2.2** Implement timing algorithm (punctuation, length) + unit tests
 - [ ] **2.3** Implement word tokenizer with RTL detection + unit tests
@@ -611,6 +630,7 @@ tests/
 > **📋 Review Point**: RSVP engine fully functional with tests
 
 ### Phase 3: Readwise Reader Integration
+
 - [ ] **3.1** Create Reader API wrapper + integration tests (mocked)
 - [ ] **3.2** Build onboarding/connect flow UI
 - [ ] **3.3** Implement `/api/auth/connect-reader` endpoint
@@ -625,6 +645,7 @@ tests/
 > **📋 Review Point**: Reader integration complete with E2E tests
 
 ### Phase 4: Reading Sessions & History
+
 - [ ] **4.1** Implement reading session creation on RSVP start
 - [ ] **4.2** Implement session update (progress, WPM changes)
 - [ ] **4.3** Implement session completion endpoint
@@ -635,6 +656,7 @@ tests/
 > **📋 Review Point**: History and ratings working end-to-end
 
 ### Phase 5: LLM Chat Integration
+
 - [ ] **5.1** Set up Anthropic Claude API integration
 - [ ] **5.2** Implement `/api/chat/[documentId]/message` endpoint
 - [ ] **5.3** Create system prompt template with article context
@@ -646,6 +668,7 @@ tests/
 > **📋 Review Point**: LLM chat functional with history
 
 ### Phase 6: Settings & Polish
+
 - [ ] **6.1** Build settings page
 - [ ] **6.2** Implement theme persistence
 - [ ] **6.3** Implement default WPM persistence
@@ -654,6 +677,7 @@ tests/
 - [ ] **6.6** Performance optimization (code splitting, lazy loading)
 
 ### Phase 7: Final Testing & Launch Prep
+
 - [ ] **7.1** Full E2E test suite pass (mobile + desktop)
 - [ ] **7.2** Cross-browser testing (Chrome, Safari, Firefox)
 - [ ] **7.3** Accessibility audit (keyboard nav, screen reader)
@@ -671,11 +695,13 @@ tests/
 ### ORP Algorithm Analysis
 
 **From [speedread](https://github.com/pasky/speedread):**
+
 - Uses a lookup table for ORP position: `[0,0,1,1,1,1,2,2,2,2,3,3,3,3]` indexed by word length
 - Words >13 characters cap at ORP position 4
 - Timing: base word time × multiplier for punctuation
 
 **From [OpenSpritz](https://github.com/levivm/OpenSpritz):**
+
 - Longer words are "right-weighted" for readability
 - Words <6 chars: ORP at center
 - Words ≥6 chars: ORP shifted left (7 chars padding before)
@@ -683,15 +709,16 @@ tests/
 
 ### Readwise Reader API Summary
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v3/list/` | GET | List documents with filters (location, category, tag) |
-| `/api/v3/save/` | POST | Create new document |
-| `/api/v3/update/<id>/` | PATCH | Update document fields |
-| `/api/v3/delete/<id>/` | DELETE | Delete document |
-| `/api/v3/tags/` | GET | List user's tags |
+| Endpoint               | Method | Description                                           |
+| ---------------------- | ------ | ----------------------------------------------------- |
+| `/api/v3/list/`        | GET    | List documents with filters (location, category, tag) |
+| `/api/v3/save/`        | POST   | Create new document                                   |
+| `/api/v3/update/<id>/` | PATCH  | Update document fields                                |
+| `/api/v3/delete/<id>/` | DELETE | Delete document                                       |
+| `/api/v3/tags/`        | GET    | List user's tags                                      |
 
 **Key Parameters:**
+
 - `location`: new, later, archive, feed
 - `category`: article, email, rss, pdf, epub, tweet, video
 - `html_content=true`: Include full HTML in response
@@ -701,10 +728,10 @@ tests/
 
 ## Appendix B: User Decisions (Confirmed)
 
-| Decision | Choice |
-|----------|--------|
-| **LLM Provider** | Multi-provider with user-supplied keys (Claude, GPT, Gemini) |
-| **Authentication** | Email/password via Supabase Auth |
-| **Mobile Controls** | On-screen buttons/menus, no touch gestures |
-| **Offline Mode** | Not needed for initial version |
-| **Reader Sync** | Keep reading progress separate (no sync back to Reader) |
+| Decision            | Choice                                                       |
+| ------------------- | ------------------------------------------------------------ |
+| **LLM Provider**    | Multi-provider with user-supplied keys (Claude, GPT, Gemini) |
+| **Authentication**  | Email/password via Supabase Auth                             |
+| **Mobile Controls** | On-screen buttons/menus, no touch gestures                   |
+| **Offline Mode**    | Not needed for initial version                               |
+| **Reader Sync**     | Keep reading progress separate (no sync back to Reader)      |
