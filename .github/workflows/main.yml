@@ -30,6 +30,8 @@ jobs:
         run: npm run type-check
 
       - name: Run unit tests
+        env:
+          READWISE_ACCESS_TOKEN: ${{ secrets.READWISE_ACCESS_TOKEN }}
         run: npm run test
 
       - name: Run E2E tests
