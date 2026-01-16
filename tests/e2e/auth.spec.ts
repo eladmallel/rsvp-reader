@@ -197,6 +197,16 @@ test.describe('Connect Reader Page', () => {
   });
 
   test('shows loading state on submit', async ({ page }) => {
+    // Mock a slow API response
+    await page.route('/api/auth/connect-reader', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, error: 'Authentication required' }),
+      });
+    });
+
     await page.getByLabel('Access Token').fill('valid_token_that_is_long_enough_1234567890');
     await page.getByRole('button', { name: 'Connect Reader' }).click();
 
@@ -205,13 +215,42 @@ test.describe('Connect Reader Page', () => {
   });
 
   test('shows error for invalid token response', async ({ page }) => {
+    // Mock API to return invalid token error
+    await page.route('/api/auth/connect-reader', (route) => {
+      route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: false,
+          error: 'Invalid access token. Please check your token and try again.',
+        }),
+      });
+    });
+
     await page.getByLabel('Access Token').fill('invalid_token_that_is_long_enough');
     await page.getByRole('button', { name: 'Connect Reader' }).click();
 
-    // Wait for simulated API call
-    await expect(page.getByRole('alert').filter({ hasText: 'Invalid token' })).toBeVisible({
+    // Wait for API response
+    await expect(page.getByRole('alert').filter({ hasText: 'Invalid access token' })).toBeVisible({
       timeout: 3000,
     });
+  });
+
+  test('redirects to library on successful connection', async ({ page }) => {
+    // Mock successful API response
+    await page.route('/api/auth/connect-reader', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
+    await page.getByLabel('Access Token').fill('valid_reader_access_token_12345');
+    await page.getByRole('button', { name: 'Connect Reader' }).click();
+
+    // Should redirect to library
+    await expect(page).toHaveURL('/', { timeout: 5000 });
   });
 
   test('has skip option to continue without connecting', async ({ page }) => {

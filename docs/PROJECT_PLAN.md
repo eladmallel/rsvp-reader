@@ -637,17 +637,17 @@ tests/
 
 ### Phase 3: Readwise Reader Integration
 
-- [ ] **3.1** Create Reader API wrapper + integration tests (mocked)
-- [ ] **3.2** Build onboarding/connect flow UI
-- [ ] **3.3** Implement `/api/auth/connect-reader` endpoint
-- [ ] **3.4** Implement `/api/reader/documents` endpoint with caching
-- [ ] **3.5** Implement `/api/reader/documents/[id]` for content fetch
-- [ ] **3.6** Implement `/api/reader/tags` endpoint
-- [ ] **3.7** Build Library page with article cards
-- [ ] **3.8** Build Feed page (separate tab)
-- [ ] **3.9** Implement tag filtering
-- [ ] **3.10** E2E test: Connect + Browse + Filter
-- [ ] **3.11** Measure CI time; optimize if >10% increase from baseline
+- [x] **3.1** Create Reader API wrapper + integration tests (mocked)
+- [x] **3.2** Build onboarding/connect flow UI
+- [x] **3.3** Implement `/api/auth/connect-reader` endpoint
+- [x] **3.4** Implement `/api/reader/documents` endpoint with caching
+- [x] **3.5** Implement `/api/reader/documents/[id]` for content fetch
+- [x] **3.6** Implement `/api/reader/tags` endpoint
+- [x] **3.7** Build Library page with article cards
+- [x] **3.8** Build Feed page (separate tab)
+- [x] **3.9** Implement tag filtering
+- [x] **3.10** E2E test: Connect + Browse + Filter
+- [x] **3.11** Measure CI time; optimize if >10% increase from baseline
 
 > **📋 Review Point**: Reader integration complete with E2E tests
 
