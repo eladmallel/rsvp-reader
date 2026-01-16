@@ -580,7 +580,7 @@ tests/
 ### Phase 0: Project Setup
 - [x] **0.1** Initialize Next.js project with TypeScript
 - [x] **0.2** Configure Vitest + React Testing Library
-- [ ] **0.3** Configure Playwright for E2E
+- [x] **0.3** Configure Playwright for E2E
 - [ ] **0.4** Set up Supabase project and database schema
 - [ ] **0.5** Configure ESLint, Prettier, and husky pre-commit hooks
 - [ ] **0.6** Set up GitHub Actions CI/CD pipeline
