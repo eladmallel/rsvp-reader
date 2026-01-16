@@ -648,6 +648,9 @@ tests/
 - [x] **3.9** Implement tag filtering
 - [x] **3.10** E2E test: Connect + Browse + Filter
 - [x] **3.11** Measure CI time; optimize if >10% increase from baseline
+- [ ] **3.12** Refactor Library view: Switch from cards to list items for higher information density
+- [ ] **3.13** Add sort options to Library (e.g., sort by date added)
+- [ ] **3.14** Implement pagination or infinite scroll for Library to handle large document sets efficiently
 
 > **📋 Review Point**: Reader integration complete with E2E tests
 
