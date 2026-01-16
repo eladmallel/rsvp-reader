@@ -607,10 +607,10 @@ tests/
 
 ### Phase 1: Design Phase (UX Prototypes)
 
-- [ ] **1.1** Create design tokens CSS file
-- [ ] **1.2** Build mobile Library view prototype (HTML/CSS/JS)
-- [ ] **1.3** Build mobile RSVP view prototype with ORP display
-- [ ] **1.4** Build mobile Chat view prototype
+- [x] **1.1** Create design tokens CSS file
+- [x] **1.2** Build mobile Library view prototype (HTML/CSS/JS)
+- [x] **1.3** Build mobile RSVP view prototype with ORP display
+- [x] **1.4** Build mobile Chat view prototype
 - [ ] **1.5** Build desktop layouts (Library, RSVP)
 - [ ] **1.6** Implement dark/light mode toggle
 - [ ] **1.7** Add RTL support for Hebrew text

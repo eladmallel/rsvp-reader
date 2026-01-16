@@ -73,6 +73,23 @@ This document defines how I (the AI agent) should work on the RSVP Reader projec
    - Consider test.concurrent for independent tests
 4. Maintain near-identical coverage with less time
 
+### Detecting Hanging Tests (IMPORTANT)
+
+**Be impatient with test execution.** If tests appear to hang:
+
+1. **E2E tests**: If you don't see test results printing within 5-10 seconds of starting, something is wrong. Don't wait minutes hoping it will finish.
+2. **Unit tests**: Should produce output almost immediately. No output after a few seconds = problem.
+
+**When tests hang, debug immediately:**
+
+1. Check if the dev server/webserver is starting (look for port conflicts, startup errors)
+2. Check Playwright config - is it waiting for a server that isn't running?
+3. Look at terminal output for errors buried in the noise
+4. Try running a single test file to isolate the issue
+5. Check for infinite loops, unresolved promises, or missing `await`
+
+**Don't just re-run and hope.** Diagnose the root cause first.
+
 ---
 
 ## 4. Task Management
