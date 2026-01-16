@@ -1,65 +1,92 @@
-import Image from 'next/image';
 import styles from './page.module.css';
 
 export default function Home() {
   return (
-    <div className={styles.page}>
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <h1>RSVP Reader</h1>
+        <p>Speed reading with Readwise Reader integration</p>
+      </header>
+
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{' '}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+        {/* Design tokens demonstration */}
+        <section className={styles.section} aria-labelledby="colors-heading">
+          <h2 id="colors-heading">Colors</h2>
+          <div className={styles.colorGrid}>
+            <div className={styles.colorSwatch} style={{ backgroundColor: 'var(--bg-primary)' }}>
+              <span>bg-primary</span>
+            </div>
+            <div className={styles.colorSwatch} style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <span>bg-secondary</span>
+            </div>
+            <div className={styles.colorSwatch} style={{ backgroundColor: 'var(--bg-elevated)' }}>
+              <span>bg-elevated</span>
+            </div>
+            <div
+              className={styles.colorSwatch}
+              style={{ backgroundColor: 'var(--accent-primary)' }}
             >
-              Templates
-            </a>{' '}
-            or the{' '}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+              <span>accent-primary</span>
+            </div>
+            <div
+              className={styles.colorSwatch}
+              style={{ backgroundColor: 'var(--accent-secondary)' }}
             >
-              Learning
-            </a>{' '}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              <span>accent-secondary</span>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="typography-heading">
+          <h2 id="typography-heading">Typography</h2>
+          <div className={styles.typographyDemo}>
+            <h1>Heading 1</h1>
+            <h2>Heading 2</h2>
+            <h3>Heading 3</h3>
+            <p>
+              This is body text using the Inter font family. It demonstrates the default text
+              styling with proper line height and color.
+            </p>
+            <p className={styles.secondaryText}>
+              This is secondary text with a muted color for less important content.
+            </p>
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="rsvp-heading">
+          <h2 id="rsvp-heading">RSVP Display Preview</h2>
+          <div className={styles.rsvpDemo}>
+            <div className={styles.rsvpWord}>
+              <span className={styles.rsvpLeft}>Read</span>
+              <span className={styles.rsvpCenter}>i</span>
+              <span className={styles.rsvpRight}>ng</span>
+            </div>
+            <p className={styles.rsvpCaption}>
+              The red letter is the Optimal Recognition Point (ORP)
+            </p>
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="spacing-heading">
+          <h2 id="spacing-heading">Spacing Scale</h2>
+          <div className={styles.spacingDemo}>
+            <div className={styles.spacingBox} style={{ padding: 'var(--space-xs)' }}>
+              xs
+            </div>
+            <div className={styles.spacingBox} style={{ padding: 'var(--space-sm)' }}>
+              sm
+            </div>
+            <div className={styles.spacingBox} style={{ padding: 'var(--space-md)' }}>
+              md
+            </div>
+            <div className={styles.spacingBox} style={{ padding: 'var(--space-lg)' }}>
+              lg
+            </div>
+            <div className={styles.spacingBox} style={{ padding: 'var(--space-xl)' }}>
+              xl
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
