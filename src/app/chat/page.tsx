@@ -11,13 +11,12 @@ const mockArticle = {
   author: 'Dan Abramov',
 };
 
-// Initial messages for prototype
+// Initial messages for prototype (no timestamp to avoid hydration mismatch)
 const initialMessages: Message[] = [
   {
     id: '1',
     role: 'assistant',
     content: `I'm here to help you understand "${mockArticle.title}" by ${mockArticle.author}. Feel free to ask me any questions about the article!`,
-    timestamp: new Date(Date.now() - 60000),
   },
 ];
 

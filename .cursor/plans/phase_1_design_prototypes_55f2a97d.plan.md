@@ -10,10 +10,10 @@ todos:
     status: completed
   - id: '1.3'
     content: Build mobile RSVP view prototype with ORP display and playback controls
-    status: in_progress
+    status: completed
   - id: '1.4'
     content: Build mobile Chat view prototype with message bubbles and input
-    status: pending
+    status: in_progress
   - id: '1.5'
     content: Build desktop layouts for Library and RSVP views
     status: pending
