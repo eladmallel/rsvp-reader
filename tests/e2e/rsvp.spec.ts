@@ -31,7 +31,7 @@ test.describe('RSVP Page', () => {
   });
 
   test('displays article title', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Sample Article', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'RSVP Demo', level: 1 })).toBeVisible();
   });
 
   test('displays word display area', async ({ page }) => {
@@ -66,13 +66,14 @@ test.describe('RSVP Page', () => {
   });
 
   test('shows paused status initially', async ({ page }) => {
-    await expect(page.getByText('Paused')).toBeVisible();
+    // RSVPPlayer shows 'Ready' in idle state initially (not 'Paused')
+    await expect(page.getByText('Ready')).toBeVisible();
   });
 
   test('toggles play/pause on button click', async ({ page }) => {
-    // Initially should show Play button and Paused status
+    // Initially should show Play button and Ready status
     await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
-    await expect(page.getByText('Paused')).toBeVisible();
+    await expect(page.getByText('Ready')).toBeVisible();
 
     // Click play
     await page.getByRole('button', { name: 'Play' }).click();
