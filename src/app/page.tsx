@@ -173,7 +173,7 @@ export default function LibraryPage() {
 
       try {
         const [library, feed] = await Promise.all([
-          fetchDocuments('later', selectedTag),
+          fetchDocuments('library', selectedTag),
           fetchDocuments('feed', selectedTag),
         ]);
 

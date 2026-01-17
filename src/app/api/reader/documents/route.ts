@@ -44,7 +44,7 @@ function extractTagNames(tags: Json | null): string[] {
  * Supports filtering by location, category, and tag.
  *
  * Query parameters:
- * - location: 'new' | 'later' | 'shortlist' | 'archive' | 'feed'
+ * - location: 'new' | 'later' | 'shortlist' | 'archive' | 'feed' | 'library'
  * - category: 'article' | 'email' | 'rss' | 'pdf' | 'epub' | 'tweet' | 'video'
  * - tag: string - filter by tag name
  * - cursor: string - pagination cursor (offset-based)
@@ -93,13 +93,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
     let query = supabase
       .from('cached_documents')
       .select('*', { count: 'exact' })
-      .eq('user_id', user.id)
-      .order('reader_created_at', { ascending: false })
-      .range(offset, offset + pageSize - 1);
+      .eq('user_id', user.id);
 
     // Apply filters
     if (location) {
-      query = query.eq('location', location);
+      if (location === 'library') {
+        query = query.in('location', ['new', 'later', 'shortlist']);
+      } else {
+        query = query.eq('location', location);
+      }
     }
     if (category) {
       query = query.eq('category', category);
@@ -109,6 +111,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
       // tags is stored as { "tagname": { "name": "tagname", ... } }
       query = query.filter('tags', 'cs', `{"${tag}": {}}`);
     }
+
+    query = query
+      .order('reader_last_moved_at', { ascending: false })
+      .order('reader_updated_at', { ascending: false })
+      .order('reader_created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
     const { data: documents, error: queryError, count } = await query;
 
@@ -134,7 +142,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
       summary: doc.summary,
       imageUrl: doc.image_url,
       publishedDate: doc.published_date,
-      createdAt: doc.reader_created_at || doc.cached_at,
+      createdAt:
+        doc.reader_last_moved_at || doc.reader_updated_at || doc.reader_created_at || doc.cached_at,
     }));
 
     // Calculate next cursor

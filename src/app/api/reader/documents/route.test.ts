@@ -35,6 +35,8 @@ const mockCachedDocuments = [
     image_url: 'https://test.com/image.jpg',
     published_date: '2026-01-10',
     reader_created_at: '2026-01-15T10:00:00Z',
+    reader_last_moved_at: '2026-01-16T08:00:00Z',
+    reader_saved_at: '2026-01-15T09:00:00Z',
     reader_updated_at: '2026-01-15T10:00:00Z',
     cached_at: '2026-01-15T10:00:00Z',
   },
@@ -80,6 +82,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockReturnThis(),
       filter: vi.fn().mockReturnThis(),
@@ -107,7 +110,7 @@ describe('GET /api/reader/documents', () => {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.set(key, value);
     });
-    return new NextRequest(url);
+    return new NextRequest(new Request(url.toString()));
   }
 
   it('should return 401 if user is not authenticated', async () => {
@@ -163,10 +166,61 @@ describe('GET /api/reader/documents', () => {
     expect(data.documents[0].tags).toEqual(['dev', 'typescript']);
   });
 
+  it('should treat location=library as new/later/shortlist', async () => {
+    const mockDocsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({
+        data: mockCachedDocuments,
+        error: null,
+        count: 1,
+      }),
+      filter: vi.fn().mockReturnThis(),
+    };
+
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: mockUserData,
+            error: null,
+          }),
+        }),
+      }),
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      if (table === 'cached_documents') {
+        return mockDocsQuery;
+      }
+      return mockUsersQuery;
+    });
+
+    const request = createRequest({ location: 'library' });
+    const response = await GET(request);
+    await response.json();
+
+    expect(mockDocsQuery.in).toHaveBeenCalledWith('location', ['new', 'later', 'shortlist']);
+  });
+
+  it('should prefer last moved timestamp for sorting fields', async () => {
+    const request = createRequest();
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(data.documents[0].createdAt).toBe('2026-01-16T08:00:00Z');
+  });
+
   it('should handle null fields from the cached documents', async () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
         data: [
@@ -189,6 +243,8 @@ describe('GET /api/reader/documents', () => {
             image_url: null,
             published_date: null,
             reader_created_at: '2026-01-16T23:54:40.078482+00:00',
+            reader_last_moved_at: null,
+            reader_saved_at: null,
             reader_updated_at: '2026-01-16T23:54:42.132460+00:00',
             cached_at: '2026-01-16T23:54:42.132460+00:00',
           },
@@ -237,6 +293,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
         data: mockCachedDocuments,
@@ -280,6 +337,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
         data: mockCachedDocuments,
@@ -332,6 +390,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
         data: null,
