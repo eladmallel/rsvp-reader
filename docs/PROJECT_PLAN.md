@@ -660,6 +660,7 @@ tests/
 - [x] **3.18** Switch app reads to DB cache only + sync-on-miss behavior
 - [x] **3.18a** User not seeing latest items in Library view. Debug the problem and fix it. Make sure most recent data is the first we fetch. And make sure subsequent sync operations use ongoing pagination if needed, and maximizing on possible API calls every time, in order to get User all their items as quickly as possible
 - [ ] **3.18b** Make sure user has a way of filtering the library view by tapping on a filter feature and then being able to search all tags for the one to filter by
+- [ ] **3.18c** Add UI option to manually trigger an account sync
 - [ ] **3.19** Create archive sync plan doc (user stories, technical design, test plan) and reference it for implementation (`docs/reader-archive-sync-plan.md`)
 - [ ] **3.20** Add dedicated archive sync endpoint + separate cron job to detect Reader archived state changes and persist locally (see `docs/reader-archive-sync-plan.md`)
 - [ ] **3.21** Hide archived items by default in Library/Feed list views (see `docs/reader-archive-sync-plan.md`)

@@ -31,7 +31,7 @@ Existing table: `cached_articles` (already in plan)
 
 ## Worker Overview
 
-Cron runs every minute:
+Cron runs once per day:
 
 1. Select users where `next_allowed_at <= now()` and not `in_progress`.
 2. For each user, run a single "sync job" with a max request budget (20).
@@ -108,7 +108,7 @@ Concurrency safety:
 ## Cron Implementation (Vercel)
 
 - Vercel Cron Jobs is a platform feature that hits a URL on a schedule.
-- We register a cron in `vercel.json` that calls `/api/sync/readwise` every minute.
+- We register a cron in `vercel.json` that calls `/api/sync/readwise` once per day.
 - The endpoint verifies a shared secret (header or query param) to avoid public abuse.
 - Execution is stateless: each run pulls eligible users and does a small batch.
 
@@ -119,7 +119,7 @@ Example `vercel.json`:
   "crons": [
     {
       "path": "/api/sync/readwise?token=$SYNC_API_KEY",
-      "schedule": "*/1 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
@@ -132,7 +132,7 @@ If we avoid Vercel Cron:
 
 ## Local Dev (Cron Emulation)
 
-- Use `scripts/run-readwise-sync-cron.sh` to ping the sync endpoint every minute.
+- Use `scripts/run-readwise-sync-cron.sh` to ping the sync endpoint once per day.
 - Set `READWISE_SYNC_URL` to your local endpoint (include the secret token).
 
 ## Success Criteria
