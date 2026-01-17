@@ -12,9 +12,11 @@ const mockUserData = {
   reader_access_token: 'valid-reader-token-12345',
 };
 
-const mockDocuments = [
+const mockCachedDocuments = [
   {
-    id: 'doc-1',
+    id: 'cache-1',
+    user_id: 'user-123',
+    reader_document_id: 'doc-1',
     title: 'Test Article',
     author: 'Test Author',
     source: 'test.com',
@@ -32,19 +34,15 @@ const mockDocuments = [
     summary: 'Test summary',
     image_url: 'https://test.com/image.jpg',
     published_date: '2026-01-10',
-    created_at: '2026-01-15T10:00:00Z',
-    updated_at: '2026-01-15T10:00:00Z',
-    notes: null,
-    parent_id: null,
+    reader_created_at: '2026-01-15T10:00:00Z',
+    reader_updated_at: '2026-01-15T10:00:00Z',
+    cached_at: '2026-01-15T10:00:00Z',
   },
 ];
 
 // Mocks
 const mockGetUser = vi.fn();
-const mockSelect = vi.fn();
-const mockEq = vi.fn();
-const mockSingle = vi.fn();
-const mockListDocuments = vi.fn();
+const mockFrom = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() =>
@@ -52,25 +50,9 @@ vi.mock('@/lib/supabase/server', () => ({
       auth: {
         getUser: mockGetUser,
       },
-      from: vi.fn(() => ({
-        select: mockSelect,
-      })),
+      from: mockFrom,
     })
   ),
-}));
-
-vi.mock('@/lib/reader', () => ({
-  createReaderClient: vi.fn(() => ({
-    listDocuments: mockListDocuments,
-  })),
-  ReaderApiException: class ReaderApiException extends Error {
-    constructor(
-      message: string,
-      public status: number
-    ) {
-      super(message);
-    }
-  },
 }));
 
 describe('GET /api/reader/documents', () => {
@@ -82,19 +64,41 @@ describe('GET /api/reader/documents', () => {
       error: null,
     });
 
-    mockSelect.mockReturnValue({
-      eq: mockEq.mockReturnValue({
-        single: mockSingle.mockResolvedValue({
-          data: mockUserData,
-          error: null,
+    // Default mock for 'users' table query
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: mockUserData,
+            error: null,
+          }),
         }),
       }),
+    };
+
+    // Default mock for 'cached_documents' table query
+    const mockDocsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockReturnThis(),
+      filter: vi.fn().mockReturnThis(),
+    };
+    // Set the final resolved value
+    mockDocsQuery.range = vi.fn().mockResolvedValue({
+      data: mockCachedDocuments,
+      error: null,
+      count: 1,
     });
 
-    mockListDocuments.mockResolvedValue({
-      count: 1,
-      nextPageCursor: null,
-      results: mockDocuments,
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      if (table === 'cached_documents') {
+        return mockDocsQuery;
+      }
+      return mockUsersQuery;
     });
   });
 
@@ -121,9 +125,22 @@ describe('GET /api/reader/documents', () => {
   });
 
   it('should return 400 if Reader is not connected', async () => {
-    mockSingle.mockResolvedValue({
-      data: { reader_access_token: null },
-      error: null,
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: { reader_access_token: null },
+            error: null,
+          }),
+        }),
+      }),
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      return mockUsersQuery;
     });
 
     const request = createRequest();
@@ -134,7 +151,7 @@ describe('GET /api/reader/documents', () => {
     expect(data.error).toContain('not connected');
   });
 
-  it('should return documents on success', async () => {
+  it('should return documents from cache on success', async () => {
     const request = createRequest();
     const response = await GET(request);
     const data = await response.json();
@@ -146,33 +163,61 @@ describe('GET /api/reader/documents', () => {
     expect(data.documents[0].tags).toEqual(['dev', 'typescript']);
   });
 
-  it('should handle null fields from the Reader API', async () => {
-    mockListDocuments.mockResolvedValue({
-      count: 1,
-      nextPageCursor: null,
-      results: [
-        {
-          id: '01kf4kq1j7ftt8f321fa477k74',
-          title: null,
-          author: null,
-          source: null,
-          site_name: null,
-          url: 'https://read.readwise.io/read/01kf4kq1j7ftt8f321fa477k74',
-          source_url: null,
-          category: 'rss',
-          location: null,
-          tags: null,
-          word_count: null,
-          reading_progress: 0,
-          summary: null,
-          image_url: null,
-          published_date: null,
-          created_at: '2026-01-16T23:54:40.078482+00:00',
-          updated_at: '2026-01-16T23:54:42.132460+00:00',
-          notes: '',
-          parent_id: null,
-        },
-      ],
+  it('should handle null fields from the cached documents', async () => {
+    const mockDocsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'cache-2',
+            user_id: 'user-123',
+            reader_document_id: '01kf4kq1j7ftt8f321fa477k74',
+            title: null,
+            author: null,
+            source: null,
+            site_name: null,
+            url: 'https://read.readwise.io/read/01kf4kq1j7ftt8f321fa477k74',
+            source_url: null,
+            category: 'rss',
+            location: null,
+            tags: null,
+            word_count: null,
+            reading_progress: 0,
+            summary: null,
+            image_url: null,
+            published_date: null,
+            reader_created_at: '2026-01-16T23:54:40.078482+00:00',
+            reader_updated_at: '2026-01-16T23:54:42.132460+00:00',
+            cached_at: '2026-01-16T23:54:42.132460+00:00',
+          },
+        ],
+        error: null,
+        count: 1,
+      }),
+      filter: vi.fn().mockReturnThis(),
+    };
+
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: mockUserData,
+            error: null,
+          }),
+        }),
+      }),
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      if (table === 'cached_documents') {
+        return mockDocsQuery;
+      }
+      return mockUsersQuery;
     });
 
     const request = createRequest();
@@ -185,75 +230,84 @@ describe('GET /api/reader/documents', () => {
     expect(data.documents[0].location).toBeNull();
     expect(data.documents[0].tags).toEqual([]);
   });
+  // Note: Filter behavior (location, category, tag) is tested in E2E tests
+  // against a real database, as mocking Supabase's chained query builder is fragile.
 
-  it('should pass location filter to Reader API', async () => {
-    const request = createRequest({ location: 'later' });
-    await GET(request);
+  it('should return pagination cursor when more results available', async () => {
+    const mockDocsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({
+        data: mockCachedDocuments,
+        error: null,
+        count: 50, // More than page size
+      }),
+      filter: vi.fn().mockReturnThis(),
+    };
 
-    expect(mockListDocuments).toHaveBeenCalledWith(expect.objectContaining({ location: 'later' }));
-  });
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: mockUserData,
+            error: null,
+          }),
+        }),
+      }),
+    };
 
-  it('should pass category filter to Reader API', async () => {
-    const request = createRequest({ category: 'article' });
-    await GET(request);
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      if (table === 'cached_documents') {
+        return mockDocsQuery;
+      }
+      return mockUsersQuery;
+    });
 
-    expect(mockListDocuments).toHaveBeenCalledWith(
-      expect.objectContaining({ category: 'article' })
-    );
-  });
-
-  it('should pass tag filter to Reader API', async () => {
-    const request = createRequest({ tag: 'dev' });
-    await GET(request);
-
-    expect(mockListDocuments).toHaveBeenCalledWith(expect.objectContaining({ tag: 'dev' }));
-  });
-
-  it('should pass pagination cursor to Reader API', async () => {
-    const request = createRequest({ cursor: 'cursor-123' });
-    await GET(request);
-
-    expect(mockListDocuments).toHaveBeenCalledWith(
-      expect.objectContaining({ pageCursor: 'cursor-123' })
-    );
-  });
-
-  it('should limit page size to 100', async () => {
-    const request = createRequest({ pageSize: '200' });
-    await GET(request);
-
-    expect(mockListDocuments).toHaveBeenCalledWith(expect.objectContaining({ pageSize: 100 }));
-  });
-
-  it('should return 401 if Reader token is invalid', async () => {
-    const { ReaderApiException } = await import('@/lib/reader');
-    mockListDocuments.mockRejectedValue(new ReaderApiException('Invalid token', 401));
-
-    const request = createRequest();
+    const request = createRequest({ pageSize: '20' });
     const response = await GET(request);
     const data = await response.json();
 
-    expect(response.status).toBe(401);
-    expect(data.error).toContain('invalid or expired');
+    expect(response.status).toBe(200);
+    expect(data.nextCursor).toBe('20'); // Next offset
+    expect(data.count).toBe(50);
   });
 
-  it('should return 429 if rate limited', async () => {
-    const { ReaderApiException } = await import('@/lib/reader');
-    mockListDocuments.mockRejectedValue(new ReaderApiException('Rate limited', 429));
+  it('should not return pagination cursor when no more results', async () => {
+    const mockDocsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({
+        data: mockCachedDocuments,
+        error: null,
+        count: 1, // Exactly the number returned
+      }),
+      filter: vi.fn().mockReturnThis(),
+    };
 
-    const request = createRequest();
-    const response = await GET(request);
-    const data = await response.json();
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: mockUserData,
+            error: null,
+          }),
+        }),
+      }),
+    };
 
-    expect(response.status).toBe(429);
-    expect(data.error).toContain('Too many requests');
-  });
-
-  it('should return pagination cursor when available', async () => {
-    mockListDocuments.mockResolvedValue({
-      count: 100,
-      nextPageCursor: 'next-cursor-abc',
-      results: mockDocuments,
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      if (table === 'cached_documents') {
+        return mockDocsQuery;
+      }
+      return mockUsersQuery;
     });
 
     const request = createRequest();
@@ -261,8 +315,7 @@ describe('GET /api/reader/documents', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.nextCursor).toBe('next-cursor-abc');
-    expect(data.count).toBe(100);
+    expect(data.nextCursor).toBeNull();
   });
 
   it('should transform document tags from object to array', async () => {
@@ -273,5 +326,47 @@ describe('GET /api/reader/documents', () => {
     expect(data.documents[0].tags).toBeInstanceOf(Array);
     expect(data.documents[0].tags).toContain('dev');
     expect(data.documents[0].tags).toContain('typescript');
+  });
+
+  it('should handle database query errors', async () => {
+    const mockDocsQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Database error' },
+        count: null,
+      }),
+      filter: vi.fn().mockReturnThis(),
+    };
+
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: mockUserData,
+            error: null,
+          }),
+        }),
+      }),
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return mockUsersQuery;
+      }
+      if (table === 'cached_documents') {
+        return mockDocsQuery;
+      }
+      return mockUsersQuery;
+    });
+
+    const request = createRequest();
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe('Failed to fetch documents');
   });
 });

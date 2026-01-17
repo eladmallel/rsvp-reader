@@ -212,6 +212,83 @@ export interface Database {
           },
         ];
       };
+      cached_documents: {
+        Row: {
+          id: string;
+          user_id: string;
+          reader_document_id: string;
+          title: string | null;
+          author: string | null;
+          source: string | null;
+          site_name: string | null;
+          url: string;
+          source_url: string | null;
+          category: string;
+          location: string | null;
+          tags: Json;
+          word_count: number | null;
+          reading_progress: number;
+          summary: string | null;
+          image_url: string | null;
+          published_date: string | null;
+          reader_created_at: string | null;
+          reader_updated_at: string | null;
+          cached_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          reader_document_id: string;
+          title?: string | null;
+          author?: string | null;
+          source?: string | null;
+          site_name?: string | null;
+          url: string;
+          source_url?: string | null;
+          category: string;
+          location?: string | null;
+          tags?: Json;
+          word_count?: number | null;
+          reading_progress?: number;
+          summary?: string | null;
+          image_url?: string | null;
+          published_date?: string | null;
+          reader_created_at?: string | null;
+          reader_updated_at?: string | null;
+          cached_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          reader_document_id?: string;
+          title?: string | null;
+          author?: string | null;
+          source?: string | null;
+          site_name?: string | null;
+          url?: string;
+          source_url?: string | null;
+          category?: string;
+          location?: string | null;
+          tags?: Json;
+          word_count?: number | null;
+          reading_progress?: number;
+          summary?: string | null;
+          image_url?: string | null;
+          published_date?: string | null;
+          reader_created_at?: string | null;
+          reader_updated_at?: string | null;
+          cached_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'cached_documents_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       readwise_sync_state: {
         Row: {
           user_id: string;

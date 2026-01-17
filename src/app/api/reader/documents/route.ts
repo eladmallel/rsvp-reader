@@ -1,47 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import {
-  createReaderClient,
-  ReaderApiException,
-  DocumentLocation,
-  DocumentCategory,
-} from '@/lib/reader';
+import type { Json } from '@/lib/supabase/types';
+
+interface DocumentFromCache {
+  id: string;
+  title: string | null;
+  author: string | null;
+  source: string | null;
+  siteName: string | null;
+  url: string;
+  sourceUrl: string | null;
+  category: string;
+  location: string | null;
+  tags: string[];
+  wordCount: number | null;
+  readingProgress: number;
+  summary: string | null;
+  imageUrl: string | null;
+  publishedDate: string | null;
+  createdAt: string;
+}
 
 interface DocumentsResponse {
-  documents?: Array<{
-    id: string;
-    title: string | null;
-    author: string | null;
-    source: string | null;
-    siteName: string | null;
-    url: string;
-    sourceUrl: string | null;
-    category: string;
-    location: string | null;
-    tags: string[];
-    wordCount: number | null;
-    readingProgress: number;
-    summary: string | null;
-    imageUrl: string | null;
-    publishedDate: string | null;
-    createdAt: string;
-  }>;
+  documents?: DocumentFromCache[];
   nextCursor?: string | null;
   count?: number;
   error?: string;
 }
 
+// Helper to extract tag names from the JSONB tags structure
+function extractTagNames(tags: Json | null): string[] {
+  if (!tags || typeof tags !== 'object' || Array.isArray(tags)) {
+    return [];
+  }
+  return Object.keys(tags);
+}
+
 /**
  * GET /api/reader/documents
  *
- * Fetches documents from the user's Readwise Reader library.
+ * Fetches documents from the user's cached Readwise Reader library.
+ * Reads from the database cache instead of calling Readwise API directly.
  * Supports filtering by location, category, and tag.
  *
  * Query parameters:
  * - location: 'new' | 'later' | 'shortlist' | 'archive' | 'feed'
  * - category: 'article' | 'email' | 'rss' | 'pdf' | 'epub' | 'tweet' | 'video'
  * - tag: string - filter by tag name
- * - cursor: string - pagination cursor
+ * - cursor: string - pagination cursor (offset-based)
  * - pageSize: number - results per page (max 100)
  */
 export async function GET(request: NextRequest): Promise<NextResponse<DocumentsResponse>> {
@@ -57,7 +63,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    // Get user's Reader token
+    // Check if user has connected Reader (has a token)
     const { data: userData, error: fetchError } = await supabase
       .from('users')
       .select('reader_access_token')
@@ -73,71 +79,74 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
-    const location = searchParams.get('location') as DocumentLocation | null;
-    const category = searchParams.get('category') as DocumentCategory | null;
+    const location = searchParams.get('location');
+    const category = searchParams.get('category');
     const tag = searchParams.get('tag');
     const cursor = searchParams.get('cursor');
     const pageSizeParam = searchParams.get('pageSize');
     const pageSize = pageSizeParam ? Math.min(parseInt(pageSizeParam, 10), 100) : 20;
 
-    // Create Reader client and fetch documents
-    const readerClient = createReaderClient(userData.reader_access_token);
+    // Calculate offset from cursor (cursor is the offset number as string)
+    const offset = cursor ? parseInt(cursor, 10) : 0;
 
-    try {
-      const response = await readerClient.listDocuments({
-        location: location || undefined,
-        category: category || undefined,
-        tag: tag || undefined,
-        pageCursor: cursor || undefined,
-        pageSize,
-      });
+    // Build query for cached_documents
+    let query = supabase
+      .from('cached_documents')
+      .select('*', { count: 'exact' })
+      .eq('user_id', user.id)
+      .order('reader_created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
-      // Transform documents to our API format
-      const documents = response.results.map((doc) => ({
-        id: doc.id,
-        title: doc.title,
-        author: doc.author,
-        source: doc.source,
-        siteName: doc.site_name,
-        url: doc.url,
-        sourceUrl: doc.source_url,
-        category: doc.category,
-        location: doc.location,
-        tags: Object.keys(doc.tags || {}),
-        wordCount: doc.word_count,
-        readingProgress: doc.reading_progress,
-        summary: doc.summary,
-        imageUrl: doc.image_url,
-        publishedDate: doc.published_date,
-        createdAt: doc.created_at,
-      }));
-
-      return NextResponse.json({
-        documents,
-        nextCursor: response.nextPageCursor,
-        count: response.count,
-      });
-    } catch (error) {
-      if (error instanceof ReaderApiException) {
-        if (error.status === 401 || error.status === 403) {
-          return NextResponse.json(
-            { error: 'Reader access token is invalid or expired. Please reconnect your account.' },
-            { status: 401 }
-          );
-        }
-        if (error.status === 429) {
-          return NextResponse.json(
-            { error: 'Too many requests to Readwise. Please try again later.' },
-            { status: 429 }
-          );
-        }
-        return NextResponse.json(
-          { error: 'Failed to fetch documents from Readwise.' },
-          { status: 502 }
-        );
-      }
-      throw error;
+    // Apply filters
+    if (location) {
+      query = query.eq('location', location);
     }
+    if (category) {
+      query = query.eq('category', category);
+    }
+    if (tag) {
+      // Use JSONB containment operator to filter by tag
+      // tags is stored as { "tagname": { "name": "tagname", ... } }
+      query = query.filter('tags', 'cs', `{"${tag}": {}}`);
+    }
+
+    const { data: documents, error: queryError, count } = await query;
+
+    if (queryError) {
+      console.error('Error fetching cached documents:', queryError);
+      return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 });
+    }
+
+    // Transform documents to API format
+    const transformedDocuments: DocumentFromCache[] = (documents || []).map((doc) => ({
+      id: doc.reader_document_id,
+      title: doc.title,
+      author: doc.author,
+      source: doc.source,
+      siteName: doc.site_name,
+      url: doc.url,
+      sourceUrl: doc.source_url,
+      category: doc.category,
+      location: doc.location,
+      tags: extractTagNames(doc.tags),
+      wordCount: doc.word_count,
+      readingProgress: doc.reading_progress,
+      summary: doc.summary,
+      imageUrl: doc.image_url,
+      publishedDate: doc.published_date,
+      createdAt: doc.reader_created_at || doc.cached_at,
+    }));
+
+    // Calculate next cursor
+    const nextOffset = offset + pageSize;
+    const hasMore = count !== null && nextOffset < count;
+    const nextCursor = hasMore ? nextOffset.toString() : null;
+
+    return NextResponse.json({
+      documents: transformedDocuments,
+      nextCursor,
+      count: count ?? documents?.length ?? 0,
+    });
   } catch (error) {
     console.error('Error fetching documents:', error);
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createReaderClient, ReaderApiException } from '@/lib/reader';
 import { htmlToPlainText } from '@/lib/reader/html';
-import type { Database } from '@/lib/supabase/types';
+import type { Database, Json } from '@/lib/supabase/types';
 
 const MAX_REQUESTS_PER_MINUTE = 20;
 const WINDOW_MS = 60 * 1000;
@@ -399,6 +399,7 @@ async function syncLocation({
 
       const plainText = html ? htmlToPlainText(html) : null;
 
+      // Cache article content
       const { error: cacheError } = await supabase.from('cached_articles').upsert(
         {
           user_id: userId,
@@ -415,7 +416,39 @@ async function syncLocation({
       );
 
       if (cacheError) {
-        throw new Error(`Failed to cache document ${doc.id}`);
+        throw new Error(`Failed to cache article content ${doc.id}`);
+      }
+
+      // Cache document metadata for library view
+      const { error: metaError } = await supabase.from('cached_documents').upsert(
+        {
+          user_id: userId,
+          reader_document_id: doc.id,
+          title: doc.title,
+          author: doc.author,
+          source: doc.source,
+          site_name: doc.site_name,
+          url: doc.url,
+          source_url: doc.source_url,
+          category: doc.category,
+          location: doc.location,
+          tags: (doc.tags ?? {}) as unknown as Json,
+          word_count: doc.word_count,
+          reading_progress: doc.reading_progress,
+          summary: doc.summary,
+          image_url: doc.image_url,
+          published_date: doc.published_date,
+          reader_created_at: doc.created_at,
+          reader_updated_at: doc.updated_at,
+          cached_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'user_id,reader_document_id',
+        }
+      );
+
+      if (metaError) {
+        throw new Error(`Failed to cache document metadata ${doc.id}`);
       }
 
       latestUpdatedAt = maxIso(latestUpdatedAt, doc.updated_at);

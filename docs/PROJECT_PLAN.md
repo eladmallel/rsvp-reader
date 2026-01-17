@@ -657,7 +657,7 @@ tests/
 - [ ] **3.15** Implement pagination or infinite scroll for Library to handle large document sets efficiently
 - [x] **3.16** Design background Readwise sync worker + rate limiting plan
 - [x] **3.17** Implement per-user sync state, cron worker, and cached HTML storage (see `docs/readwise-sync-plan.md`)
-- [ ] **3.18** Switch app reads to DB cache only + sync-on-miss behavior
+- [x] **3.18** Switch app reads to DB cache only + sync-on-miss behavior
 - [ ] **3.19** Create archive sync plan doc (user stories, technical design, test plan) and reference it for implementation (`docs/reader-archive-sync-plan.md`)
 - [ ] **3.20** Add dedicated archive sync endpoint + separate cron job to detect Reader archived state changes and persist locally (see `docs/reader-archive-sync-plan.md`)
 - [ ] **3.21** Hide archived items by default in Library/Feed list views (see `docs/reader-archive-sync-plan.md`)
