@@ -33,6 +33,8 @@ export interface RSVPPlayerConfig {
   minWpm?: number;
   /** Maximum WPM (default: 1000) */
   maxWpm?: number;
+  /** Initial word index to start from (default: 0) */
+  initialIndex?: number;
   /** Whether to auto-pause at paragraph boundaries (default: false) */
   pauseAtParagraphs?: boolean;
   /** Callback when reading is complete */
@@ -109,14 +111,12 @@ export interface RSVPPlayerReturn {
  *   {player.state === 'playing' ? 'Pause' : 'Play'}
  * </button>
  */
-export function useRSVPPlayer(
-  text: string,
-  config: RSVPPlayerConfig = {}
-): RSVPPlayerReturn {
+export function useRSVPPlayer(text: string, config: RSVPPlayerConfig = {}): RSVPPlayerReturn {
   const {
     initialWpm = 300,
     minWpm = 100,
     maxWpm = 1000,
+    initialIndex = 0,
     pauseAtParagraphs = false,
     onComplete,
     onWordChange,
@@ -124,7 +124,12 @@ export function useRSVPPlayer(
 
   // Core state
   const [tokens, setTokens] = useState<WordToken[]>(() => tokenize(text));
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Clamp initialIndex to valid range
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const tokensArray = tokenize(text);
+    if (tokensArray.length === 0) return 0;
+    return Math.max(0, Math.min(initialIndex, tokensArray.length - 1));
+  });
   const [state, setState] = useState<PlayerState>('idle');
   const [wpm, setWpmState] = useState(initialWpm);
 
