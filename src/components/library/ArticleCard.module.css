@@ -26,6 +26,7 @@
   height: 140px;
   overflow: hidden;
   background-color: var(--bg-secondary);
+  position: relative;
 }
 
 .image {

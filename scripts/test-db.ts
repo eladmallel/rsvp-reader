@@ -16,7 +16,7 @@ async function testDatabase() {
 
   // Test 1: List all tables
   console.log('\n📋 Checking tables...');
-  const { data: tables, error: tablesError } = await supabase.from('users').select('id').limit(0);
+  const { error: tablesError } = await supabase.from('users').select('id').limit(0);
 
   if (tablesError && tablesError.code !== 'PGRST116') {
     console.error('❌ Error accessing users table:', tablesError.message);

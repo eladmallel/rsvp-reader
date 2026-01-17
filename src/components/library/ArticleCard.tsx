@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import styles from './ArticleCard.module.css';
 
 export interface Article {
@@ -38,7 +40,14 @@ export function ArticleCard({ article, onClick }: ArticleCardProps) {
     >
       {article.imageUrl && (
         <div className={styles.imageContainer}>
-          <img src={article.imageUrl} alt="" className={styles.image} loading="lazy" />
+          <Image
+            src={article.imageUrl}
+            alt=""
+            className={styles.image}
+            fill
+            sizes="100vw"
+            unoptimized
+          />
         </div>
       )}
       <div className={styles.content}>
