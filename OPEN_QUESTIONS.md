@@ -39,3 +39,20 @@
 **Status**: [ ] Open
 
 ---
+
+## [2026-01-16] Readwise List Endpoint HTML Support
+
+**Context**: Background sync should minimize requests by pulling HTML content in bulk if possible.
+
+**Question**: Does the Readwise list endpoint support returning full `html_content` (or similar) so we can avoid per-document fetches?
+
+**Options Considered**:
+
+1. List endpoint supports HTML content (best case; fewer requests)
+2. List endpoint does not support HTML content (need per-document fetches within budget)
+
+**My Recommendation**: Prefer Option 1 if the API supports it; otherwise keep per-document fetches limited to the remaining request budget.
+
+**Status**: [ ] Open
+
+---

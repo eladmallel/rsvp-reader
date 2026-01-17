@@ -185,7 +185,7 @@ describeIntegration('Readwise Reader API Integration Tests', () => {
 
   /**
    * Test 8: Get document with HTML content
-   * Tests the html_content parameter.
+   * Tests the withHtmlContent parameter.
    */
   it('should fetch document with content parameter', async () => {
     if (!cachedDocument) {

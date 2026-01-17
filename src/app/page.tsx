@@ -16,14 +16,14 @@ import styles from './page.module.css';
 
 interface DocumentFromApi {
   id: string;
-  title: string;
+  title: string | null;
   author: string | null;
   source: string | null;
   siteName: string | null;
   url: string;
-  sourceUrl: string;
+  sourceUrl: string | null;
   category: string;
-  location: string;
+  location: string | null;
   tags: string[];
   wordCount: number | null;
   readingProgress: number;
@@ -58,11 +58,11 @@ function documentToArticle(doc: DocumentFromApi): Article {
   const readingTime = doc.wordCount ? Math.ceil(doc.wordCount / 200) : 5; // Assume 200 WPM average
   return {
     id: doc.id,
-    title: doc.title,
+    title: doc.title ?? 'Untitled',
     author: doc.author || 'Unknown',
     siteName: doc.siteName || doc.source || 'Unknown',
     readingTime,
-    tags: doc.tags,
+    tags: doc.tags || [],
     createdAt: doc.createdAt,
     imageUrl: doc.imageUrl || undefined,
   };

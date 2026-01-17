@@ -23,7 +23,10 @@ const mockDocuments = [
     source_url: 'https://test.com/article',
     category: 'article',
     location: 'later',
-    tags: { dev: 'dev', typescript: 'typescript' },
+    tags: {
+      dev: { name: 'dev', type: 'manual', created: 0 },
+      typescript: { name: 'typescript', type: 'manual', created: 0 },
+    },
     word_count: 1500,
     reading_progress: 0,
     summary: 'Test summary',
@@ -141,6 +144,46 @@ describe('GET /api/reader/documents', () => {
     expect(data.documents[0].id).toBe('doc-1');
     expect(data.documents[0].title).toBe('Test Article');
     expect(data.documents[0].tags).toEqual(['dev', 'typescript']);
+  });
+
+  it('should handle null fields from the Reader API', async () => {
+    mockListDocuments.mockResolvedValue({
+      count: 1,
+      nextPageCursor: null,
+      results: [
+        {
+          id: '01kf4kq1j7ftt8f321fa477k74',
+          title: null,
+          author: null,
+          source: null,
+          site_name: null,
+          url: 'https://read.readwise.io/read/01kf4kq1j7ftt8f321fa477k74',
+          source_url: null,
+          category: 'rss',
+          location: null,
+          tags: null,
+          word_count: null,
+          reading_progress: 0,
+          summary: null,
+          image_url: null,
+          published_date: null,
+          created_at: '2026-01-16T23:54:40.078482+00:00',
+          updated_at: '2026-01-16T23:54:42.132460+00:00',
+          notes: '',
+          parent_id: null,
+        },
+      ],
+    });
+
+    const request = createRequest();
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.documents[0].title).toBeNull();
+    expect(data.documents[0].sourceUrl).toBeNull();
+    expect(data.documents[0].location).toBeNull();
+    expect(data.documents[0].tags).toEqual([]);
   });
 
   it('should pass location filter to Reader API', async () => {

@@ -30,7 +30,10 @@ describe('Reader API Client', () => {
       source: 'example.com',
       category: 'article',
       location: 'later',
-      tags: { dev: 'dev', typescript: 'typescript' },
+      tags: {
+        dev: { name: 'dev', type: 'manual', created: 0 },
+        typescript: { name: 'typescript', type: 'manual', created: 0 },
+      },
       site_name: 'Example Site',
       word_count: 1500,
       reading_progress: 0,
@@ -43,6 +46,14 @@ describe('Reader API Client', () => {
       parent_id: null,
       ...overrides,
     };
+  }
+
+  type TagInfo = NonNullable<ReaderDocument['tags']>[string];
+
+  function createTagMap(tagNames: string[]): Record<string, TagInfo> {
+    return Object.fromEntries(
+      tagNames.map((name) => [name, { name, type: 'manual', created: 0 }])
+    ) as Record<string, TagInfo>;
   }
 
   // Helper to create a successful mock response
@@ -83,6 +94,10 @@ describe('Reader API Client', () => {
             Authorization: `Token ${TEST_TOKEN}`,
           }),
         })
+      );
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('limit=1'),
+        expect.any(Object)
       );
     });
 
@@ -181,7 +196,18 @@ describe('Reader API Client', () => {
       await client.listDocuments({ pageSize: 50 });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('page_size=50'),
+        expect.stringContaining('limit=50'),
+        expect.any(Object)
+      );
+    });
+
+    it('should request HTML content when withHtmlContent is true', async () => {
+      mockSuccessResponse({ count: 1, nextPageCursor: null, results: [createMockDocument()] });
+
+      await client.listDocuments({ withHtmlContent: true });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('withHtmlContent=true'),
         expect.any(Object)
       );
     });
@@ -236,7 +262,7 @@ describe('Reader API Client', () => {
       await client.getDocument('doc-123', true);
 
       const callUrl = mockFetch.mock.calls[0][0] as string;
-      expect(callUrl).toContain('html_content=true');
+      expect(callUrl).toContain('withHtmlContent=true');
     });
 
     it('should not request HTML content by default', async () => {
@@ -246,7 +272,7 @@ describe('Reader API Client', () => {
       await client.getDocument('doc-123');
 
       const callUrl = mockFetch.mock.calls[0][0] as string;
-      expect(callUrl).not.toContain('html_content');
+      expect(callUrl).not.toContain('withHtmlContent');
     });
 
     it('should throw 404 error when document not found', async () => {
@@ -264,9 +290,9 @@ describe('Reader API Client', () => {
 
   describe('getTags', () => {
     it('should aggregate tags from all documents', async () => {
-      const doc1 = createMockDocument({ tags: { dev: 'dev', typescript: 'typescript' } });
-      const doc2 = createMockDocument({ tags: { dev: 'dev', react: 'react' } });
-      const doc3 = createMockDocument({ tags: { typescript: 'typescript' } });
+      const doc1 = createMockDocument({ tags: createTagMap(['dev', 'typescript']) });
+      const doc2 = createMockDocument({ tags: createTagMap(['dev', 'react']) });
+      const doc3 = createMockDocument({ tags: createTagMap(['typescript']) });
 
       mockSuccessResponse({
         count: 3,
@@ -282,10 +308,10 @@ describe('Reader API Client', () => {
     });
 
     it('should sort tags by count descending', async () => {
-      const doc1 = createMockDocument({ tags: { rare: 'rare' } });
-      const doc2 = createMockDocument({ tags: { common: 'common' } });
-      const doc3 = createMockDocument({ tags: { common: 'common' } });
-      const doc4 = createMockDocument({ tags: { common: 'common' } });
+      const doc1 = createMockDocument({ tags: createTagMap(['rare']) });
+      const doc2 = createMockDocument({ tags: createTagMap(['common']) });
+      const doc3 = createMockDocument({ tags: createTagMap(['common']) });
+      const doc4 = createMockDocument({ tags: createTagMap(['common']) });
 
       mockSuccessResponse({
         count: 4,
@@ -302,8 +328,24 @@ describe('Reader API Client', () => {
     });
 
     it('should handle documents without tags', async () => {
-      const doc1 = createMockDocument({ tags: {} });
-      const doc2 = createMockDocument({ tags: { dev: 'dev' } });
+      const doc1 = createMockDocument({ tags: createTagMap([]) });
+      const doc2 = createMockDocument({ tags: createTagMap(['dev']) });
+
+      mockSuccessResponse({
+        count: 2,
+        nextPageCursor: null,
+        results: [doc1, doc2],
+      });
+
+      const tags = await client.getTags();
+
+      expect(tags).toHaveLength(1);
+      expect(tags[0]).toEqual({ name: 'dev', count: 1 });
+    });
+
+    it('should handle documents with null tags', async () => {
+      const doc1 = createMockDocument({ tags: null });
+      const doc2 = createMockDocument({ tags: createTagMap(['dev']) });
 
       mockSuccessResponse({
         count: 2,
@@ -322,14 +364,14 @@ describe('Reader API Client', () => {
       mockSuccessResponse({
         count: 200,
         nextPageCursor: 'page-2-cursor',
-        results: [createMockDocument({ tags: { tag1: 'tag1' } })],
+        results: [createMockDocument({ tags: createTagMap(['tag1']) })],
       });
 
       // Second page
       mockSuccessResponse({
         count: 200,
         nextPageCursor: null,
-        results: [createMockDocument({ tags: { tag2: 'tag2' } })],
+        results: [createMockDocument({ tags: createTagMap(['tag2']) })],
       });
 
       const tags = await client.getTags();

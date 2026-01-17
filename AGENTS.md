@@ -142,6 +142,7 @@ E2E tests automatically detect and use a free port. No manual server management 
   2. Write minimal code to pass
   3. Refactor while keeping tests green
   4. Commit
+- When fixing a bug, add at least one test that would have caught it.
 
 ### Especially Apply TDD For:
 

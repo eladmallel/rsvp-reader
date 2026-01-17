@@ -22,7 +22,10 @@ const mockDocument = {
   source_url: 'https://test.com/article',
   category: 'article',
   location: 'later',
-  tags: { dev: 'dev', typescript: 'typescript' },
+  tags: {
+    dev: { name: 'dev', type: 'manual', created: 0 },
+    typescript: { name: 'typescript', type: 'manual', created: 0 },
+  },
   word_count: 1500,
   reading_progress: 0.5,
   summary: 'Test summary',
@@ -179,6 +182,36 @@ describe('GET /api/reader/documents/[id]', () => {
     expect(response.status).toBe(200);
     expect(mockGetDocument).toHaveBeenCalledWith('doc-123', true);
     expect(data.document.htmlContent).toBe('<p>This is the article content.</p>');
+  });
+
+  it('should pass includeContent flag when content=true is requested', async () => {
+    const [request, context] = createRequest('doc-123', { content: 'true' });
+    const response = await GET(request, context);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mockGetDocument).toHaveBeenCalledWith('doc-123', true);
+    expect(data.document.htmlContent).toBeUndefined();
+  });
+
+  it('should handle null fields from the Reader API', async () => {
+    mockGetDocument.mockResolvedValue({
+      ...mockDocument,
+      title: null,
+      source_url: null,
+      location: null,
+      tags: null,
+    });
+
+    const [request, context] = createRequest('doc-123');
+    const response = await GET(request, context);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.document.title).toBeNull();
+    expect(data.document.sourceUrl).toBeNull();
+    expect(data.document.location).toBeNull();
+    expect(data.document.tags).toEqual([]);
   });
 
   it('should return 404 if document not found', async () => {

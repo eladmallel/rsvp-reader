@@ -23,7 +23,7 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 interface FetchOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: Record<string, unknown>;
-  params?: Record<string, string | number | undefined>;
+  params?: Record<string, string | number | boolean | undefined>;
 }
 
 /**
@@ -114,7 +114,7 @@ export function createReaderClient(accessToken: string) {
     async validateToken(): Promise<boolean> {
       // Make a minimal request to check if the token is valid
       await fetchApi<ListDocumentsResponse>('/list/', {
-        params: { page_size: 1 },
+        params: { limit: 1 },
       });
       return true;
     },
@@ -126,7 +126,7 @@ export function createReaderClient(accessToken: string) {
      * @returns Paginated list of documents
      */
     async listDocuments(params: ListDocumentsParams = {}): Promise<ListDocumentsResponse> {
-      const apiParams: Record<string, string | number | undefined> = {};
+      const apiParams: Record<string, string | number | boolean | undefined> = {};
 
       if (params.location) {
         apiParams.location = params.location;
@@ -142,10 +142,13 @@ export function createReaderClient(accessToken: string) {
         apiParams.pageCursor = params.pageCursor;
       }
       if (params.pageSize) {
-        apiParams.page_size = params.pageSize;
+        apiParams.limit = params.pageSize;
       }
       if (params.updatedAfter) {
         apiParams.updatedAfter = params.updatedAfter;
+      }
+      if (params.withHtmlContent !== undefined) {
+        apiParams.withHtmlContent = params.withHtmlContent;
       }
 
       return fetchApi<ListDocumentsResponse>('/list/', { params: apiParams });
@@ -167,7 +170,7 @@ export function createReaderClient(accessToken: string) {
       };
 
       if (includeContent) {
-        params.html_content = 'true';
+        params.withHtmlContent = 'true';
       }
 
       const response = await fetchApi<ListDocumentsResponse>('/list/', { params });
@@ -196,7 +199,7 @@ export function createReaderClient(accessToken: string) {
       do {
         const response = await fetchApi<ListDocumentsResponse>('/list/', {
           params: {
-            page_size: 100,
+            limit: 100,
             pageCursor: cursor,
           },
         });

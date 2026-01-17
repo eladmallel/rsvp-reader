@@ -7,14 +7,22 @@
 export type DocumentCategory =
   | 'article'
   | 'email'
+  | 'note'
   | 'rss'
   | 'pdf'
   | 'epub'
   | 'tweet'
   | 'video'
-  | 'highlight';
+  | 'highlight'
+  | 'podcast';
 
 export type DocumentLocation = 'new' | 'later' | 'shortlist' | 'archive' | 'feed';
+
+export interface ReaderTagInfo {
+  name: string;
+  type: string;
+  created: number;
+}
 
 export interface ReaderDocument {
   /** Unique identifier */
@@ -22,9 +30,9 @@ export interface ReaderDocument {
   /** URL for the document in Reader */
   url: string;
   /** Original source URL */
-  source_url: string;
+  source_url: string | null;
   /** Document title */
-  title: string;
+  title: string | null;
   /** Author name(s) */
   author: string | null;
   /** Source website name */
@@ -32,9 +40,9 @@ export interface ReaderDocument {
   /** Document category/type */
   category: DocumentCategory;
   /** Where the document is located (inbox state) */
-  location: DocumentLocation;
-  /** Tags as a record of tag name to tag value */
-  tags: Record<string, string>;
+  location: DocumentLocation | null;
+  /** Tags keyed by tag name */
+  tags: Record<string, ReaderTagInfo> | null;
   /** Site name / publication */
   site_name: string | null;
   /** Word count of the document */
@@ -82,6 +90,8 @@ export interface ListDocumentsParams {
   pageSize?: number;
   /** Last update time filter (ISO timestamp or Unix epoch) */
   updatedAfter?: string;
+  /** Include HTML content in each document */
+  withHtmlContent?: boolean;
 }
 
 export interface ListDocumentsResponse {
