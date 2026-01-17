@@ -163,6 +163,7 @@ export default function RsvpPageClient() {
       {/* RSVP Player */}
       <RSVPPlayer
         text={text}
+        articleId={articleId || 'demo'}
         onExit={handleExit}
         initialWpm={300}
         className={styles.playerContainer}

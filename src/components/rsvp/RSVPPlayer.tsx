@@ -5,6 +5,10 @@
  *
  * Combines WordDisplay, Controls, and ProgressBar into a full-featured
  * RSVP reading experience with automatic playback.
+ *
+ * Supports position persistence: if an articleId is provided, the current
+ * reading position will be saved to localStorage and restored when the
+ * user returns to the article.
  */
 
 import { useCallback, useEffect } from 'react';
@@ -12,11 +16,14 @@ import { WordDisplay } from './WordDisplay';
 import { Controls } from './Controls';
 import { ProgressBar } from './ProgressBar';
 import { useRSVPPlayer, RSVPPlayerConfig, PlayerState } from './useRSVPPlayer';
+import { useReadingPosition } from '@/hooks/useReadingPosition';
 import styles from './RSVPPlayer.module.css';
 
 export interface RSVPPlayerProps extends RSVPPlayerConfig {
   /** Text content to read */
   text: string;
+  /** Article ID for position persistence (null disables persistence) */
+  articleId?: string | null;
   /** Callback when exit button is clicked */
   onExit?: () => void;
   /** Optional title to display */
@@ -51,6 +58,7 @@ function StateIndicator({ state }: { state: PlayerState }) {
  * @example
  * <RSVPPlayer
  *   text="Hello world. This is a test."
+ *   articleId="article-123"
  *   initialWpm={300}
  *   onComplete={() => console.log("Done!")}
  *   onExit={() => router.push("/library")}
@@ -58,22 +66,42 @@ function StateIndicator({ state }: { state: PlayerState }) {
  */
 export function RSVPPlayer({
   text,
+  articleId = null,
   onExit,
   title,
   showProgressLabels = true,
   className,
   ...config
 }: RSVPPlayerProps) {
-  const player = useRSVPPlayer(text, config);
+  // Position persistence - savedPosition is read synchronously from localStorage on mount
+  const { savedPosition, savePosition, clearPosition } = useReadingPosition(articleId);
+
+  // RSVP player state - savedPosition is used as initialIndex only on first render
+  // The hook internally handles clamping to valid range
+  const player = useRSVPPlayer(text, {
+    ...config,
+    initialIndex: savedPosition,
+  });
+
+  // Save position when index changes (debounced by useReadingPosition)
+  useEffect(() => {
+    if (player.state === 'playing' || player.state === 'paused') {
+      savePosition(player.currentIndex);
+    }
+  }, [player.currentIndex, player.state, savePosition]);
+
+  // Clear position when finished
+  useEffect(() => {
+    if (player.state === 'finished') {
+      clearPosition();
+    }
+  }, [player.state, clearPosition]);
 
   // Handle keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if user is typing in an input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -209,8 +237,4 @@ export function RSVPPlayer({
 
 // Re-export hook and types for convenience
 export { useRSVPPlayer } from './useRSVPPlayer';
-export type {
-  RSVPPlayerConfig,
-  RSVPPlayerReturn,
-  PlayerState,
-} from './useRSVPPlayer';
+export type { RSVPPlayerConfig, RSVPPlayerReturn, PlayerState } from './useRSVPPlayer';
