@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/sync/readwise?token=$READWISE_SYNC_SECRET",
+      "schedule": "*/1 * * * *"
+    }
+  ]
+}

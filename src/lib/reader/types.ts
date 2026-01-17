@@ -114,7 +114,8 @@ export class ReaderApiException extends Error {
   constructor(
     message: string,
     public status: number,
-    public detail?: string
+    public detail?: string,
+    public retryAfterSeconds?: number
   ) {
     super(message);
     this.name = 'ReaderApiException';

@@ -88,6 +88,8 @@ export function createReaderClient(accessToken: string) {
     const response = await fetch(url.toString(), fetchOptions);
 
     if (!response.ok) {
+      const retryAfterHeader = response.headers.get('retry-after');
+      const retryAfterSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
       let detail: string | undefined;
       try {
         const errorBody = await response.json();
@@ -99,7 +101,8 @@ export function createReaderClient(accessToken: string) {
       throw new ReaderApiException(
         detail || `Request failed with status ${response.status}`,
         response.status,
-        detail
+        detail,
+        Number.isNaN(retryAfterSeconds) ? undefined : retryAfterSeconds
       );
     }
 

@@ -135,6 +135,7 @@ export async function GET(
             html_content: doc.html_content,
             plain_text: plainText,
             word_count: wordCount,
+            reader_updated_at: doc.updated_at,
             cached_at: new Date().toISOString(),
           },
           {

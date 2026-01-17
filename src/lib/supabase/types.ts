@@ -179,6 +179,7 @@ export interface Database {
           html_content: string | null;
           plain_text: string | null;
           word_count: number | null;
+          reader_updated_at: string | null;
           cached_at: string;
         };
         Insert: {
@@ -188,6 +189,7 @@ export interface Database {
           html_content?: string | null;
           plain_text?: string | null;
           word_count?: number | null;
+          reader_updated_at?: string | null;
           cached_at?: string;
         };
         Update: {
@@ -197,6 +199,7 @@ export interface Database {
           html_content?: string | null;
           plain_text?: string | null;
           word_count?: number | null;
+          reader_updated_at?: string | null;
           cached_at?: string;
         };
         Relationships: [
@@ -204,6 +207,53 @@ export interface Database {
             foreignKeyName: 'cached_articles_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      readwise_sync_state: {
+        Row: {
+          user_id: string;
+          library_cursor: string | null;
+          feed_cursor: string | null;
+          next_allowed_at: string | null;
+          last_sync_at: string | null;
+          in_progress: boolean;
+          initial_backfill_done: boolean;
+          window_started_at: string | null;
+          window_request_count: number;
+          last_429_at: string | null;
+        };
+        Insert: {
+          user_id: string;
+          library_cursor?: string | null;
+          feed_cursor?: string | null;
+          next_allowed_at?: string | null;
+          last_sync_at?: string | null;
+          in_progress?: boolean;
+          initial_backfill_done?: boolean;
+          window_started_at?: string | null;
+          window_request_count?: number;
+          last_429_at?: string | null;
+        };
+        Update: {
+          user_id?: string;
+          library_cursor?: string | null;
+          feed_cursor?: string | null;
+          next_allowed_at?: string | null;
+          last_sync_at?: string | null;
+          in_progress?: boolean;
+          initial_backfill_done?: boolean;
+          window_started_at?: string | null;
+          window_request_count?: number;
+          last_429_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'readwise_sync_state_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
             referencedRelation: 'users';
             referencedColumns: ['id'];
           },

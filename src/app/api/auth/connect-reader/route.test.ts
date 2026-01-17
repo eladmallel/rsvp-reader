@@ -13,6 +13,9 @@ const mockUpdate = vi.fn();
 const mockSelect = vi.fn();
 const mockEq = vi.fn();
 const mockSingle = vi.fn();
+const mockUpsert = vi.fn();
+const mockDelete = vi.fn();
+const mockFrom = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() =>
@@ -20,10 +23,7 @@ vi.mock('@/lib/supabase/server', () => ({
       auth: {
         getUser: mockGetUser,
       },
-      from: vi.fn(() => ({
-        update: mockUpdate,
-        select: mockSelect,
-      })),
+      from: mockFrom,
     })
   ),
 }));
@@ -59,6 +59,25 @@ describe('POST /api/auth/connect-reader', () => {
 
     mockUpdate.mockReturnValue({
       eq: mockEq.mockReturnValue(Promise.resolve({ error: null })),
+    });
+
+    mockUpsert.mockResolvedValue({ error: null });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          update: mockUpdate,
+          select: mockSelect,
+        };
+      }
+
+      if (table === 'readwise_sync_state') {
+        return {
+          upsert: mockUpsert,
+        };
+      }
+
+      return {};
     });
   });
 
@@ -148,6 +167,13 @@ describe('POST /api/auth/connect-reader', () => {
         reader_access_token: 'valid-reader-token-12345678',
       })
     );
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: mockSupabaseUser.id,
+        initial_backfill_done: false,
+      }),
+      expect.any(Object)
+    );
   });
 
   it('should return 500 if database update fails', async () => {
@@ -161,6 +187,17 @@ describe('POST /api/auth/connect-reader', () => {
 
     expect(response.status).toBe(500);
     expect(data.error).toContain('Failed to save token');
+  });
+
+  it('should return 500 if sync state initialization fails', async () => {
+    mockUpsert.mockResolvedValue({ error: { message: 'Sync error' } });
+
+    const request = createRequest({ token: 'valid-reader-token-12345678' });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toContain('Failed to initialize sync state');
   });
 
   it('should trim whitespace from token', async () => {
@@ -188,6 +225,26 @@ describe('DELETE /api/auth/connect-reader', () => {
     mockUpdate.mockReturnValue({
       eq: mockEq.mockReturnValue(Promise.resolve({ error: null })),
     });
+
+    mockDelete.mockReturnValue({
+      eq: mockEq.mockReturnValue(Promise.resolve({ error: null })),
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          update: mockUpdate,
+        };
+      }
+
+      if (table === 'readwise_sync_state') {
+        return {
+          delete: mockDelete,
+        };
+      }
+
+      return {};
+    });
   });
 
   it('should return 401 if user is not authenticated', async () => {
@@ -214,10 +271,23 @@ describe('DELETE /api/auth/connect-reader', () => {
         reader_access_token: null,
       })
     );
+    expect(mockDelete).toHaveBeenCalled();
   });
 
   it('should return 500 if database update fails', async () => {
     mockUpdate.mockReturnValue({
+      eq: mockEq.mockReturnValue(Promise.resolve({ error: { message: 'DB error' } })),
+    });
+
+    const response = await DELETE();
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toContain('Failed to disconnect');
+  });
+
+  it('should return 500 if sync state cleanup fails', async () => {
+    mockDelete.mockReturnValue({
       eq: mockEq.mockReturnValue(Promise.resolve({ error: { message: 'DB error' } })),
     });
 
@@ -242,6 +312,16 @@ describe('GET /api/auth/connect-reader', () => {
       eq: mockEq.mockReturnValue({
         single: mockSingle,
       }),
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') {
+        return {
+          select: mockSelect,
+        };
+      }
+
+      return {};
     });
   });
 

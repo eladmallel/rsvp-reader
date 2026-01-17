@@ -101,6 +101,32 @@ export async function POST(request: NextRequest): Promise<NextResponse<ConnectRe
       );
     }
 
+    const { error: syncStateError } = await supabase.from('readwise_sync_state').upsert(
+      {
+        user_id: user.id,
+        library_cursor: null,
+        feed_cursor: null,
+        next_allowed_at: new Date().toISOString(),
+        last_sync_at: null,
+        in_progress: false,
+        initial_backfill_done: false,
+        window_started_at: null,
+        window_request_count: 0,
+        last_429_at: null,
+      },
+      {
+        onConflict: 'user_id',
+      }
+    );
+
+    if (syncStateError) {
+      console.error('Failed to initialize Reader sync state:', syncStateError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to initialize sync state. Please try again.' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in connect-reader:', error);
@@ -149,6 +175,19 @@ export async function DELETE(): Promise<NextResponse<ConnectReaderResponse>> {
 
     if (updateError) {
       console.error('Failed to remove Reader token:', updateError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to disconnect. Please try again.' },
+        { status: 500 }
+      );
+    }
+
+    const { error: syncStateError } = await supabase
+      .from('readwise_sync_state')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (syncStateError) {
+      console.error('Failed to remove Reader sync state:', syncStateError);
       return NextResponse.json(
         { success: false, error: 'Failed to disconnect. Please try again.' },
         { status: 500 }
