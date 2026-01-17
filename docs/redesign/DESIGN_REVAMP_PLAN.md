@@ -5,8 +5,8 @@
 The goal is to reduce cognitive load to zero. The interface should disappear, leaving only the words.
 
 - **Aesthetic**: "Modern Humanist". Clean lines, but warm tones. Not clinical.
-- **Interaction**: "Fluid". Swipe gestures, instant transitions, large touch targets.
-- **Typography**: The core of the app. We will use a high-readability Sans-Serif for UI and a dedicated Monospace or specialized Sans for the RSVP window.
+- **Interaction**: "Fluid". Instant transitions, large touch targets, minimal chrome.
+- **Typography**: The core of the app. Use a high-readability Sans-Serif for UI and a purpose-built RSVP font that feels calm and consistent.
 
 ## 2. Visual Identity (The "Readwise" Vibe)
 
@@ -19,8 +19,8 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 
 ### Typography
 
-- **UI Font**: `Inter` or System Sans-Serif (Clean, legible at small sizes).
-- **RSVP Font**: `JetBrains Mono` or `Roboto Mono`. Monospace is superior for RSVP as it reduces jitter when word lengths change rapidly.
+- **UI Font**: `Fraunces` for headlines + `IBM Plex Sans` for UI labels/body (warm, human, not default).
+- **RSVP Font**: `IBM Plex Sans Condensed` or `Söhne Condensed` (proportional, tight rhythm, reduces visual jump while avoiding monospaced stiffness).
 
 ---
 
@@ -45,15 +45,17 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 **Goal**: Scannability.
 
 - **Layout**: Clean vertical list. No heavy borders.
+- **Sub-tabs**: Library/Feed both include a segmented control for **Inbox / Later / Archive** (Readwise-inspired).
 - **Item Design**:
   - **Title**: Bold, primary text color.
   - **Meta**: Small, secondary color (Source • Reading Time).
   - **Status**: A subtle dot or bar indicating "New", "In Progress", "Finished".
   - **Thumbnail**: Small square on the right (optional, if available) or a nice generated icon based on the tag.
 - **Interactions**:
-  - **Swipe Right**: Mark as Done / Archive.
-  - **Swipe Left**: Save to Favorites / Open Options.
+  - **Overflow Menu**: Mark as Done / Archive / Share / Open Original.
   - **Pull to Refresh**: Sync with Readwise.
+  - **Inline Archive**: Quick archive action available on each item (no gestures required).
+  - **Empty/Loading/Error**: Beautiful state cards with clear CTAs and helpful copy.
 
 ### 3.2 RSVP Player (The Core Experience)
 
@@ -68,16 +70,18 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
   - **ORP**: Highlighted character perfectly centered.
 - **Bottom Zone (The Cockpit)**:
   - **Anchored**: Always visible (or minimal fade). High contrast or subtle card background.
+  - **Collapsible (Small Screens)**: A single tap expands controls; auto-collapses after a short idle.
   - **Scrubber**: Full-width progress bar / waveform representation.
-  - **Primary Controls**: Large Play/Pause button in center. Skip Back (15s/sentence) and Skip Forward buttons on sides.
+  - **Primary Controls**: Large Play/Pause button in center. Skip Back (words) and Skip Forward (words) on sides.
   - **Secondary Controls**: WPM selector (bottom left), Theme/Font settings (bottom right).
+  - **Skip Amount Setting**: User can choose how many words to skip back/forward per tap (e.g., 1/3/5/10).
 
 ### 3.3 Settings Tab
 
 **Goal**: Set and forget.
 
 - **Connect Readwise**: A friendly, branded card. "Connect to Reader" button using Readwise colors.
-- **Preferences**: Toggle switches for "Dark Mode", "Auto-Archive", "Haptics".
+- **Preferences**: Toggle switches for "Dark Mode" and reading preferences (default WPM, skip amount).
 - **Account**: Simple profile card.
 
 ### 3.4 Search Tab
@@ -92,6 +96,12 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 
 ## 4. Implementation Strategy
 
-1.  **Design Tokens**: Define CSS variables for the new palette.
+1.  **Design Tokens**: Define CSS variables for the new palette (keep ORP red accent).
 2.  **Layout Shell**: Create a mobile-responsive shell (max-width container on desktop).
 3.  **Component Refactor**: Update `ArticleList`, `RSVPPlayer`, and `Settings` to use new tokens.
+4.  **States & Accessibility**:
+    - **States**: Build empty/loading/error states for Library, Feed, Search, and RSVP.
+    - **A11y Targets**: WCAG AA contrast for text, 44px min tap targets, and reduced-motion support.
+5.  **Desktop Minimalism**:
+    - **Hover/Focus**: Subtle hover states + clear focus ring for keyboard.
+    - **Shortcuts**: Keep existing keyboard shortcuts for RSVP controls.
