@@ -1,20 +1,8 @@
-import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
+import { test, expect, type TestInfo } from '@playwright/test';
 
-// Get today's date for screenshot directory
-function getScreenshotDir(): string {
+function getScreenshotPath(testInfo: TestInfo, filename: string): string {
   const today = new Date().toISOString().split('T')[0];
-  return `screenshots/${today}`;
-}
-
-// Ensure screenshot directory exists
-function ensureScreenshotDir(): string {
-  const dir = getScreenshotDir();
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return dir;
+  return testInfo.outputPath('screenshots', today, filename);
 }
 
 test.describe('RSVP Page', () => {
@@ -140,11 +128,10 @@ test.describe('RSVP Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `rsvp-${viewport}-dark.png`),
+      path: getScreenshotPath(testInfo, `rsvp-${viewport}-dark.png`),
       fullPage: true,
     });
   });
@@ -156,11 +143,10 @@ test.describe('RSVP Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `rsvp-${viewport}-light.png`),
+      path: getScreenshotPath(testInfo, `rsvp-${viewport}-light.png`),
       fullPage: true,
     });
   });

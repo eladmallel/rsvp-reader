@@ -198,6 +198,7 @@ E2E tests automatically detect and use a free port. No manual server management 
 ### Screenshots Are Required
 
 - Capture screenshots during E2E tests for all key screens
+- Screenshots are stored in Playwright outputs and uploaded by GitHub Actions
 - Add a screenshot review task before completing each feature
 
 ### Analyze Every Screenshot
@@ -223,8 +224,8 @@ If screenshots reveal problems:
 
 ### Save All E2E Screenshots
 
-- Save to: `screenshots/<YYYY-MM-DD>/`
-- Example: `screenshots/2026-01-15/`
+- Save to: `test-results/screenshots/<YYYY-MM-DD>/`
+- Example: `test-results/screenshots/2026-01-15/`
 
 ### Naming Convention
 
@@ -241,14 +242,15 @@ Examples:
 ### Directory Structure
 
 ```
-screenshots/
-├── 2026-01-15/
-│   ├── library-mobile-dark-loaded.png
-│   ├── library-mobile-light-loaded.png
-│   ├── rsvp-mobile-dark-playing.png
-│   └── ...
-└── 2026-01-16/
-    └── ...
+test-results/
+└── screenshots/
+    ├── 2026-01-15/
+    │   ├── library-mobile-dark-loaded.png
+    │   ├── library-mobile-light-loaded.png
+    │   ├── rsvp-mobile-dark-playing.png
+    │   └── ...
+    └── 2026-01-16/
+        └── ...
 ```
 
 ---

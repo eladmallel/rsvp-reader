@@ -1,6 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type TestInfo } from '@playwright/test';
 
-const screenshotDir = `screenshots/${new Date().toISOString().split('T')[0]}`;
+function getScreenshotPath(testInfo: TestInfo, filename: string): string {
+  const today = new Date().toISOString().split('T')[0];
+  return testInfo.outputPath('screenshots', today, filename);
+}
 
 test.describe('Chat Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -67,31 +70,31 @@ test.describe('Chat Page', () => {
 });
 
 test.describe('Chat Page Screenshots', () => {
-  test('mobile dark mode', async ({ page }) => {
+  test('mobile dark mode', async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/chat');
     await page.waitForLoadState('networkidle');
 
     await page.screenshot({
-      path: `${screenshotDir}/chat-mobile-dark.png`,
+      path: getScreenshotPath(testInfo, 'chat-mobile-dark.png'),
       fullPage: false,
     });
   });
 
-  test('mobile light mode', async ({ page }) => {
+  test('mobile light mode', async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/chat');
     await page.waitForLoadState('networkidle');
 
     await page.screenshot({
-      path: `${screenshotDir}/chat-mobile-light.png`,
+      path: getScreenshotPath(testInfo, 'chat-mobile-light.png'),
       fullPage: false,
     });
   });
 
-  test('mobile with conversation', async ({ page }) => {
+  test('mobile with conversation', async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/chat');
@@ -103,31 +106,31 @@ test.describe('Chat Page Screenshots', () => {
     await page.waitForTimeout(2500);
 
     await page.screenshot({
-      path: `${screenshotDir}/chat-mobile-dark-conversation.png`,
+      path: getScreenshotPath(testInfo, 'chat-mobile-dark-conversation.png'),
       fullPage: false,
     });
   });
 
-  test('desktop dark mode', async ({ page }) => {
+  test('desktop dark mode', async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/chat');
     await page.waitForLoadState('networkidle');
 
     await page.screenshot({
-      path: `${screenshotDir}/chat-desktop-dark.png`,
+      path: getScreenshotPath(testInfo, 'chat-desktop-dark.png'),
       fullPage: false,
     });
   });
 
-  test('desktop light mode', async ({ page }) => {
+  test('desktop light mode', async ({ page }, testInfo) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/chat');
     await page.waitForLoadState('networkidle');
 
     await page.screenshot({
-      path: `${screenshotDir}/chat-desktop-light.png`,
+      path: getScreenshotPath(testInfo, 'chat-desktop-light.png'),
       fullPage: false,
     });
   });

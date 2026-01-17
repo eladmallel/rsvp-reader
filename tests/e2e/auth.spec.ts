@@ -1,21 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type TestInfo } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
-import * as fs from 'fs';
-import * as path from 'path';
 
-// Get today's date for screenshot directory
-function getScreenshotDir(): string {
+function getScreenshotPath(testInfo: TestInfo, filename: string): string {
   const today = new Date().toISOString().split('T')[0];
-  return `screenshots/${today}`;
-}
-
-// Ensure screenshot directory exists
-function ensureScreenshotDir(): string {
-  const dir = getScreenshotDir();
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return dir;
+  return testInfo.outputPath('screenshots', today, filename);
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -140,11 +128,10 @@ test.describe('Signup Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `signup-${viewport}-dark.png`),
+      path: getScreenshotPath(testInfo, `signup-${viewport}-dark.png`),
       fullPage: true,
     });
   });
@@ -155,11 +142,10 @@ test.describe('Signup Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `signup-${viewport}-light.png`),
+      path: getScreenshotPath(testInfo, `signup-${viewport}-light.png`),
       fullPage: true,
     });
   });
@@ -349,11 +335,10 @@ test.describe('Connect Reader Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `connect-reader-${viewport}-dark.png`),
+      path: getScreenshotPath(testInfo, `connect-reader-${viewport}-dark.png`),
       fullPage: true,
     });
   });
@@ -364,11 +349,10 @@ test.describe('Connect Reader Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `connect-reader-${viewport}-light.png`),
+      path: getScreenshotPath(testInfo, `connect-reader-${viewport}-light.png`),
       fullPage: true,
     });
   });
@@ -447,11 +431,10 @@ test.describe('Login Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `login-${viewport}-dark.png`),
+      path: getScreenshotPath(testInfo, `login-${viewport}-dark.png`),
       fullPage: true,
     });
   });
@@ -462,11 +445,10 @@ test.describe('Login Page', () => {
     });
     await page.waitForTimeout(300);
 
-    const dir = ensureScreenshotDir();
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
     await page.screenshot({
-      path: path.join(dir, `login-${viewport}-light.png`),
+      path: getScreenshotPath(testInfo, `login-${viewport}-light.png`),
       fullPage: true,
     });
   });

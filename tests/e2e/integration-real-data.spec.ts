@@ -18,23 +18,11 @@
  * In CI, set READWISE_ACCESS_TOKEN as a GitHub Actions secret.
  */
 
-import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
+import { test, expect, type TestInfo } from '@playwright/test';
 
-// Get today's date for screenshot directory
-function getScreenshotDir(): string {
+function getScreenshotPath(testInfo: TestInfo, filename: string): string {
   const today = new Date().toISOString().split('T')[0];
-  return `screenshots/${today}`;
-}
-
-// Ensure screenshot directory exists
-function ensureScreenshotDir(): string {
-  const dir = getScreenshotDir();
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  return dir;
+  return testInfo.outputPath('screenshots', today, filename);
 }
 
 // Check if Readwise token is available
@@ -352,13 +340,12 @@ test.describe('Real Readwise Data Integration', () => {
       });
       await page.waitForTimeout(300);
 
-      const dir = ensureScreenshotDir();
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
         : 'desktop';
 
       await page.screenshot({
-        path: path.join(dir, `library-real-data-${viewport}-dark.png`),
+        path: getScreenshotPath(testInfo, `library-real-data-${viewport}-dark.png`),
       });
     });
 
@@ -372,13 +359,12 @@ test.describe('Real Readwise Data Integration', () => {
       });
       await page.waitForTimeout(300);
 
-      const dir = ensureScreenshotDir();
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
         : 'desktop';
 
       await page.screenshot({
-        path: path.join(dir, `library-real-data-${viewport}-light.png`),
+        path: getScreenshotPath(testInfo, `library-real-data-${viewport}-light.png`),
       });
     });
   });
@@ -452,13 +438,12 @@ test.describe('Real Readwise Data Integration', () => {
       });
       await page.waitForTimeout(300);
 
-      const dir = ensureScreenshotDir();
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
         : 'desktop';
 
       await page.screenshot({
-        path: path.join(dir, `rsvp-real-article-${viewport}-dark.png`),
+        path: getScreenshotPath(testInfo, `rsvp-real-article-${viewport}-dark.png`),
       });
     });
 
@@ -487,13 +472,12 @@ test.describe('Real Readwise Data Integration', () => {
       });
       await page.waitForTimeout(300);
 
-      const dir = ensureScreenshotDir();
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
         : 'desktop';
 
       await page.screenshot({
-        path: path.join(dir, `rsvp-real-article-${viewport}-light.png`),
+        path: getScreenshotPath(testInfo, `rsvp-real-article-${viewport}-light.png`),
       });
     });
   });
