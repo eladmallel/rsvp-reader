@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/sync/readwise?token=$SYNC_API_KEY",
-      "schedule": "0 12 * * *"
+      "schedule": "*/1 * * * *"
     }
   ]
 }

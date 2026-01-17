@@ -18,6 +18,7 @@ New table: `readwise_sync_state`
 
 - `user_id` (PK, FK users)
 - `library_cursor` (timestamp or cursor token)
+- `inbox_cursor` (timestamp or cursor token)
 - `feed_cursor` (timestamp or cursor token)
 - `next_allowed_at` (timestamptz)
 - `last_sync_at` (timestamptz)
@@ -40,7 +41,7 @@ Cron runs every minute:
 
 ### 1) Initial Backfill (on connect)
 
-- Run for `location=later` (library) first, then `location=feed`.
+- Run for `location=new` (inbox) first, then `location=later`, then `location=feed`.
 - Use list endpoint pagination with max page size.
 - For each item returned:
   - Upsert into `cached_articles` (store HTML + derived plain text).

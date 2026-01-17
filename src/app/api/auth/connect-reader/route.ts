@@ -104,6 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ConnectRe
     const { error: syncStateError } = await supabase.from('readwise_sync_state').upsert(
       {
         user_id: user.id,
+        inbox_cursor: null,
         library_cursor: null,
         feed_cursor: null,
         next_allowed_at: new Date().toISOString(),

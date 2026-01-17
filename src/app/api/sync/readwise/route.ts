@@ -84,7 +84,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: states, error } = await supabase
     .from('readwise_sync_state')
     .select(
-      'user_id, library_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, users (reader_access_token)'
+      'user_id, library_cursor, inbox_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, users (reader_access_token)'
     )
     .eq('in_progress', false)
     .or(`next_allowed_at.is.null,next_allowed_at.lte.${nowIso}`);
@@ -186,9 +186,11 @@ async function syncUser({
     };
   }
 
+  const inboxDone = isTimestamp(state.inbox_cursor);
   const libraryDone = isTimestamp(state.library_cursor);
   const feedDone = isTimestamp(state.feed_cursor);
   const updates: Database['public']['Tables']['readwise_sync_state']['Update'] = {
+    inbox_cursor: state.inbox_cursor,
     library_cursor: state.library_cursor,
     feed_cursor: state.feed_cursor,
     initial_backfill_done: state.initial_backfill_done,
@@ -201,7 +203,26 @@ async function syncUser({
 
   try {
     if (!state.initial_backfill_done) {
-      if (!libraryDone) {
+      let inboxComplete = inboxDone;
+      let libraryComplete = libraryDone;
+      let feedComplete = feedDone;
+
+      if (!inboxComplete) {
+        const inboxResult = await syncLocation({
+          supabase,
+          readerClient,
+          budget,
+          userId: state.user_id,
+          location: 'new',
+          mode: 'initial',
+          cursorValue: state.inbox_cursor,
+        });
+        updates.inbox_cursor = inboxResult.nextCursor;
+        updates.window_request_count = budget.used();
+        inboxComplete = inboxResult.completed;
+      }
+
+      if (inboxComplete && budget.remaining() > 0 && !libraryComplete) {
         const libraryResult = await syncLocation({
           supabase,
           readerClient,
@@ -213,26 +234,10 @@ async function syncUser({
         });
         updates.library_cursor = libraryResult.nextCursor;
         updates.window_request_count = budget.used();
+        libraryComplete = libraryResult.completed;
+      }
 
-        if (libraryResult.completed) {
-          if (budget.remaining() > 0 && !feedDone) {
-            const feedResult = await syncLocation({
-              supabase,
-              readerClient,
-              budget,
-              userId: state.user_id,
-              location: 'feed',
-              mode: 'initial',
-              cursorValue: state.feed_cursor,
-            });
-            updates.feed_cursor = feedResult.nextCursor;
-            updates.window_request_count = budget.used();
-            updates.initial_backfill_done = feedResult.completed;
-          } else if (feedDone) {
-            updates.initial_backfill_done = true;
-          }
-        }
-      } else if (!feedDone) {
+      if (inboxComplete && libraryComplete && budget.remaining() > 0 && !feedComplete) {
         const feedResult = await syncLocation({
           supabase,
           readerClient,
@@ -244,34 +249,56 @@ async function syncUser({
         });
         updates.feed_cursor = feedResult.nextCursor;
         updates.window_request_count = budget.used();
-        updates.initial_backfill_done = feedResult.completed;
-      } else {
+        feedComplete = feedResult.completed;
+      }
+
+      if (inboxComplete && libraryComplete && feedComplete) {
         updates.initial_backfill_done = true;
       }
     } else {
-      const libraryResult = await syncLocation({
-        supabase,
-        readerClient,
-        budget,
-        userId: state.user_id,
-        location: 'later',
-        mode: 'incremental',
-        cursorValue: state.library_cursor,
-      });
-      updates.library_cursor = libraryResult.nextCursor;
-      updates.window_request_count = budget.used();
+      const locations: Array<{
+        location: 'new' | 'later' | 'feed';
+        cursorValue: string | null;
+        setCursor: (value: string | null) => void;
+      }> = [
+        {
+          location: 'new',
+          cursorValue: state.inbox_cursor,
+          setCursor: (value) => {
+            updates.inbox_cursor = value;
+          },
+        },
+        {
+          location: 'later',
+          cursorValue: state.library_cursor,
+          setCursor: (value) => {
+            updates.library_cursor = value;
+          },
+        },
+        {
+          location: 'feed',
+          cursorValue: state.feed_cursor,
+          setCursor: (value) => {
+            updates.feed_cursor = value;
+          },
+        },
+      ];
 
-      if (budget.remaining() > 0) {
-        const feedResult = await syncLocation({
+      for (const entry of locations) {
+        if (!budget.canRequest()) {
+          break;
+        }
+
+        const result = await syncLocation({
           supabase,
           readerClient,
           budget,
           userId: state.user_id,
-          location: 'feed',
+          location: entry.location,
           mode: 'incremental',
-          cursorValue: state.feed_cursor,
+          cursorValue: entry.cursorValue,
         });
-        updates.feed_cursor = feedResult.nextCursor;
+        entry.setCursor(result.nextCursor);
         updates.window_request_count = budget.used();
       }
     }
@@ -349,7 +376,7 @@ async function syncLocation({
   readerClient: ReturnType<typeof createReaderClient>;
   budget: RequestBudget;
   userId: string;
-  location: 'later' | 'feed';
+  location: 'new' | 'later' | 'feed';
   mode: 'initial' | 'incremental';
   cursorValue: string | null;
 }): Promise<SyncLocationResult> {
@@ -439,6 +466,8 @@ async function syncLocation({
           image_url: doc.image_url,
           published_date: doc.published_date,
           reader_created_at: doc.created_at,
+          reader_last_moved_at: doc.last_moved_at,
+          reader_saved_at: doc.saved_at,
           reader_updated_at: doc.updated_at,
           cached_at: new Date().toISOString(),
         },

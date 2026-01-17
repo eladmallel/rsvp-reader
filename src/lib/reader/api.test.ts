@@ -42,6 +42,8 @@ describe('Reader API Client', () => {
       published_date: '2026-01-10T12:00:00Z',
       created_at: '2026-01-15T10:00:00Z',
       updated_at: '2026-01-15T10:00:00Z',
+      last_moved_at: '2026-01-15T10:00:00Z',
+      saved_at: '2026-01-15T09:30:00Z',
       notes: null,
       parent_id: null,
       ...overrides,

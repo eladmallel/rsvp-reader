@@ -59,6 +59,10 @@ export interface ReaderDocument {
   created_at: string;
   /** When the document was last updated */
   updated_at: string;
+  /** When the document was last moved between locations */
+  last_moved_at: string | null;
+  /** When the document was saved to Reader */
+  saved_at: string | null;
   /** Notes added by user */
   notes: string | null;
   /** Parent document ID (for highlights) */

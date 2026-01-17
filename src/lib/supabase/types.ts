@@ -232,6 +232,8 @@ export interface Database {
           image_url: string | null;
           published_date: string | null;
           reader_created_at: string | null;
+          reader_last_moved_at: string | null;
+          reader_saved_at: string | null;
           reader_updated_at: string | null;
           cached_at: string;
         };
@@ -254,6 +256,8 @@ export interface Database {
           image_url?: string | null;
           published_date?: string | null;
           reader_created_at?: string | null;
+          reader_last_moved_at?: string | null;
+          reader_saved_at?: string | null;
           reader_updated_at?: string | null;
           cached_at?: string;
         };
@@ -276,6 +280,8 @@ export interface Database {
           image_url?: string | null;
           published_date?: string | null;
           reader_created_at?: string | null;
+          reader_last_moved_at?: string | null;
+          reader_saved_at?: string | null;
           reader_updated_at?: string | null;
           cached_at?: string;
         };
@@ -293,6 +299,7 @@ export interface Database {
         Row: {
           user_id: string;
           library_cursor: string | null;
+          inbox_cursor: string | null;
           feed_cursor: string | null;
           next_allowed_at: string | null;
           last_sync_at: string | null;
@@ -305,6 +312,7 @@ export interface Database {
         Insert: {
           user_id: string;
           library_cursor?: string | null;
+          inbox_cursor?: string | null;
           feed_cursor?: string | null;
           next_allowed_at?: string | null;
           last_sync_at?: string | null;
@@ -317,6 +325,7 @@ export interface Database {
         Update: {
           user_id?: string;
           library_cursor?: string | null;
+          inbox_cursor?: string | null;
           feed_cursor?: string | null;
           next_allowed_at?: string | null;
           last_sync_at?: string | null;
