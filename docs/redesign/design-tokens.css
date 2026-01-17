@@ -1,0 +1,104 @@
+:root {
+  /* --- Palette: Light (Warm Paper) --- */
+  --color-bg-light: #f9f9f7;
+  --color-surface-light: #ffffff;
+  --color-text-primary-light: #242424;
+  --color-text-secondary-light: #6b6b6b;
+  --color-border-light: #e5e5e5;
+
+  /* --- Palette: Dark (Deep Ink) --- */
+  --color-bg-dark: #151515;
+  --color-surface-dark: #222222;
+  --color-text-primary-dark: #eaeaea;
+  --color-text-secondary-dark: #a1a1aa;
+  --color-border-dark: #333333;
+
+  /* --- Brand & Accents --- */
+  --color-brand-yellow: #f2c94c; /* Readwise-ish Highlight */
+  --color-brand-indigo: #5e5ce6; /* Focus/Action */
+  --color-danger: #ef4444;
+  --color-success: #22c55e;
+
+  /* --- ORP Highlight --- */
+  /* The specific color for the center character in RSVP */
+  --color-orp-highlight: #d93025; /* Classic Red for contrast, or use Brand Yellow */
+
+  /* --- Typography --- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Merriweather', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', 'Roboto Mono', monospace;
+
+  /* --- Spacing --- */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+
+  /* --- Radius --- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-float: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* --- Layout & Z-Index --- */
+  --nav-height: 60px;
+  --z-nav: 100;
+  --z-modal: 200;
+}
+
+/* Dark Mode Defaults (can be toggled via class) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-app: var(--color-bg-dark);
+    --bg-surface: var(--color-surface-dark);
+    --text-primary: var(--color-text-primary-dark);
+    --text-secondary: var(--color-text-secondary-dark);
+    --border-subtle: var(--color-border-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-app: var(--color-bg-light);
+    --bg-surface: var(--color-surface-light);
+    --text-primary: var(--color-text-primary-light);
+    --text-secondary: var(--color-text-secondary-light);
+    --border-subtle: var(--color-border-light);
+  }
+}
+
+/* --- Utility Classes (Conceptual) --- */
+.text-orp {
+  color: var(--color-orp-highlight);
+  font-weight: 700;
+}
+
+.card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-primary {
+  background: var(--color-brand-yellow);
+  color: #000; /* Always black on yellow for contrast */
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.96);
+}
