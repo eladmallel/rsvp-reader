@@ -69,8 +69,10 @@ function getSnapshot() {
   return themeState;
 }
 
+const serverSnapshot = { theme: 'system' as Theme, resolvedTheme: 'dark' as ResolvedTheme };
+
 function getServerSnapshot() {
-  return { theme: 'system' as Theme, resolvedTheme: 'dark' as ResolvedTheme };
+  return serverSnapshot;
 }
 
 function updateThemeState(theme: Theme, resolvedTheme: ResolvedTheme) {
