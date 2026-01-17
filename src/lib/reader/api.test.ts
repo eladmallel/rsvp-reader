@@ -60,6 +60,7 @@ describe('Reader API Client', () => {
   function mockSuccessResponse<T>(data: T): void {
     mockFetch.mockResolvedValueOnce({
       ok: true,
+      headers: new Headers(),
       json: () => Promise.resolve(data),
     });
   }
@@ -69,6 +70,7 @@ describe('Reader API Client', () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status,
+      headers: new Headers(),
       json: () => Promise.resolve({ detail }),
     });
   }
@@ -459,6 +461,7 @@ describe('Reader API Client', () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
+        headers: new Headers(),
         json: () => Promise.reject(new Error('Invalid JSON')),
       });
 

@@ -11,8 +11,8 @@ interface ArticleContent {
   id: string;
   title: string;
   author: string | null;
-  content: string;
-  html: string | null;
+  content?: string | null;
+  htmlContent?: string | null;
   wordCount: number | null;
 }
 
@@ -39,7 +39,7 @@ export default function RsvpPageClient() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/reader/documents/${id}`);
+      const response = await fetch(`/api/reader/documents/${id}?content=true`);
       const data: ArticleResponse = await response.json();
 
       if (!response.ok || data.error) {
@@ -78,10 +78,10 @@ export default function RsvpPageClient() {
         return article.content;
       }
       // Fall back to stripped HTML
-      if (article.html) {
+      if (article.htmlContent) {
         // Strip HTML tags to get plain text
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = article.html;
+        tempDiv.innerHTML = article.htmlContent;
         return tempDiv.textContent || tempDiv.innerText || sampleText;
       }
     }
