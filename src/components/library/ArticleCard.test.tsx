@@ -9,6 +9,7 @@ const mockArticle: Article = {
   siteName: 'dev.to',
   readingTime: 8,
   tags: ['react', 'javascript', 'webdev'],
+  createdAt: '2024-01-12T10:00:00.000Z',
 };
 
 describe('ArticleCard', () => {

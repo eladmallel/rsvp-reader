@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -41,7 +41,10 @@ interface DocumentsResponse {
 }
 
 interface TagsResponse {
-  tags?: Array<{ name: string; count: number }>;
+  tags?: Array<{
+    name: string;
+    count: number;
+  }>;
   error?: string;
 }
 
@@ -60,14 +63,18 @@ function documentToArticle(doc: DocumentFromApi): Article {
     siteName: doc.siteName || doc.source || 'Unknown',
     readingTime,
     tags: doc.tags,
+    createdAt: doc.createdAt,
     imageUrl: doc.imageUrl || undefined,
   };
 }
+
+type SortOption = 'newest' | 'oldest' | 'title-asc' | 'title-desc' | 'reading-time';
 
 export default function LibraryPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('library');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
 
   // API state
   const [isLoading, setIsLoading] = useState(true);
@@ -94,9 +101,12 @@ export default function LibraryPage() {
   }, []);
 
   // Fetch documents from API
-  const fetchDocuments = useCallback(async (location: string) => {
+  const fetchDocuments = useCallback(async (location: string, tag?: string | null) => {
     try {
       const params = new URLSearchParams({ location, pageSize: '50' });
+      if (tag) {
+        params.set('tag', tag);
+      }
       const response = await fetch(`/api/reader/documents?${params}`);
       const data: DocumentsResponse = await response.json();
 
@@ -111,7 +121,6 @@ export default function LibraryPage() {
     }
   }, []);
 
-  // Fetch tags from API
   const fetchTags = useCallback(async () => {
     try {
       const response = await fetch('/api/reader/tags');
@@ -121,37 +130,55 @@ export default function LibraryPage() {
         throw new Error(data.error || 'Failed to fetch tags');
       }
 
-      return (data.tags || []).map((t) => t.name);
+      const sortedTags = (data.tags || [])
+        .slice()
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+        .map((tag) => tag.name);
+
+      setAvailableTags(sortedTags);
     } catch (err) {
       console.error('Error fetching tags:', err);
-      return [];
+      setAvailableTags([]);
     }
   }, []);
 
-  // Initial data load
+  // Initial connection check
   useEffect(() => {
-    async function loadData() {
+    async function loadConnection() {
+      const connected = await checkConnection();
+      if (!connected) {
+        setIsLoading(false);
+      }
+    }
+
+    loadConnection();
+  }, [checkConnection]);
+
+  // Load tags once connected
+  useEffect(() => {
+    if (isConnected) {
+      fetchTags();
+    }
+  }, [fetchTags, isConnected]);
+
+  // Load documents when connected or filter changes
+  useEffect(() => {
+    async function loadDocuments() {
+      if (!isConnected) {
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
 
       try {
-        const connected = await checkConnection();
-
-        if (!connected) {
-          setIsLoading(false);
-          return;
-        }
-
-        // Fetch all data in parallel
-        const [library, feed, tags] = await Promise.all([
-          fetchDocuments('later'),
-          fetchDocuments('feed'),
-          fetchTags(),
+        const [library, feed] = await Promise.all([
+          fetchDocuments('later', selectedTag),
+          fetchDocuments('feed', selectedTag),
         ]);
 
         setLibraryArticles(library);
         setFeedArticles(feed);
-        setAvailableTags(tags);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
@@ -159,27 +186,55 @@ export default function LibraryPage() {
       }
     }
 
-    loadData();
-  }, [checkConnection, fetchDocuments, fetchTags]);
+    loadDocuments();
+  }, [fetchDocuments, isConnected, selectedTag]);
 
-  // Get articles based on active tab
-  const getArticles = (): Article[] => {
-    switch (activeTab) {
-      case 'library':
-        return libraryArticles;
-      case 'feed':
-        return feedArticles;
-      case 'history':
-        return historyArticles;
-      default:
-        return libraryArticles;
+  useEffect(() => {
+    if (selectedTag && !availableTags.includes(selectedTag)) {
+      setSelectedTag(null);
     }
-  };
+  }, [availableTags, selectedTag]);
 
-  // Filter articles by selected tag
-  const articles = getArticles().filter(
-    (article) => selectedTag === null || article.tags.includes(selectedTag)
-  );
+  const sortedArticles = useMemo(() => {
+    const baseArticles = (() => {
+      switch (activeTab) {
+        case 'library':
+          return libraryArticles;
+        case 'feed':
+          return feedArticles;
+        case 'history':
+          return historyArticles;
+        default:
+          return libraryArticles;
+      }
+    })();
+
+    const filtered = baseArticles.filter(
+      (article) => selectedTag === null || article.tags.includes(selectedTag)
+    );
+
+    const parseDate = (value: string) => {
+      const time = new Date(value).getTime();
+      return Number.isNaN(time) ? 0 : time;
+    };
+
+    return [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'newest':
+          return parseDate(b.createdAt) - parseDate(a.createdAt);
+        case 'oldest':
+          return parseDate(a.createdAt) - parseDate(b.createdAt);
+        case 'title-asc':
+          return a.title.localeCompare(b.title);
+        case 'title-desc':
+          return b.title.localeCompare(a.title);
+        case 'reading-time':
+          return a.readingTime - b.readingTime;
+        default:
+          return 0;
+      }
+    });
+  }, [activeTab, feedArticles, historyArticles, libraryArticles, selectedTag, sortOption]);
 
   const handleArticleClick = (article: Article) => {
     // Navigate to the RSVP reader with the article
@@ -261,7 +316,32 @@ export default function LibraryPage() {
       </nav>
 
       <div className={styles.filterContainer}>
-        <TagFilter tags={availableTags} selectedTag={selectedTag} onTagSelect={setSelectedTag} />
+        <div className={styles.filterRow}>
+          <div className={styles.tagFilter}>
+            <TagFilter
+              tags={availableTags}
+              selectedTag={selectedTag}
+              onTagSelect={setSelectedTag}
+            />
+          </div>
+          <div className={styles.sortControl}>
+            <label className={styles.sortLabel} htmlFor="library-sort">
+              Sort
+            </label>
+            <select
+              id="library-sort"
+              className={styles.sortSelect}
+              value={sortOption}
+              onChange={(event) => setSortOption(event.target.value as SortOption)}
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="title-asc">Title (A-Z)</option>
+              <option value="title-desc">Title (Z-A)</option>
+              <option value="reading-time">Reading time</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <main
@@ -270,7 +350,7 @@ export default function LibraryPage() {
         role="tabpanel"
         aria-labelledby={`tab-${activeTab}`}
       >
-        {articles.length === 0 ? (
+        {sortedArticles.length === 0 ? (
           <div className={styles.emptyState}>
             <p>
               {selectedTag
@@ -281,8 +361,8 @@ export default function LibraryPage() {
             </p>
           </div>
         ) : (
-          <div className={styles.articleGrid}>
-            {articles.map((article) => (
+          <div className={styles.articleList}>
+            {sortedArticles.map((article) => (
               <ArticleCard key={article.id} article={article} onClick={handleArticleClick} />
             ))}
           </div>
