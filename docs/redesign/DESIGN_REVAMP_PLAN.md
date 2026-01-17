@@ -39,6 +39,7 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 - **Interaction**:
   - Tab bar is persistent in these views.
   - **RSVP Player** is a full-screen overlay that hides the navigation.
+  - **Auth Routing**: If logged out, show Login/Signup. If logged in but no Reader token, show Connect Readwise.
 
 ### 3.1 List Views (Library & Feed)
 
@@ -82,7 +83,7 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 
 - **Connect Readwise**: A friendly, branded card. "Connect to Reader" button using Readwise colors.
 - **Preferences**: Toggle switches for "Dark Mode" and reading preferences (default WPM, skip amount).
-- **Account**: Simple profile card.
+- **Account**: Simple profile card with **Log Out** action.
 
 ### 3.4 Search Tab
 
@@ -91,6 +92,15 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 - **Input**: Large search bar at top, auto-focus on enter.
 - **Results**: Reuses the List View item design.
 - **Filters**: Chips for "Library" vs "Feed" or Tags.
+
+### 3.5 Authentication Screens (Missing Today)
+
+**Goal**: Remove confusion around the first screen and make auth feel simple.
+
+- **Login**: Email/password with optional OAuth later; clear "Create account" CTA.
+- **Signup**: Email/password with friendly copy and minimal fields.
+- **Connect Readwise**: Token entry with clear explanation and a "Get your token" link.
+- **Routing**: Logged-out users always land on Login/Signup, never the Readwise token screen.
 
 ---
 
@@ -105,3 +115,7 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 5.  **Desktop Minimalism**:
     - **Hover/Focus**: Subtle hover states + clear focus ring for keyboard.
     - **Shortcuts**: Keep existing keyboard shortcuts for RSVP controls.
+6.  **Auth Flow Fix**:
+    - **Landing**: Logged-out users see Login/Signup.
+    - **Next Step**: Logged-in users without Reader token see Connect Readwise.
+    - **Settings**: Add Log Out action.
