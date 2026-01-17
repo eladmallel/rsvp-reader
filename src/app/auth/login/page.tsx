@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui';
+import { createClient } from '@/lib/supabase/client';
 import styles from '../auth.module.css';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,17 +28,32 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    // Simulate API call for prototype
-    setTimeout(() => {
-      setIsLoading(false);
-      // Simulate error for demo purposes
-      if (email === 'error@test.com') {
-        setError('Invalid email or password');
+    try {
+      const supabase = createClient();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
         return;
       }
-      console.log('Login attempt:', { email, rememberMe });
-      // In real app, would handle login and redirect
-    }, 1500);
+
+      const userId = data.user?.id;
+      if (userId) {
+        await supabase.from('users').upsert({
+          id: userId,
+          email: data.user?.email ?? email,
+        });
+      }
+
+      router.push('/');
+    } catch {
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

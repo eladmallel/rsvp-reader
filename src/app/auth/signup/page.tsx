@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui';
+import { createClient } from '@/lib/supabase/client';
 import styles from '../auth.module.css';
 
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,12 +38,45 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
-    // Simulate API call for prototype
-    setTimeout(() => {
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      const userId = data.user?.id;
+      if (!userId) {
+        setError('Signup failed. Please try again.');
+        return;
+      }
+
+      if (!data.session) {
+        setError('Check your email to confirm your account before signing in.');
+        return;
+      }
+
+      const { error: profileError } = await supabase.from('users').upsert({
+        id: userId,
+        email: data.user?.email ?? email,
+      });
+
+      if (profileError) {
+        setError('Account created, but profile setup failed. Please try logging in.');
+        return;
+      }
+
+      router.push('/auth/connect-reader');
+    } catch {
+      setError('Signup failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      console.log('Signup attempt:', { email, password });
-      // In real app, would handle signup and redirect
-    }, 1500);
+    }
   };
 
   return (

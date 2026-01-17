@@ -639,6 +639,7 @@ tests/
 
 - [x] **3.1** Create Reader API wrapper + integration tests (mocked)
 - [x] **3.2** Build onboarding/connect flow UI
+- [x] **3.2a** Implement Supabase email/password auth (signup + login)
 - [x] **3.3** Implement `/api/auth/connect-reader` endpoint
 - [x] **3.4** Implement `/api/reader/documents` endpoint with caching
 - [x] **3.5** Implement `/api/reader/documents/[id]` for content fetch
@@ -647,6 +648,7 @@ tests/
 - [x] **3.8** Build Feed page (separate tab)
 - [x] **3.9** Implement tag filtering
 - [x] **3.10** E2E test: Connect + Browse + Filter
+- [x] **3.10a** E2E test: Supabase signup flow with cleanup
 - [x] **3.11** Measure CI time; optimize if >10% increase from baseline
 - [ ] **3.12** Refactor Library view: Switch from cards to list items for higher information density
 - [ ] **3.13** Add sort options to Library (e.g., sort by date added)

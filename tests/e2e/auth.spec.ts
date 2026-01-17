@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -15,6 +16,41 @@ function ensureScreenshotDir(): string {
     fs.mkdirSync(dir, { recursive: true });
   }
   return dir;
+}
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const shouldRunSupabaseSignupTest = Boolean(
+  SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_SERVICE_ROLE_KEY
+);
+
+async function deleteSupabaseUserByEmail(email: string) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return;
+  }
+
+  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
+
+  if (error) {
+    throw error;
+  }
+
+  const user = data.users.find(
+    (candidate) => candidate.email?.toLowerCase() === email.toLowerCase()
+  );
+
+  if (!user) {
+    return;
+  }
+
+  const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id);
+  if (deleteError) {
+    throw deleteError;
+  }
 }
 
 test.describe('Signup Page', () => {
@@ -126,6 +162,56 @@ test.describe('Signup Page', () => {
       path: path.join(dir, `signup-${viewport}-light.png`),
       fullPage: true,
     });
+  });
+});
+
+test.describe('Signup Supabase Integration', () => {
+  test.skip(!shouldRunSupabaseSignupTest, 'Skipping: Supabase env vars not set');
+  test.describe.configure({ mode: 'serial' });
+
+  let createdEmail: string | null = null;
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/auth/signup');
+    await page.addStyleTag({
+      content: 'nextjs-portal { display: none !important; pointer-events: none !important; }',
+    });
+  });
+
+  test.afterEach(async () => {
+    if (!createdEmail) {
+      return;
+    }
+    await deleteSupabaseUserByEmail(createdEmail);
+    createdEmail = null;
+  });
+
+  test('creates a Supabase user and redirects or prompts for confirmation', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'Mobile Chrome', 'Run once to avoid duplicate users');
+
+    const uniqueId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const email = `e2e+${uniqueId}@example.com`;
+    const password = `Test${uniqueId}!`;
+    createdEmail = email;
+
+    await page.getByLabel('Email address').fill(email);
+    await page.getByLabel('Password', { exact: true }).fill(password);
+    await page.getByLabel('Confirm password').fill(password);
+    await page.getByRole('button', { name: 'Create account' }).click();
+
+    const redirectPromise = page
+      .waitForURL('/auth/connect-reader', { timeout: 10000 })
+      .then(() => 'redirect');
+    const confirmationPromise = page
+      .getByRole('alert')
+      .filter({ hasText: 'Check your email to confirm your account' })
+      .waitFor({ timeout: 10000 })
+      .then(() => 'confirmation');
+
+    const result = await Promise.any([redirectPromise, confirmationPromise]);
+    expect(['redirect', 'confirmation']).toContain(result);
   });
 });
 
@@ -345,13 +431,8 @@ test.describe('Login Page', () => {
     await page.locator('#password').fill('password123');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
-    // Wait for simulated API call
-    await expect(page.getByRole('alert').filter({ hasText: 'Invalid' })).toContainText(
-      'Invalid email or password',
-      {
-        timeout: 3000,
-      }
-    );
+    const errorAlert = page.getByRole('alert').filter({ hasText: /invalid/i });
+    await expect(errorAlert).toContainText(/invalid/i, { timeout: 3000 });
   });
 
   test('has link to signup page', async ({ page }) => {
