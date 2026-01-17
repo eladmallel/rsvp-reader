@@ -65,12 +65,12 @@ interface SyncLocationResult {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const secret = process.env.READWISE_SYNC_SECRET;
+  const secret = process.env.SYNC_API_KEY;
   const token =
     request.nextUrl.searchParams.get('token') ?? request.headers.get('x-readwise-sync-secret');
 
   if (!secret) {
-    return NextResponse.json({ error: 'READWISE_SYNC_SECRET is not configured' }, { status: 500 });
+    return NextResponse.json({ error: 'SYNC_API_KEY is not configured' }, { status: 500 });
   }
 
   if (token !== secret) {

@@ -117,7 +117,7 @@ Example `vercel.json`:
 {
   "crons": [
     {
-      "path": "/api/sync/readwise?token=$READWISE_SYNC_SECRET",
+      "path": "/api/sync/readwise?token=$SYNC_API_KEY",
       "schedule": "*/1 * * * *"
     }
   ]
