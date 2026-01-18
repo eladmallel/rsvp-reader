@@ -5,23 +5,517 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RSVP Player - Prototype</title>
     <link rel="stylesheet" href="../design-tokens.css" />
-    <link rel="stylesheet" href="./rsvp-player.css" />
+    <style>
+      :root {
+        --font-ui:
+          'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        --font-display: 'Fraunces', 'Georgia', serif;
+        --font-rsvp:
+          'Droid Sans Mono', 'IBM Plex Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+        --header-height: 80px;
+        --cockpit-height: 200px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: var(--font-ui);
+        color: var(--text-primary);
+        background: var(--bg-app);
+      }
+
+      body.theme-light {
+        --bg-app: #f9f9f7;
+        --bg-surface: #ffffff;
+        --bg-surface-elevated: #f0f0ee;
+        --text-primary: #242424;
+        --text-secondary: #6b6b6b;
+        --text-tertiary: #8e8e93;
+        --border-subtle: #e5e5e5;
+        --accent: #f2c94c;
+        --accent-text: #000;
+        --orp-color: #d93025;
+        --progress-bg: #e8e8e6;
+      }
+
+      body.theme-dark {
+        --bg-app: #151515;
+        --bg-surface: #1c1c1c;
+        --bg-surface-elevated: #242424;
+        --text-primary: #eaeaea;
+        --text-secondary: #8e8e93;
+        --text-tertiary: #636366;
+        --border-subtle: #2c2c2e;
+        --accent: #f2c94c;
+        --accent-text: #000;
+        --orp-color: #ff6b6b;
+        --progress-bg: #2c2c2e;
+      }
+
+      .app {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      /* Header */
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        background: var(--bg-app);
+        padding: 0.75rem 1rem;
+      }
+
+      .top-bar-inner {
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      .top-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .icon-button {
+        border: none;
+        background: transparent;
+        color: var(--text-primary);
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        cursor: pointer;
+        border-radius: 8px;
+      }
+
+      .icon-button:hover {
+        background: var(--bg-surface-elevated);
+      }
+
+      .icon-button svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .action-right {
+        display: flex;
+        gap: 0.25rem;
+      }
+
+      .article-meta {
+        text-align: center;
+      }
+
+      .article-source {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 0.25rem;
+      }
+
+      .article-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Stage - The Word Display */
+      .stage {
+        position: absolute;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: var(--cockpit-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .word-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        aspect-ratio: 16 / 9;
+        background: var(--bg-surface);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      }
+
+      .word-display-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .word-display {
+        font-family: var(--font-rsvp);
+        font-size: 32px;
+        line-height: 43px;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      /* ORP marker line - positioned below the word, centered */
+      .orp-marker {
+        width: 2px;
+        height: 10px;
+        background: var(--orp-color);
+        opacity: 0.6;
+        margin-top: 4px;
+      }
+
+      /* RSVP word styling - preserved from original */
+      .spritz_start,
+      .spritz_end {
+        color: var(--text-secondary);
+        font-family: var(--font-rsvp);
+        font-size: 32px;
+      }
+
+      .spritz_pivot {
+        color: var(--orp-color);
+        font-family: var(--font-rsvp);
+        font-size: 32px;
+        font-weight: 600;
+      }
+
+      .invisible {
+        font-family: var(--font-rsvp);
+        color: transparent;
+      }
+
+      /* Cockpit - Controls */
+      .cockpit {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--cockpit-height);
+        z-index: 10;
+        background: var(--bg-surface);
+        border-top: 1px solid var(--border-subtle);
+        padding: 0.75rem 1rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+      }
+
+      .cockpit-inner {
+        max-width: 560px;
+        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        flex: 1;
+        justify-content: space-between;
+      }
+
+      /* Progress section */
+      .progress-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .progress-track {
+        height: 4px;
+        background: var(--progress-bg);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 3px;
+        transition: width 0.1s ease;
+      }
+
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--text-tertiary);
+      }
+
+      .progress-center {
+        color: var(--text-secondary);
+      }
+
+      /* Main controls */
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+
+      .control-button {
+        background: var(--bg-surface-elevated);
+        border: none;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        color: var(--text-primary);
+        transition:
+          background 0.1s ease,
+          transform 0.1s ease;
+      }
+
+      .control-button:hover {
+        background: var(--border-subtle);
+      }
+
+      .control-button:active {
+        transform: scale(0.95);
+      }
+
+      .control-button.secondary {
+        width: 44px;
+        height: 44px;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .control-button.secondary svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .control-button.secondary .skip-label {
+        font-size: 0.55rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+      }
+
+      .control-button.primary {
+        width: 56px;
+        height: 56px;
+        background: var(--accent);
+        color: var(--accent-text);
+      }
+
+      .control-button.primary:hover {
+        background: #e0b83d;
+      }
+
+      .control-button.primary svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* Secondary controls row */
+      .secondary-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .control-group-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        min-width: 32px;
+      }
+
+      .stepper {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: var(--bg-surface-elevated);
+        border-radius: 8px;
+        padding: 0.25rem;
+      }
+
+      .stepper-button {
+        width: 26px;
+        height: 26px;
+        background: transparent;
+        border: none;
+        border-radius: 5px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        color: var(--text-secondary);
+      }
+
+      .stepper-button:hover {
+        background: var(--border-subtle);
+        color: var(--text-primary);
+      }
+
+      .stepper-button svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .stepper-value {
+        min-width: 32px;
+        text-align: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .stepper-unit {
+        font-size: 0.6rem;
+        font-weight: 500;
+        color: var(--text-tertiary);
+        margin-left: -4px;
+      }
+
+      /* Settings panel */
+      .settings-panel {
+        position: fixed;
+        top: 4rem;
+        right: 1rem;
+        width: min(280px, calc(100vw - 2rem));
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        z-index: 20;
+      }
+
+      .settings-panel[hidden] {
+        display: none;
+      }
+
+      .settings-header {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+      }
+
+      .settings-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .settings-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .settings-row-label {
+        font-size: 0.9rem;
+        color: var(--text-primary);
+      }
+
+      .pill-button {
+        background: var(--bg-surface-elevated);
+        border: none;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .pill-button:hover {
+        background: var(--border-subtle);
+        color: var(--text-primary);
+      }
+
+      /* Hidden source text */
+      .source-text {
+        display: none;
+      }
+
+      /* Responsive */
+      @media (min-width: 900px) {
+        .app {
+          max-width: 900px;
+        }
+
+        .top-bar-inner,
+        .cockpit-inner {
+          max-width: 900px;
+        }
+
+        .word-container {
+          max-width: 600px;
+        }
+
+        .word-display,
+        .spritz_start,
+        .spritz_end,
+        .spritz_pivot {
+          font-size: 42px;
+        }
+      }
+    </style>
   </head>
-  <body class="theme-light">
+  <body class="theme-dark">
     <div class="app">
       <header class="top-bar">
         <div class="top-bar-inner">
           <div class="top-actions">
             <button class="icon-button" type="button" aria-label="Back to library">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M15 6l-6 6 6 6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6"></path>
               </svg>
             </button>
             <div class="action-right">
@@ -31,156 +525,198 @@
                 aria-label="Player settings"
                 id="settings-toggle"
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="3"></circle>
                   <path
-                    d="M12 8.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7z"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  />
-                  <path
-                    d="M19.4 15a7.8 7.8 0 00.1-6l1.6-1.2-2-3.4-1.9.8a7.9 7.9 0 00-5.2-2l-.4-2H8.4l-.4 2a7.9 7.9 0 00-5.2 2l-1.9-.8-2 3.4 1.6 1.2a7.8 7.8 0 000 6l-1.6 1.2 2 3.4 1.9-.8a7.9 7.9 0 005.2 2l.4 2h3.2l.4-2a7.9 7.9 0 005.2-2l1.9.8 2-3.4-1.6-1.2z"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
+                    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+                  ></path>
                 </svg>
               </button>
               <button class="icon-button" type="button" aria-label="Article menu">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="6" cy="12" r="1.6" />
-                  <circle cx="12" cy="12" r="1.6" />
-                  <circle cx="18" cy="12" r="1.6" />
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="6" r="1.5"></circle>
+                  <circle cx="12" cy="12" r="1.5"></circle>
+                  <circle cx="12" cy="18" r="1.5"></circle>
                 </svg>
               </button>
             </div>
           </div>
           <div class="article-meta">
+            <div class="article-source">X.COM</div>
             <h1 class="article-title">The Calm Power of Shorter Inputs</h1>
           </div>
         </div>
       </header>
 
       <main class="stage">
-        <div class="word-frame" aria-hidden="true">
-          <span class="frame-top"></span>
-          <span class="frame-bottom"></span>
-          <span class="frame-left"></span>
-          <span class="frame-right"></span>
+        <div class="word-container">
+          <div class="word-display-wrapper">
+            <div class="word-display" id="spritz-result" aria-live="polite"></div>
+            <div class="orp-marker"></div>
+          </div>
         </div>
-        <div class="word-display" id="spritz-result" aria-live="polite"></div>
       </main>
 
       <section class="cockpit">
-        <div class="progress">
-          <div class="progress-track">
-            <div class="progress-fill" id="progress-fill"></div>
+        <div class="cockpit-inner">
+          <div class="progress-section">
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-meta">
+              <span id="elapsed-time">00:00</span>
+              <span class="progress-center" id="progress-text">0% complete</span>
+              <span id="remaining-time">00:00</span>
+            </div>
           </div>
-          <div class="progress-meta">
-            <span id="elapsed-time">00:00</span>
-            <span id="progress-text">0% • 0 / 0</span>
-            <span id="remaining-time">00:00</span>
-          </div>
-        </div>
 
-        <div class="controls">
-          <button
-            class="control-button"
-            type="button"
-            aria-label="Skip back 3 words"
-            data-action="back"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M12 5l-7 7 7 7"
+          <div class="controls">
+            <button
+              class="control-button secondary"
+              type="button"
+              aria-label="Skip back"
+              data-action="back"
+            >
+              <svg
+                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="2.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            class="control-button primary"
-            type="button"
-            aria-label="Play or pause"
-            data-action="play"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" class="play-icon" id="play-icon">
-              <polygon points="8,5 19,12 8,19" fill="currentColor"></polygon>
-            </svg>
-          </button>
-          <button
-            class="control-button"
-            type="button"
-            aria-label="Skip forward 3 words"
-            data-action="forward"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M12 5l7 7-7 7"
+              >
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+              <span class="skip-label" id="skip-back-label">3</span>
+            </button>
+            <button
+              class="control-button primary"
+              type="button"
+              aria-label="Play or pause"
+              data-action="play"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" id="play-icon">
+                <polygon points="6,4 20,12 6,20" fill="currentColor"></polygon>
+              </svg>
+            </button>
+            <button
+              class="control-button secondary"
+              type="button"
+              aria-label="Skip forward"
+              data-action="forward"
+            >
+              <svg
+                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="2.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div class="wpm-controls">
-          <button
-            class="icon-button wpm-step"
-            type="button"
-            aria-label="Decrease speed"
-            data-action="wpm-down"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M5 12h14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
-          <div class="wpm-readout">
-            <span id="wpm-value">320</span>
-            <span class="wpm-label">WPM</span>
+              >
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+              <span class="skip-label" id="skip-forward-label">3</span>
+            </button>
           </div>
-          <button
-            class="icon-button wpm-step"
-            type="button"
-            aria-label="Increase speed"
-            data-action="wpm-up"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M12 5v14M5 12h14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
-          </button>
+
+          <div class="secondary-controls">
+            <div class="control-group">
+              <span class="control-group-label">WPM</span>
+              <div class="stepper">
+                <button
+                  class="stepper-button"
+                  type="button"
+                  aria-label="Decrease speed"
+                  data-action="wpm-down"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M5 12h14"></path>
+                  </svg>
+                </button>
+                <span class="stepper-value" id="wpm-value">320</span>
+                <button
+                  class="stepper-button"
+                  type="button"
+                  aria-label="Increase speed"
+                  data-action="wpm-up"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <span class="control-group-label">Skip</span>
+              <div class="stepper">
+                <button
+                  class="stepper-button"
+                  type="button"
+                  aria-label="Decrease skip amount"
+                  data-action="skip-down"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M5 12h14"></path>
+                  </svg>
+                </button>
+                <span class="stepper-value" id="skip-value">3</span>
+                <span class="stepper-unit">w</span>
+                <button
+                  class="stepper-button"
+                  type="button"
+                  aria-label="Increase skip amount"
+                  data-action="skip-up"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <aside class="settings-panel" id="settings-panel" hidden>
-        <h2>Player Settings</h2>
+        <div class="settings-header">Player Settings</div>
         <div class="settings-row">
-          <span>Theme</span>
-          <button class="pill" type="button" data-action="toggle-theme">Light</button>
+          <span class="settings-row-label">Theme</span>
+          <button class="pill-button" type="button" data-action="toggle-theme">Dark</button>
         </div>
         <div class="settings-row">
-          <span>Font</span>
-          <button class="pill" type="button">RSVP Condensed</button>
+          <span class="settings-row-label">Font</span>
+          <button class="pill-button" type="button">Monospace</button>
         </div>
       </aside>
     </div>
@@ -201,13 +737,17 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
       const settingsToggle = document.getElementById('settings-toggle');
       const settingsPanel = document.getElementById('settings-panel');
 
+      const skipBackLabel = document.getElementById('skip-back-label');
+      const skipForwardLabel = document.getElementById('skip-forward-label');
+      const skipValueEl = document.getElementById('skip-value');
+
       const words = textSource.value.trim().split(/\s+/);
       let index = 0;
       let isPlaying = false;
       let wpm = 320;
       let startTime = null;
       let timerId = null;
-      const skipAmount = 3;
+      let skipAmount = 3;
 
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
@@ -218,7 +758,7 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
       function updateProgress() {
         const progress = words.length ? index / words.length : 0;
         progressFill.style.width = `${Math.min(progress * 100, 100)}%`;
-        progressText.textContent = `${Math.round(progress * 100)}% • ${index} / ${words.length}`;
+        progressText.textContent = `${Math.round(progress * 100)}% complete`;
         const totalSeconds = (words.length / wpm) * 60;
         const elapsed = Math.max(0, (index / wpm) * 60);
         elapsedTime.textContent = formatTime(elapsed);
@@ -294,7 +834,7 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
       function tick() {
         if (!isPlaying || index >= words.length) {
           isPlaying = false;
-          playIcon.innerHTML = '<polygon points="8,5 19,12 8,19" fill="currentColor"></polygon>';
+          playIcon.innerHTML = '<polygon points="6,4 20,12 6,20" fill="currentColor"></polygon>';
           return;
         }
 
@@ -309,7 +849,7 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
         if (isPlaying) {
           isPlaying = false;
           clearTimeout(timerId);
-          playIcon.innerHTML = '<polygon points="8,5 19,12 8,19" fill="currentColor"></polygon>';
+          playIcon.innerHTML = '<polygon points="6,4 20,12 6,20" fill="currentColor"></polygon>';
           return;
         }
         if (index >= words.length) {
@@ -318,7 +858,7 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
         isPlaying = true;
         if (!startTime) startTime = Date.now();
         playIcon.innerHTML =
-          '<rect x="7" y="6" width="4" height="12" fill="currentColor"></rect><rect x="13" y="6" width="4" height="12" fill="currentColor"></rect>';
+          '<rect x="6" y="4" width="4" height="16" fill="currentColor"></rect><rect x="14" y="4" width="4" height="16" fill="currentColor"></rect>';
         tick();
       }
 
@@ -333,6 +873,13 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
         wpmValue.textContent = wpm;
       }
 
+      function updateSkipAmount(delta) {
+        skipAmount = Math.max(1, Math.min(20, skipAmount + delta));
+        skipValueEl.textContent = skipAmount;
+        skipBackLabel.textContent = skipAmount;
+        skipForwardLabel.textContent = skipAmount;
+      }
+
       document.querySelectorAll('[data-action]').forEach((button) => {
         button.addEventListener('click', (event) => {
           const action = event.currentTarget.getAttribute('data-action');
@@ -341,9 +888,13 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
           if (action === 'forward') skipWords(1);
           if (action === 'wpm-down') updateWpm(-10);
           if (action === 'wpm-up') updateWpm(10);
+          if (action === 'skip-down') updateSkipAmount(-1);
+          if (action === 'skip-up') updateSkipAmount(1);
           if (action === 'toggle-theme') {
-            document.body.classList.toggle('theme-dark');
-            document.body.classList.toggle('theme-light');
+            const isDark = document.body.classList.contains('theme-dark');
+            document.body.classList.toggle('theme-dark', !isDark);
+            document.body.classList.toggle('theme-light', isDark);
+            event.currentTarget.textContent = isDark ? 'Light' : 'Dark';
           }
         });
       });
