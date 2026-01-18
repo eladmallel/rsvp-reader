@@ -4,14 +4,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArticleCard,
-  TabBar,
-  TagFilter,
-  defaultTabs,
-  type Article,
-  type TabId,
+  ArticleListItem,
+  SubTabs,
+  librarySubTabs,
+  type ArticleListItemData,
 } from '@/components/library';
-import { ThemeToggle } from '@/components/ui';
 import styles from './page.module.css';
 
 interface DocumentFromApi {
@@ -40,41 +37,39 @@ interface DocumentsResponse {
   error?: string;
 }
 
-interface TagsResponse {
-  tags?: Array<{
-    name: string;
-    count: number;
-  }>;
-  error?: string;
-}
-
 interface ConnectionResponse {
   connected: boolean;
   error?: string;
 }
 
-// Convert API document to Article format for our components
-function documentToArticle(doc: DocumentFromApi): Article {
-  const readingTime = doc.wordCount ? Math.ceil(doc.wordCount / 200) : 5; // Assume 200 WPM average
+// Map our sub-tab IDs to Readwise location parameter
+const subTabToLocation: Record<string, string> = {
+  new: 'new',
+  later: 'later',
+  archive: 'archive',
+};
+
+// Convert API document to ArticleListItemData
+function documentToArticleListItem(doc: DocumentFromApi): ArticleListItemData {
+  const readingTime = doc.wordCount ? Math.ceil(doc.wordCount / 200) : 5;
   return {
     id: doc.id,
     title: doc.title ?? 'Untitled',
-    author: doc.author || 'Unknown',
-    siteName: doc.siteName || doc.source || 'Unknown',
+    author: doc.author || doc.siteName || 'Unknown',
+    source: doc.source || '',
+    sourceName: doc.siteName || doc.source || 'Unknown',
     readingTime,
     tags: doc.tags || [],
     createdAt: doc.createdAt,
+    preview: doc.summary || undefined,
     imageUrl: doc.imageUrl || undefined,
+    isUnread: doc.readingProgress === 0,
   };
 }
 
-type SortOption = 'newest' | 'oldest' | 'title-asc' | 'title-desc' | 'reading-time';
-
 export default function LibraryPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabId>('library');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const [activeSubTab, setActiveSubTab] = useState('new');
 
   // API state
   const [isLoading, setIsLoading] = useState(true);
@@ -82,10 +77,7 @@ export default function LibraryPage() {
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
 
   // Data from API
-  const [libraryArticles, setLibraryArticles] = useState<Article[]>([]);
-  const [feedArticles, setFeedArticles] = useState<Article[]>([]);
-  const [historyArticles] = useState<Article[]>([]); // Will be implemented in Phase 4
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [articles, setArticles] = useState<ArticleListItemData[]>([]);
 
   // Check if Reader is connected
   const checkConnection = useCallback(async () => {
@@ -101,12 +93,9 @@ export default function LibraryPage() {
   }, []);
 
   // Fetch documents from API
-  const fetchDocuments = useCallback(async (location: string, tag?: string | null) => {
+  const fetchDocuments = useCallback(async (location: string) => {
     try {
       const params = new URLSearchParams({ location, pageSize: '50' });
-      if (tag) {
-        params.set('tag', tag);
-      }
       const response = await fetch(`/api/reader/documents?${params}`);
       const data: DocumentsResponse = await response.json();
 
@@ -114,31 +103,10 @@ export default function LibraryPage() {
         throw new Error(data.error || 'Failed to fetch documents');
       }
 
-      return (data.documents || []).map(documentToArticle);
+      return (data.documents || []).map(documentToArticleListItem);
     } catch (err) {
       console.error(`Error fetching ${location} documents:`, err);
       return [];
-    }
-  }, []);
-
-  const fetchTags = useCallback(async () => {
-    try {
-      const response = await fetch('/api/reader/tags');
-      const data: TagsResponse = await response.json();
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to fetch tags');
-      }
-
-      const sortedTags = (data.tags || [])
-        .slice()
-        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-        .map((tag) => tag.name);
-
-      setAvailableTags(sortedTags);
-    } catch (err) {
-      console.error('Error fetching tags:', err);
-      setAvailableTags([]);
     }
   }, []);
 
@@ -154,14 +122,7 @@ export default function LibraryPage() {
     loadConnection();
   }, [checkConnection]);
 
-  // Load tags once connected
-  useEffect(() => {
-    if (isConnected) {
-      fetchTags();
-    }
-  }, [fetchTags, isConnected]);
-
-  // Load documents when connected or filter changes
+  // Load documents when connected or tab changes
   useEffect(() => {
     async function loadDocuments() {
       if (!isConnected) {
@@ -172,13 +133,9 @@ export default function LibraryPage() {
       setError(null);
 
       try {
-        const [library, feed] = await Promise.all([
-          fetchDocuments('library', selectedTag),
-          fetchDocuments('feed', selectedTag),
-        ]);
-
-        setLibraryArticles(library);
-        setFeedArticles(feed);
+        const location = subTabToLocation[activeSubTab] || 'new';
+        const docs = await fetchDocuments(location);
+        setArticles(docs);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
@@ -187,67 +144,53 @@ export default function LibraryPage() {
     }
 
     loadDocuments();
-  }, [fetchDocuments, isConnected, selectedTag]);
+  }, [fetchDocuments, isConnected, activeSubTab]);
 
-  useEffect(() => {
-    if (selectedTag && !availableTags.includes(selectedTag)) {
-      setSelectedTag(null);
-    }
-  }, [availableTags, selectedTag]);
-
-  const sortedArticles = useMemo(() => {
-    const baseArticles = (() => {
-      switch (activeTab) {
-        case 'library':
-          return libraryArticles;
-        case 'feed':
-          return feedArticles;
-        case 'history':
-          return historyArticles;
-        default:
-          return libraryArticles;
-      }
-    })();
-
-    const filtered = baseArticles.filter(
-      (article) => selectedTag === null || article.tags.includes(selectedTag)
-    );
-
-    const parseDate = (value: string) => {
-      const time = new Date(value).getTime();
-      return Number.isNaN(time) ? 0 : time;
-    };
-
-    return [...filtered].sort((a, b) => {
-      switch (sortOption) {
-        case 'newest':
-          return parseDate(b.createdAt) - parseDate(a.createdAt);
-        case 'oldest':
-          return parseDate(a.createdAt) - parseDate(b.createdAt);
-        case 'title-asc':
-          return a.title.localeCompare(b.title);
-        case 'title-desc':
-          return b.title.localeCompare(a.title);
-        case 'reading-time':
-          return a.readingTime - b.readingTime;
-        default:
-          return 0;
-      }
-    });
-  }, [activeTab, feedArticles, historyArticles, libraryArticles, selectedTag, sortOption]);
-
-  const handleArticleClick = (article: Article) => {
-    // Navigate to the RSVP reader with the article
+  const handleArticleClick = (article: ArticleListItemData) => {
     router.push(`/rsvp?id=${article.id}`);
   };
+
+  const handleMenuClick = (article: ArticleListItemData) => {
+    // Future: implement overflow menu
+    console.log('Menu clicked for:', article.id);
+  };
+
+  // Get display title and count for current tab
+  const tabInfo = useMemo(() => {
+    const labels: Record<string, string> = {
+      new: 'Inbox',
+      later: 'Later',
+      archive: 'Archive',
+    };
+    return {
+      title: labels[activeSubTab] || 'Library',
+      count: articles.length,
+    };
+  }, [activeSubTab, articles.length]);
 
   // Not connected state
   if (isConnected === false) {
     return (
       <div className={styles.container}>
         <header className={styles.header}>
-          <h1 className={styles.title}>RSVP Reader</h1>
-          <ThemeToggle />
+          <div className={styles.headerTop}>
+            <button className={styles.iconButton} type="button" aria-label="Menu">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div className={styles.pageTitle}>
+            <h1 className={styles.title}>Library</h1>
+          </div>
         </header>
 
         <main className={styles.main}>
@@ -265,17 +208,33 @@ export default function LibraryPage() {
   }
 
   // Loading state
-  if (isLoading) {
+  if (isLoading && articles.length === 0) {
     return (
       <div className={styles.container}>
         <header className={styles.header}>
-          <h1 className={styles.title}>RSVP Reader</h1>
-          <ThemeToggle />
+          <div className={styles.headerTop}>
+            <button className={styles.iconButton} type="button" aria-label="Menu">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div className={styles.pageTitle}>
+            <h1 className={styles.title}>Library</h1>
+          </div>
         </header>
 
         <main className={styles.main}>
           <div className={styles.loadingState}>
-            <div className={styles.spinner}></div>
+            <div className={styles.spinner} />
             <p>Loading your articles...</p>
           </div>
         </main>
@@ -288,8 +247,24 @@ export default function LibraryPage() {
     return (
       <div className={styles.container}>
         <header className={styles.header}>
-          <h1 className={styles.title}>RSVP Reader</h1>
-          <ThemeToggle />
+          <div className={styles.headerTop}>
+            <button className={styles.iconButton} type="button" aria-label="Menu">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <div className={styles.pageTitle}>
+            <h1 className={styles.title}>Library</h1>
+          </div>
         </header>
 
         <main className={styles.main}>
@@ -307,63 +282,84 @@ export default function LibraryPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>RSVP Reader</h1>
-        <ThemeToggle />
-      </header>
-
-      <nav className={styles.tabBarContainer}>
-        <TabBar tabs={defaultTabs} activeTab={activeTab} onTabChange={setActiveTab} />
-      </nav>
-
-      <div className={styles.filterContainer}>
-        <div className={styles.filterRow}>
-          <div className={styles.tagFilter}>
-            <TagFilter
-              tags={availableTags}
-              selectedTag={selectedTag}
-              onTagSelect={setSelectedTag}
-            />
-          </div>
-          <div className={styles.sortControl}>
-            <label className={styles.sortLabel} htmlFor="library-sort">
-              Sort
-            </label>
-            <select
-              id="library-sort"
-              className={styles.sortSelect}
-              value={sortOption}
-              onChange={(event) => setSortOption(event.target.value as SortOption)}
+        <div className={styles.headerTop}>
+          <button className={styles.iconButton} type="button" aria-label="Menu">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
             >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="title-asc">Title (A-Z)</option>
-              <option value="title-desc">Title (Z-A)</option>
-              <option value="reading-time">Reading time</option>
-            </select>
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <div className={styles.actionRight}>
+            <button className={styles.iconButton} type="button" aria-label="Add article">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="16" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+            </button>
+            <button className={styles.iconButton} type="button" aria-label="More options">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="6" r="1.5" />
+                <circle cx="12" cy="12" r="1.5" />
+                <circle cx="12" cy="18" r="1.5" />
+              </svg>
+            </button>
           </div>
         </div>
+        <div className={styles.pageTitle}>
+          <h1 className={styles.title}>{tabInfo.title}</h1>
+          <span className={styles.count}>{tabInfo.count}</span>
+        </div>
+      </header>
+
+      <div className={styles.subTabsContainer}>
+        <SubTabs tabs={librarySubTabs} activeTab={activeSubTab} onTabChange={setActiveSubTab} />
       </div>
 
-      <main
-        className={styles.main}
-        id={`panel-${activeTab}`}
-        role="tabpanel"
-        aria-labelledby={`tab-${activeTab}`}
-      >
-        {sortedArticles.length === 0 ? (
+      <main className={styles.main}>
+        {articles.length === 0 ? (
           <div className={styles.emptyState}>
-            <p>
-              {selectedTag
-                ? `No articles found with tag "${selectedTag}".`
-                : activeTab === 'history'
-                  ? 'No reading history yet. Start reading!'
-                  : 'No articles found. Save some articles in Readwise Reader!'}
+            <svg
+              className={styles.emptyIcon}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <p className={styles.emptyTitle}>No articles here</p>
+            <p className={styles.emptyDescription}>
+              {activeSubTab === 'new'
+                ? 'Save articles to your Readwise Reader inbox to see them here.'
+                : activeSubTab === 'later'
+                  ? 'Articles you mark as "Later" will appear here.'
+                  : 'Archived articles will appear here.'}
             </p>
           </div>
         ) : (
           <div className={styles.articleList}>
-            {sortedArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} onClick={handleArticleClick} />
+            {articles.map((article) => (
+              <ArticleListItem
+                key={article.id}
+                article={article}
+                onClick={handleArticleClick}
+                onMenuClick={handleMenuClick}
+              />
             ))}
           </div>
         )}

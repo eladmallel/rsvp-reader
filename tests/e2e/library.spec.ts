@@ -23,7 +23,7 @@ async function mockReaderConnected(page: import('@playwright/test').Page) {
     const url = new URL(route.request().url());
     const location = url.searchParams.get('location');
 
-    const mockDocuments = getMockDocuments(location || 'later');
+    const mockDocuments = getMockDocuments(location || 'new');
 
     route.fulfill({
       status: 200,
@@ -69,15 +69,79 @@ function getMockDocuments(location: string) {
         tags: ['newsletter', 'javascript'],
         wordCount: 1000,
         readingProgress: 0,
-        summary: null,
+        summary: 'The latest JavaScript news and updates from around the web.',
         imageUrl: null,
         publishedDate: '2026-01-15',
         createdAt: '2026-01-15T10:00:00Z',
       },
+      {
+        id: 'feed-2',
+        title: 'Morning Tech Digest',
+        author: 'Tech News',
+        source: 'technews.com',
+        siteName: 'Tech News Daily',
+        url: 'https://read.readwise.io/feed-2',
+        sourceUrl: 'https://technews.com/digest',
+        category: 'rss',
+        location: 'feed',
+        tags: [],
+        wordCount: 500,
+        readingProgress: 0.5, // This one is "seen"
+        summary: 'Daily roundup of tech news.',
+        imageUrl: null,
+        publishedDate: '2026-01-14',
+        createdAt: '2026-01-14T08:00:00Z',
+      },
     ];
   }
 
-  // Library documents
+  if (location === 'later') {
+    return [
+      {
+        id: 'doc-later-1',
+        title: 'System Design Interview Prep Guide',
+        author: 'Alex Xu',
+        source: 'medium.com',
+        siteName: 'Medium',
+        url: 'https://read.readwise.io/doc-later-1',
+        sourceUrl: 'https://medium.com/system-design',
+        category: 'article',
+        location: 'later',
+        tags: ['dev', 'career'],
+        wordCount: 5000,
+        readingProgress: 0,
+        summary: 'Everything you need to know for system design interviews.',
+        imageUrl: null,
+        publishedDate: '2026-01-10',
+        createdAt: '2026-01-12T10:00:00Z',
+      },
+    ];
+  }
+
+  if (location === 'archive') {
+    return [
+      {
+        id: 'doc-archive-1',
+        title: 'What Great Managers Do',
+        author: 'Marcus Buckingham',
+        source: 'hbr.org',
+        siteName: 'HBR',
+        url: 'https://read.readwise.io/doc-archive-1',
+        sourceUrl: 'https://hbr.org/managers',
+        category: 'article',
+        location: 'archive',
+        tags: ['leadership'],
+        wordCount: 3000,
+        readingProgress: 1,
+        summary: 'The best managers discover what is unique about each person.',
+        imageUrl: null,
+        publishedDate: '2026-01-01',
+        createdAt: '2026-01-05T10:00:00Z',
+      },
+    ];
+  }
+
+  // Default: new (inbox) documents
   return [
     {
       id: 'doc-1',
@@ -88,7 +152,7 @@ function getMockDocuments(location: string) {
       url: 'https://read.readwise.io/doc-1',
       sourceUrl: 'https://react.dev/blog/rsc',
       category: 'article',
-      location: 'later',
+      location: 'new',
       tags: ['react', 'javascript', 'webdev'],
       wordCount: 2400,
       readingProgress: 0,
@@ -106,11 +170,11 @@ function getMockDocuments(location: string) {
       url: 'https://read.readwise.io/doc-2',
       sourceUrl: 'https://css-tricks.com/future-css-2026',
       category: 'article',
-      location: 'later',
+      location: 'new',
       tags: ['css', 'webdev'],
       wordCount: 1600,
       readingProgress: 0,
-      summary: null,
+      summary: 'What new CSS features are coming this year.',
       imageUrl: null,
       publishedDate: '2026-01-08',
       createdAt: '2026-01-13T10:00:00Z',
@@ -124,7 +188,7 @@ function getMockDocuments(location: string) {
       url: 'https://read.readwise.io/doc-3',
       sourceUrl: 'https://devblogs.microsoft.com/typescript/ts-6',
       category: 'article',
-      location: 'later',
+      location: 'new',
       tags: ['typescript', 'javascript'],
       wordCount: 3000,
       readingProgress: 0.25,
@@ -154,11 +218,13 @@ async function mockReaderNotConnected(page: import('@playwright/test').Page) {
 test.describe('Library Page - Not Connected', () => {
   test.beforeEach(async ({ page }) => {
     await mockReaderNotConnected(page);
-    await page.goto('/');
+    await page.goto('/library');
+    // Wait for the connect prompt to appear (indicates page is loaded)
+    await page.waitForSelector('text=Connect Your Reader Account', { timeout: 10000 });
   });
 
   test('displays the page title', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'RSVP Reader', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Library', level: 1 })).toBeVisible();
   });
 
   test('shows connect prompt when Reader not connected', async ({ page }) => {
@@ -177,120 +243,75 @@ test.describe('Library Page - Not Connected', () => {
 test.describe('Library Page - Connected', () => {
   test.beforeEach(async ({ page }) => {
     await mockReaderConnected(page);
-    await page.goto('/');
+    await page.goto('/library');
+    // Wait for articles to load
+    await page.waitForSelector('article', { timeout: 10000 });
   });
 
-  test('displays the page title', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'RSVP Reader', level: 1 })).toBeVisible();
+  test('displays the page title with count', async ({ page }) => {
+    // The title should be "Inbox" (default sub-tab) with count
+    await expect(page.getByRole('heading', { name: 'Inbox', level: 1 })).toBeVisible();
   });
 
-  test('shows tab navigation with Library, Feed, History', async ({ page }) => {
-    await expect(page.getByRole('tab', { name: 'Library' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Feed' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'History' })).toBeVisible();
+  test('shows sub-tabs for Inbox, Later, Archive', async ({ page }) => {
+    const tablist = page.getByRole('tablist', { name: 'Filter tabs' });
+    await expect(tablist.getByRole('tab', { name: 'Inbox' })).toBeVisible();
+    await expect(tablist.getByRole('tab', { name: 'Later' })).toBeVisible();
+    await expect(tablist.getByRole('tab', { name: 'Archive' })).toBeVisible();
   });
 
-  test('Library tab is active by default', async ({ page }) => {
-    await expect(page.getByRole('tab', { name: 'Library' })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
+  test('Inbox tab is active by default', async ({ page }) => {
+    const inboxTab = page.getByRole('tab', { name: 'Inbox' });
+    await expect(inboxTab).toHaveAttribute('aria-selected', 'true');
   });
 
   test('displays article cards', async ({ page }) => {
-    // Wait for articles to load
-    await page.waitForSelector('article');
-
-    // Check that at least one article card is visible
     const articles = page.locator('article');
     await expect(articles.first()).toBeVisible();
 
-    // Should have multiple articles in the library
     const count = await articles.count();
     expect(count).toBeGreaterThan(0);
   });
 
-  test('article cards display title, author, site name', async ({ page }) => {
-    await page.waitForSelector('article');
+  test('article cards show title and metadata', async ({ page }) => {
     const firstArticle = page.locator('article').first();
 
-    // Check card contains expected elements
-    await expect(firstArticle.locator('h3')).toBeVisible();
+    // Check card contains title (h2)
+    await expect(firstArticle.locator('h2')).toBeVisible();
   });
 
-  test('shows tag filter with All button', async ({ page }) => {
-    await page.waitForSelector('article');
-    await expect(page.getByRole('button', { name: 'All' })).toBeVisible();
+  test('switching sub-tabs changes content', async ({ page }) => {
+    // Click on Later tab
+    await page.getByRole('tab', { name: 'Later' }).click();
+
+    // Wait for content update
+    await page.waitForTimeout(500);
+
+    // Later tab should be active
+    await expect(page.getByRole('tab', { name: 'Later' })).toHaveAttribute('aria-selected', 'true');
+
+    // Title should update to "Later"
+    await expect(page.getByRole('heading', { name: 'Later', level: 1 })).toBeVisible();
   });
 
-  test('tag filter shows available tags', async ({ page }) => {
-    await page.waitForSelector('article');
-    // Check for tags from mock data
-    const tagGroup = page.getByRole('group', { name: 'Filter by tag' });
-    await expect(tagGroup).toBeVisible();
+  test('switching to Archive tab shows archived articles', async ({ page }) => {
+    // Click on Archive tab
+    await page.getByRole('tab', { name: 'Archive' }).click();
 
-    // Check for specific tags (use exact: true to avoid matching article cards)
-    await expect(tagGroup.getByRole('button', { name: 'react', exact: true })).toBeVisible();
-    await expect(tagGroup.getByRole('button', { name: 'javascript', exact: true })).toBeVisible();
-  });
+    // Wait for content update
+    await page.waitForTimeout(500);
 
-  test('clicking a tag filters articles', async ({ page }) => {
-    await page.waitForSelector('article');
-
-    // Get initial article count
-    const initialCount = await page.locator('article').count();
-
-    // Click on react tag (within the tag filter group to avoid matching article cards)
-    const tagGroup = page.getByRole('group', { name: 'Filter by tag' });
-    await tagGroup.getByRole('button', { name: 'react', exact: true }).click();
-
-    // Wait for filter to apply
-    await page.waitForTimeout(200);
-
-    // Count should change (could be less or same if all match)
-    const filteredCount = await page.locator('article').count();
-    expect(filteredCount).toBeGreaterThanOrEqual(0);
-    expect(filteredCount).toBeLessThanOrEqual(initialCount);
-  });
-
-  test('clicking All clears tag filter', async ({ page }) => {
-    await page.waitForSelector('article');
-
-    // First click on a tag to filter (within the tag filter group)
-    const tagGroup = page.getByRole('group', { name: 'Filter by tag' });
-    await tagGroup.getByRole('button', { name: 'react', exact: true }).click();
-    await page.waitForTimeout(200);
-
-    // Verify All button is not pressed
-    const allButton = tagGroup.getByRole('button', { name: 'All' });
-    await expect(allButton).toHaveAttribute('aria-pressed', 'false');
-
-    // Click All to clear filter
-    await allButton.click();
-    await page.waitForTimeout(200);
-
-    // All button should now be pressed
-    await expect(allButton).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  test('switching tabs changes content', async ({ page }) => {
-    await page.waitForSelector('article');
-
-    // Click on Feed tab
-    await page.getByRole('tab', { name: 'Feed' }).click();
-
-    // Feed tab should be active
-    await expect(page.getByRole('tab', { name: 'Feed' })).toHaveAttribute('aria-selected', 'true');
-
-    // Library tab should not be active
-    await expect(page.getByRole('tab', { name: 'Library' })).toHaveAttribute(
+    // Archive tab should be active
+    await expect(page.getByRole('tab', { name: 'Archive' })).toHaveAttribute(
       'aria-selected',
-      'false'
+      'true'
     );
+
+    // Title should update to "Archive"
+    await expect(page.getByRole('heading', { name: 'Archive', level: 1 })).toBeVisible();
   });
 
   test('articles are keyboard accessible', async ({ page }) => {
-    await page.waitForSelector('article');
     const firstArticle = page.locator('article').first();
 
     // Focus on first article
@@ -303,8 +324,6 @@ test.describe('Library Page - Connected', () => {
   });
 
   test('screenshot: library page - mobile dark', async ({ page }, testInfo) => {
-    await page.waitForSelector('article');
-
     // Force dark mode
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -320,8 +339,6 @@ test.describe('Library Page - Connected', () => {
   });
 
   test('screenshot: library page - mobile light', async ({ page }, testInfo) => {
-    await page.waitForSelector('article');
-
     // Switch to light mode
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'light');
@@ -332,6 +349,63 @@ test.describe('Library Page - Connected', () => {
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, `library-${viewport}-light.png`),
+      fullPage: true,
+    });
+  });
+});
+
+test.describe('Feed Page - Connected', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockReaderConnected(page);
+    await page.goto('/feed');
+    // Wait for content to load - either articles or empty state
+    await page.waitForSelector('article, [class*="emptyState"]', { timeout: 10000 });
+  });
+
+  test('displays the page title with count', async ({ page }) => {
+    // The title should be "Unseen" (default sub-tab)
+    await expect(page.getByRole('heading', { name: 'Unseen', level: 1 })).toBeVisible();
+  });
+
+  test('shows sub-tabs for Unseen and Seen', async ({ page }) => {
+    const tablist = page.getByRole('tablist', { name: 'Filter tabs' });
+    await expect(tablist.getByRole('tab', { name: 'Unseen', exact: true })).toBeVisible();
+    await expect(tablist.getByRole('tab', { name: 'Seen', exact: true })).toBeVisible();
+  });
+
+  test('Unseen tab is active by default', async ({ page }) => {
+    const unseenTab = page.getByRole('tab', { name: 'Unseen', exact: true });
+    await expect(unseenTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('switching to Seen tab changes content', async ({ page }) => {
+    // Click on Seen tab
+    await page.getByRole('tab', { name: 'Seen', exact: true }).click();
+
+    // Wait for content update
+    await page.waitForTimeout(500);
+
+    // Seen tab should be active
+    await expect(page.getByRole('tab', { name: 'Seen', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+
+    // Title should update to "Seen"
+    await expect(page.getByRole('heading', { name: 'Seen', level: 1 })).toBeVisible();
+  });
+
+  test('screenshot: feed page - mobile dark', async ({ page }, testInfo) => {
+    // Force dark mode
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: getScreenshotPath(testInfo, `feed-${viewport}-dark.png`),
       fullPage: true,
     });
   });

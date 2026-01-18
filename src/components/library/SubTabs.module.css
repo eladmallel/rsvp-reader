@@ -1,0 +1,39 @@
+/* SubTabs - Fixed position tabs below header */
+
+.subTabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 1rem 0.75rem;
+  background-color: var(--bg-app);
+}
+
+.subTab {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.subTab:hover {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+}
+
+.subTab.active {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+}
+
+/* Focus state for accessibility */
+.subTab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

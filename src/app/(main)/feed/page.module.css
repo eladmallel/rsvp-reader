@@ -1,39 +1,230 @@
+/* Feed Page - New Design */
+
 .container {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-app);
   max-width: 560px;
   margin: 0 auto;
-  padding: 1rem;
 }
 
+/* Header */
 .header {
-  padding: 1rem 0;
+  padding: 0.75rem 1rem 0;
+  background-color: var(--bg-app);
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.iconButton {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.iconButton:hover {
+  background-color: var(--bg-surface-elevated);
+}
+
+.iconButton svg {
+  width: 22px;
+  height: 22px;
+}
+
+.actionRight {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pageTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
-.main {
-  padding: 1rem 0;
-}
-
-.placeholder {
-  text-align: center;
-  color: var(--text-secondary);
-  padding: 3rem 1rem;
-}
-
-.placeholder p {
-  margin: 0.5rem 0;
-}
-
-.hint {
-  font-size: 0.875rem;
+.count {
+  font-size: 2rem;
+  font-weight: 400;
   color: var(--text-tertiary);
 }
 
+/* Sub-tabs container */
+.subTabsContainer {
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-app);
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Article list */
+.articleList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  color: var(--text-tertiary);
+}
+
+.emptyTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem;
+}
+
+.emptyDescription {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 280px;
+}
+
+/* Loading state */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--text-secondary);
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.retryButton {
+  padding: 0.5rem 1.5rem;
+  background-color: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.retryButton:hover {
+  opacity: 0.9;
+}
+
+/* Connect prompt */
+.connectPrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.connectIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.connectPrompt h2 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.connectPrompt p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  max-width: 320px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.connectButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent);
+  color: var(--accent-text);
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: opacity var(--transition-fast);
+  margin-top: 1rem;
+}
+
+.connectButton:hover {
+  opacity: 0.9;
+}
+
+/* Desktop styles */
 @media (min-width: 900px) {
   .container {
     max-width: 900px;

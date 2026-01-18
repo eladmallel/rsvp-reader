@@ -1,0 +1,10 @@
+.mainLayout {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
