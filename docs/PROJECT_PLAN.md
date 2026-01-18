@@ -610,6 +610,7 @@ tests/
 - [x] **1.1** Create design tokens CSS file
 - [x] **1.2** Build mobile Library view prototype (HTML/CSS/JS)
 - [x] **1.3** Build mobile RSVP view prototype with ORP display
+- [x] **1.3a** Adjust RSVP word alignment (ORP slightly left of center)
 - [x] **1.4** Build mobile Chat view prototype
 - [x] **1.4a** Build mobile signup/registration screen prototype
 - [x] **1.4b** Build mobile login screen prototype

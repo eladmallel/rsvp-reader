@@ -70,11 +70,7 @@
           <span class="frame-left"></span>
           <span class="frame-right"></span>
         </div>
-        <div class="word-display" aria-live="polite">
-          <span class="word-left" id="word-left"></span>
-          <span class="word-orp" id="word-orp"></span>
-          <span class="word-right" id="word-right"></span>
-        </div>
+        <div class="word-display" id="spritz-result" aria-live="polite"></div>
       </main>
 
       <section class="cockpit">
@@ -195,9 +191,7 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
 
     <script>
       const textSource = document.getElementById('rsvp-text');
-      const leftEl = document.getElementById('word-left');
-      const orpEl = document.getElementById('word-orp');
-      const rightEl = document.getElementById('word-right');
+      const wordDisplay = document.getElementById('spritz-result');
       const playIcon = document.getElementById('play-icon');
       const progressFill = document.getElementById('progress-fill');
       const progressText = document.getElementById('progress-text');
@@ -215,13 +209,6 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
       let timerId = null;
       const skipAmount = 3;
 
-      function calculateOrpIndex(word) {
-        const length = word.length;
-        if (length > 13) return 4;
-        const table = [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
-        return table[length] || 0;
-      }
-
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const remainder = Math.floor(seconds % 60);
@@ -238,11 +225,62 @@ Rapid reading is less about rushing and more about finding a steady rhythm. When
         remainingTime.textContent = formatTime(Math.max(totalSeconds - elapsed, 0));
       }
 
+      function pivot(word) {
+        const length = word.length;
+
+        if (length < 6) {
+          let bit = 1;
+          while (word.length < 22) {
+            if (bit > 0) {
+              word = `${word}.`;
+            } else {
+              word = `.${word}`;
+            }
+            bit *= -1;
+          }
+
+          let start = '';
+          let end = '';
+          if (length % 2 === 0) {
+            start = word.slice(0, word.length / 2);
+            end = word.slice(word.length / 2);
+          } else {
+            start = word.slice(0, word.length / 2);
+            end = word.slice(word.length / 2);
+          }
+
+          let result = "<span class='spritz_start'>" + start.slice(0, start.length - 1);
+          result = result + "</span><span class='spritz_pivot'>";
+          result = result + start.slice(start.length - 1);
+          result = result + "</span><span class='spritz_end'>";
+          result = result + end;
+          result = result + '</span>';
+
+          result = result.replace(/\./g, "<span class='invisible'>.</span>");
+          return result;
+        }
+
+        const tail = 22 - (word.length + 7);
+        word = `.......${word}${'.'.repeat(tail)}`;
+
+        const start = word.slice(0, word.length / 2);
+        const end = word.slice(word.length / 2);
+
+        let result = "<span class='spritz_start'>" + start.slice(0, start.length - 1);
+        result = result + "</span><span class='spritz_pivot'>";
+        result = result + start.slice(start.length - 1);
+        result = result + "</span><span class='spritz_end'>";
+        result = result + end;
+        result = result + '</span>';
+
+        result = result.replace(/\./g, "<span class='invisible'>.</span>");
+        return result;
+      }
+
       function showWord(word) {
-        const orpIndex = calculateOrpIndex(word);
-        leftEl.textContent = word.slice(0, orpIndex);
-        orpEl.textContent = word.charAt(orpIndex) || '';
-        rightEl.textContent = word.slice(orpIndex + 1);
+        const strippedWord = word.replace(/[.!?]+$/g, '');
+        const displayWord = strippedWord.replace(/\./g, '&#8226;');
+        wordDisplay.innerHTML = pivot(displayWord);
       }
 
       function getDelay(word) {

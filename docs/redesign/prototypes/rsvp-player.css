@@ -127,37 +127,37 @@ body::before {
 }
 
 .word-display {
-  position: relative;
-  font-family: var(--font-rsvp);
-  font-size: clamp(2.4rem, 8vw, 4rem);
-  letter-spacing: 0.02em;
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 0.8fr);
-  align-items: center;
-  gap: 0.2rem;
-  width: 100%;
-  max-width: 320px;
-}
-
-.word-left {
-  justify-self: end;
-  color: var(--text-secondary);
-  text-align: right;
-  padding-right: 0.15rem;
-}
-
-.word-orp {
-  color: var(--color-orp-highlight);
-  font-weight: 700;
-  min-width: 1ch;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-family: 'Droid Sans Mono', 'IBM Plex Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  font-size: 32px;
+  line-height: 43px;
   text-align: center;
+  white-space: nowrap;
+  min-height: 40px;
+  --word-raise: -3em;
+  transform: translate(-50%, calc(-50% + var(--word-raise)));
 }
 
-.word-right {
-  justify-self: start;
-  color: var(--text-primary);
-  text-align: left;
-  padding-left: 0.15rem;
+.spritz_start,
+.spritz_end {
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 32px;
+  font-family: 'Droid Sans Mono', 'IBM Plex Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+}
+
+.spritz_pivot {
+  color: var(--color-orp-highlight);
+  text-align: center;
+  font-size: 32px;
+  font-family: 'Droid Sans Mono', 'IBM Plex Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+}
+
+.invisible {
+  font-family: 'Droid Sans Mono', 'IBM Plex Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  color: transparent;
 }
 
 .word-frame {
@@ -176,7 +176,7 @@ body::before {
 }
 
 .frame-top {
-  top: 0;
+  display: none;
 }
 
 .frame-bottom {
@@ -195,7 +195,7 @@ body::before {
 }
 
 .frame-top::after {
-  bottom: -10px;
+  display: none;
 }
 
 .frame-bottom::after {
@@ -351,6 +351,18 @@ body::before {
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
+}
+
+body.theme-dark .control-button {
+  background: #1f1f1f;
+  color: #eaeaea;
+  border-color: #2f2f2f;
+}
+
+body.theme-dark .control-button.primary {
+  background: #f2c94c;
+  color: #151515;
+  border-color: #f2c94c;
 }
 
 .source-text {
