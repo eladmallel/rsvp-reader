@@ -102,6 +102,17 @@ The goal is to reduce cognitive load to zero. The interface should disappear, le
 - **Connect Readwise**: Token entry with clear explanation and a "Get your token" link.
 - **Routing**: Logged-out users always land on Login/Signup, never the Readwise token screen.
 
+### 3.6 Screen Build Order + Feedback Loop
+
+**Priority**: Start from the core value prop and move outward, one screen at a time.
+
+1. **RSVP Player (Single Article)** – Playback controls, ORP display, scrubber, WPM selector
+2. **Main Navigation Shell** – Bottom tabs (Library / Feed / Search / Settings)
+3. **Secondary Screens** – Settings, search, and AI chat
+4. **Auth Screens** – Connect Readwise, login, signup
+
+**Process**: Build one screen, pause for review, and iterate before moving to the next.
+
 ---
 
 ## 4. Implementation Strategy
