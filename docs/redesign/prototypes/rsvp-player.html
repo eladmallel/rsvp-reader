@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RSVP Player - Prototype</title>
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <link rel="stylesheet" href="./rsvp-player.css" />
+  </head>
+  <body class="theme-light">
+    <div class="app">
+      <header class="top-bar">
+        <div class="top-bar-inner">
+          <div class="top-actions">
+            <button class="icon-button" type="button" aria-label="Back to library">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M15 6l-6 6 6 6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <div class="action-right">
+              <button
+                class="icon-button"
+                type="button"
+                aria-label="Player settings"
+                id="settings-toggle"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 8.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M19.4 15a7.8 7.8 0 00.1-6l1.6-1.2-2-3.4-1.9.8a7.9 7.9 0 00-5.2-2l-.4-2H8.4l-.4 2a7.9 7.9 0 00-5.2 2l-1.9-.8-2 3.4 1.6 1.2a7.8 7.8 0 000 6l-1.6 1.2 2 3.4 1.9-.8a7.9 7.9 0 005.2 2l.4 2h3.2l.4-2a7.9 7.9 0 005.2-2l1.9.8 2-3.4-1.6-1.2z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button class="icon-button" type="button" aria-label="Article menu">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="6" cy="12" r="1.6" />
+                  <circle cx="12" cy="12" r="1.6" />
+                  <circle cx="18" cy="12" r="1.6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="article-meta">
+            <h1 class="article-title">The Calm Power of Shorter Inputs</h1>
+          </div>
+        </div>
+      </header>
+
+      <main class="stage">
+        <div class="word-frame" aria-hidden="true">
+          <span class="frame-top"></span>
+          <span class="frame-bottom"></span>
+          <span class="frame-left"></span>
+          <span class="frame-right"></span>
+        </div>
+        <div class="word-display" aria-live="polite">
+          <span class="word-left" id="word-left"></span>
+          <span class="word-orp" id="word-orp"></span>
+          <span class="word-right" id="word-right"></span>
+        </div>
+      </main>
+
+      <section class="cockpit">
+        <div class="progress">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="elapsed-time">00:00</span>
+            <span id="progress-text">0% • 0 / 0</span>
+            <span id="remaining-time">00:00</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button
+            class="control-button"
+            type="button"
+            aria-label="Skip back 3 words"
+            data-action="back"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 5l-7 7 7 7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            class="control-button primary"
+            type="button"
+            aria-label="Play or pause"
+            data-action="play"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="play-icon" id="play-icon">
+              <polygon points="8,5 19,12 8,19" fill="currentColor"></polygon>
+            </svg>
+          </button>
+          <button
+            class="control-button"
+            type="button"
+            aria-label="Skip forward 3 words"
+            data-action="forward"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 5l7 7-7 7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="wpm-controls">
+          <button
+            class="icon-button wpm-step"
+            type="button"
+            aria-label="Decrease speed"
+            data-action="wpm-down"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M5 12h14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+          <div class="wpm-readout">
+            <span id="wpm-value">320</span>
+            <span class="wpm-label">WPM</span>
+          </div>
+          <button
+            class="icon-button wpm-step"
+            type="button"
+            aria-label="Increase speed"
+            data-action="wpm-up"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 5v14M5 12h14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <aside class="settings-panel" id="settings-panel" hidden>
+        <h2>Player Settings</h2>
+        <div class="settings-row">
+          <span>Theme</span>
+          <button class="pill" type="button" data-action="toggle-theme">Light</button>
+        </div>
+        <div class="settings-row">
+          <span>Font</span>
+          <button class="pill" type="button">RSVP Condensed</button>
+        </div>
+      </aside>
+    </div>
+
+    <textarea id="rsvp-text" class="source-text" aria-hidden="true">
+Rapid reading is less about rushing and more about finding a steady rhythm. When the interface is quiet, the mind has more room to listen. The RSVP method reduces the need for eye movement, keeping attention fixed while words arrive in sequence. Slow moments create room for emphasis, and quick bursts keep momentum alive. The aim is to feel flow instead of strain. With gentle controls and a centered focus, even dense material can feel calm, breathable, and intentional.
+    </textarea>
+
+    <script>
+      const textSource = document.getElementById('rsvp-text');
+      const leftEl = document.getElementById('word-left');
+      const orpEl = document.getElementById('word-orp');
+      const rightEl = document.getElementById('word-right');
+      const playIcon = document.getElementById('play-icon');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      const elapsedTime = document.getElementById('elapsed-time');
+      const remainingTime = document.getElementById('remaining-time');
+      const wpmValue = document.getElementById('wpm-value');
+      const settingsToggle = document.getElementById('settings-toggle');
+      const settingsPanel = document.getElementById('settings-panel');
+
+      const words = textSource.value.trim().split(/\s+/);
+      let index = 0;
+      let isPlaying = false;
+      let wpm = 320;
+      let startTime = null;
+      let timerId = null;
+      const skipAmount = 3;
+
+      function calculateOrpIndex(word) {
+        const length = word.length;
+        if (length > 13) return 4;
+        const table = [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
+        return table[length] || 0;
+      }
+
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainder = Math.floor(seconds % 60);
+        return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+      }
+
+      function updateProgress() {
+        const progress = words.length ? index / words.length : 0;
+        progressFill.style.width = `${Math.min(progress * 100, 100)}%`;
+        progressText.textContent = `${Math.round(progress * 100)}% • ${index} / ${words.length}`;
+        const totalSeconds = (words.length / wpm) * 60;
+        const elapsed = Math.max(0, (index / wpm) * 60);
+        elapsedTime.textContent = formatTime(elapsed);
+        remainingTime.textContent = formatTime(Math.max(totalSeconds - elapsed, 0));
+      }
+
+      function showWord(word) {
+        const orpIndex = calculateOrpIndex(word);
+        leftEl.textContent = word.slice(0, orpIndex);
+        orpEl.textContent = word.charAt(orpIndex) || '';
+        rightEl.textContent = word.slice(orpIndex + 1);
+      }
+
+      function getDelay(word) {
+        const base = 60000 / wpm;
+        if (/[.!?]$/.test(word)) return base * 2.2;
+        if (/[,;:]$/.test(word)) return base * 1.6;
+        if (word.length >= 8) return base * 1.3;
+        return base;
+      }
+
+      function tick() {
+        if (!isPlaying || index >= words.length) {
+          isPlaying = false;
+          playIcon.innerHTML = '<polygon points="8,5 19,12 8,19" fill="currentColor"></polygon>';
+          return;
+        }
+
+        const word = words[index];
+        showWord(word);
+        updateProgress();
+        index += 1;
+        timerId = setTimeout(tick, getDelay(word));
+      }
+
+      function togglePlay() {
+        if (isPlaying) {
+          isPlaying = false;
+          clearTimeout(timerId);
+          playIcon.innerHTML = '<polygon points="8,5 19,12 8,19" fill="currentColor"></polygon>';
+          return;
+        }
+        if (index >= words.length) {
+          index = 0;
+        }
+        isPlaying = true;
+        if (!startTime) startTime = Date.now();
+        playIcon.innerHTML =
+          '<rect x="7" y="6" width="4" height="12" fill="currentColor"></rect><rect x="13" y="6" width="4" height="12" fill="currentColor"></rect>';
+        tick();
+      }
+
+      function skipWords(direction) {
+        index = Math.max(0, Math.min(words.length - 1, index + direction * skipAmount));
+        showWord(words[index]);
+        updateProgress();
+      }
+
+      function updateWpm(delta) {
+        wpm = Math.max(120, Math.min(900, wpm + delta));
+        wpmValue.textContent = wpm;
+      }
+
+      document.querySelectorAll('[data-action]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          const action = event.currentTarget.getAttribute('data-action');
+          if (action === 'play') togglePlay();
+          if (action === 'back') skipWords(-1);
+          if (action === 'forward') skipWords(1);
+          if (action === 'wpm-down') updateWpm(-10);
+          if (action === 'wpm-up') updateWpm(10);
+          if (action === 'toggle-theme') {
+            document.body.classList.toggle('theme-dark');
+            document.body.classList.toggle('theme-light');
+          }
+        });
+      });
+
+      settingsPanel.setAttribute('hidden', '');
+
+      settingsToggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const isHidden = settingsPanel.hasAttribute('hidden');
+        if (isHidden) {
+          settingsPanel.removeAttribute('hidden');
+        } else {
+          settingsPanel.setAttribute('hidden', '');
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        if (settingsPanel.hasAttribute('hidden')) return;
+        const target = event.target;
+        if (settingsPanel.contains(target) || settingsToggle.contains(target)) return;
+        settingsPanel.setAttribute('hidden', '');
+      });
+
+      showWord(words[0]);
+      updateProgress();
+    </script>
+  </body>
+</html>
