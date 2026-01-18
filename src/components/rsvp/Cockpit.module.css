@@ -1,0 +1,135 @@
+.cockpit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--cockpit-height);
+  z-index: 10;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.inner {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+  justify-content: space-between;
+}
+
+/* Progress section */
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.progressTrack {
+  height: 4px;
+  background: var(--progress-bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.1s ease;
+}
+
+.progressMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.progressCenter {
+  color: var(--text-secondary);
+}
+
+/* Main controls */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.controlButton {
+  background: var(--bg-surface-elevated);
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition:
+    background 0.1s ease,
+    transform 0.1s ease;
+}
+
+.controlButton:hover {
+  background: var(--border-subtle);
+}
+
+.controlButton:active {
+  transform: scale(0.95);
+}
+
+.controlButton.secondary {
+  width: 44px;
+  height: 44px;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.controlButton.secondary svg {
+  width: 16px;
+  height: 16px;
+}
+
+.skipLabel {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.controlButton.primary {
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.controlButton.primary:hover {
+  background: var(--accent-hover);
+}
+
+.controlButton.primary svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Secondary controls row */
+.secondaryControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Responsive */
+@media (min-width: 900px) {
+  .inner {
+    max-width: 900px;
+  }
+}

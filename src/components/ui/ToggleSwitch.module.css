@@ -1,0 +1,44 @@
+.toggle {
+  position: relative;
+  width: 52px;
+  height: 32px;
+  background: var(--bg-surface-elevated);
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 0;
+}
+
+.toggle:hover:not(.disabled) {
+  background: var(--border-subtle);
+}
+
+.thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.active {
+  background: var(--accent);
+}
+
+.active:hover:not(.disabled) {
+  background: var(--accent-hover);
+}
+
+.active .thumb {
+  transform: translateX(20px);
+  background: var(--accent-text);
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -2,6 +2,16 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RSVPPlayer } from './RSVPPlayer';
 
+// Mock the ThemeContext
+vi.mock('@/contexts/ThemeContext', () => ({
+  useTheme: () => ({
+    theme: 'dark',
+    resolvedTheme: 'dark',
+    setTheme: vi.fn(),
+    toggleTheme: vi.fn(),
+  }),
+}));
+
 describe('RSVPPlayer', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -17,7 +27,6 @@ describe('RSVPPlayer', () => {
 
       // WordDisplay splits word into ORP parts, so check aria-label
       expect(screen.getByLabelText('Current word: Hello')).toBeInTheDocument();
-      expect(screen.getByText('Ready')).toBeInTheDocument();
     });
 
     it('renders empty state for no text', () => {
@@ -32,28 +41,37 @@ describe('RSVPPlayer', () => {
       expect(screen.getByText('Test Article')).toBeInTheDocument();
     });
 
-    it('renders progress bar', () => {
-      render(<RSVPPlayer text="One Two Three" />);
+    it('renders source when provided', () => {
+      render(<RSVPPlayer text="Hello" source="EXAMPLE.COM" />);
 
-      expect(screen.getByText('1 / 3')).toBeInTheDocument();
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      expect(screen.getByText('EXAMPLE.COM')).toBeInTheDocument();
     });
 
-    it('renders controls', () => {
+    it('renders cockpit controls', () => {
       render(<RSVPPlayer text="Hello world" />);
 
+      // Check for play/pause button (Play is default)
       expect(screen.getByLabelText('Play')).toBeInTheDocument();
-      expect(screen.getByLabelText('Rewind')).toBeInTheDocument();
-      expect(screen.getByLabelText('Forward')).toBeInTheDocument();
-      expect(screen.getByLabelText('Exit reading mode')).toBeInTheDocument();
+      // Check for skip buttons
+      expect(screen.getByLabelText(/Skip back/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/Skip forward/)).toBeInTheDocument();
     });
 
-    it('renders WPM slider', () => {
+    it('renders WPM stepper', () => {
       render(<RSVPPlayer text="Hello" initialWpm={300} />);
 
-      const slider = screen.getByLabelText('Words per minute');
-      expect(slider).toBeInTheDocument();
-      expect(slider).toHaveValue('300');
+      // The stepper shows the WPM value
+      expect(screen.getByText('300')).toBeInTheDocument();
+      expect(screen.getByText('WPM')).toBeInTheDocument();
+    });
+
+    it('renders progress bar with time', () => {
+      render(<RSVPPlayer text="Hello world test" />);
+
+      // Check for elapsed and remaining times (format: 00:00) - there are two of them
+      const timeElements = screen.getAllByText('00:00');
+      expect(timeElements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/complete/)).toBeInTheDocument();
     });
   });
 
@@ -71,7 +89,6 @@ describe('RSVPPlayer', () => {
       fireEvent.click(playButton);
 
       expect(screen.getByLabelText('Pause')).toBeInTheDocument();
-      expect(screen.getByText('Playing')).toBeInTheDocument();
     });
 
     it('toggles between play and pause', () => {
@@ -85,62 +102,62 @@ describe('RSVPPlayer', () => {
       fireEvent.click(screen.getByLabelText('Pause'));
 
       expect(screen.getByLabelText('Play')).toBeInTheDocument();
-      expect(screen.getByText('Paused')).toBeInTheDocument();
     });
   });
 
   describe('word navigation', () => {
-    it('advances word on forward button', () => {
-      render(<RSVPPlayer text="First Second Third" />);
+    it('skips words with skip buttons', () => {
+      render(<RSVPPlayer text="First Second Third Fourth" initialSkipAmount={1} />);
 
       expect(screen.getByLabelText('Current word: First')).toBeInTheDocument();
 
-      fireEvent.click(screen.getByLabelText('Forward'));
+      fireEvent.click(screen.getByLabelText(/Skip forward/));
 
       expect(screen.getByLabelText('Current word: Second')).toBeInTheDocument();
     });
 
-    it('goes back on rewind button', () => {
-      render(<RSVPPlayer text="First Second Third" />);
+    it('goes back with skip back button', () => {
+      render(<RSVPPlayer text="First Second Third Fourth" initialSkipAmount={1} />);
 
       // Go forward first
-      fireEvent.click(screen.getByLabelText('Forward'));
+      fireEvent.click(screen.getByLabelText(/Skip forward/));
       expect(screen.getByLabelText('Current word: Second')).toBeInTheDocument();
 
-      // Then rewind
-      fireEvent.click(screen.getByLabelText('Rewind'));
+      // Then skip back
+      fireEvent.click(screen.getByLabelText(/Skip back/));
       expect(screen.getByLabelText('Current word: First')).toBeInTheDocument();
     });
 
-    it('updates progress when navigating', () => {
-      render(<RSVPPlayer text="One Two Three" />);
+    it('skips multiple words based on skip amount', () => {
+      render(<RSVPPlayer text="One Two Three Four Five" initialSkipAmount={3} />);
 
-      expect(screen.getByText('1 / 3')).toBeInTheDocument();
+      expect(screen.getByLabelText('Current word: One')).toBeInTheDocument();
 
-      fireEvent.click(screen.getByLabelText('Forward'));
+      fireEvent.click(screen.getByLabelText(/Skip forward/));
 
-      expect(screen.getByText('2 / 3')).toBeInTheDocument();
+      expect(screen.getByLabelText('Current word: Four')).toBeInTheDocument();
     });
   });
 
   describe('WPM control', () => {
-    it('changes WPM via slider', () => {
+    it('changes WPM via stepper buttons', () => {
       render(<RSVPPlayer text="Hello" initialWpm={300} />);
 
-      const slider = screen.getByLabelText('Words per minute');
-      fireEvent.change(slider, { target: { value: '500' } });
+      // Find the increase WPM button
+      const increaseButton = screen.getByLabelText('Increase WPM');
+      fireEvent.click(increaseButton);
 
-      expect(slider).toHaveValue('500');
-      expect(screen.getByText('500 WPM')).toBeInTheDocument();
+      // WPM should increase by 10
+      expect(screen.getByText('310')).toBeInTheDocument();
     });
   });
 
   describe('exit button', () => {
-    it('calls onExit when exit button is clicked', () => {
+    it('calls onExit when back button is clicked', () => {
       const onExit = vi.fn();
       render(<RSVPPlayer text="Hello" onExit={onExit} />);
 
-      fireEvent.click(screen.getByLabelText('Exit reading mode'));
+      fireEvent.click(screen.getByLabelText('Back to library'));
 
       expect(onExit).toHaveBeenCalledTimes(1);
     });
@@ -151,12 +168,12 @@ describe('RSVPPlayer', () => {
 
       // Start playing
       fireEvent.click(screen.getByLabelText('Play'));
-      expect(screen.getByText('Playing')).toBeInTheDocument();
 
       // Exit
-      fireEvent.click(screen.getByLabelText('Exit reading mode'));
+      fireEvent.click(screen.getByLabelText('Back to library'));
 
-      expect(screen.getByText('Paused')).toBeInTheDocument();
+      // After exit, play button should be visible (paused)
+      expect(screen.getByLabelText('Play')).toBeInTheDocument();
     });
   });
 
@@ -164,43 +181,39 @@ describe('RSVPPlayer', () => {
     it('toggles play/pause with space key', () => {
       render(<RSVPPlayer text="Hello world" />);
 
-      expect(screen.getByText('Ready')).toBeInTheDocument();
+      expect(screen.getByLabelText('Play')).toBeInTheDocument();
 
       fireEvent.keyDown(window, { key: ' ' });
 
-      expect(screen.getByText('Playing')).toBeInTheDocument();
+      expect(screen.getByLabelText('Pause')).toBeInTheDocument();
 
       fireEvent.keyDown(window, { key: ' ' });
 
-      expect(screen.getByText('Paused')).toBeInTheDocument();
+      expect(screen.getByLabelText('Play')).toBeInTheDocument();
     });
 
-    it('navigates with arrow keys', () => {
-      render(<RSVPPlayer text="One Two Three" />);
+    it('navigates with arrow keys using skip amount', () => {
+      render(<RSVPPlayer text="One Two Three Four Five" initialSkipAmount={2} />);
 
       expect(screen.getByLabelText('Current word: One')).toBeInTheDocument();
-
-      fireEvent.keyDown(window, { key: 'ArrowRight' });
-      expect(screen.getByLabelText('Current word: Two')).toBeInTheDocument();
 
       fireEvent.keyDown(window, { key: 'ArrowRight' });
       expect(screen.getByLabelText('Current word: Three')).toBeInTheDocument();
 
       fireEvent.keyDown(window, { key: 'ArrowLeft' });
-      expect(screen.getByLabelText('Current word: Two')).toBeInTheDocument();
+      expect(screen.getByLabelText('Current word: One')).toBeInTheDocument();
     });
 
     it('adjusts WPM with up/down arrows', () => {
       render(<RSVPPlayer text="Hello" initialWpm={300} />);
 
-      const slider = screen.getByLabelText('Words per minute');
-      expect(slider).toHaveValue('300');
+      expect(screen.getByText('300')).toBeInTheDocument();
 
       fireEvent.keyDown(window, { key: 'ArrowUp' });
-      expect(slider).toHaveValue('350');
+      expect(screen.getByText('310')).toBeInTheDocument();
 
       fireEvent.keyDown(window, { key: 'ArrowDown' });
-      expect(slider).toHaveValue('300');
+      expect(screen.getByText('300')).toBeInTheDocument();
     });
 
     it('calls onExit with Escape key', () => {
@@ -211,66 +224,29 @@ describe('RSVPPlayer', () => {
 
       expect(onExit).toHaveBeenCalledTimes(1);
     });
-
-    it('resets with Home key', () => {
-      render(<RSVPPlayer text="One Two Three" />);
-
-      fireEvent.click(screen.getByLabelText('Forward'));
-      fireEvent.click(screen.getByLabelText('Forward'));
-      expect(screen.getByLabelText('Current word: Three')).toBeInTheDocument();
-
-      fireEvent.keyDown(window, { key: 'Home' });
-
-      expect(screen.getByLabelText('Current word: One')).toBeInTheDocument();
-      expect(screen.getByText('Ready')).toBeInTheDocument();
-    });
-
-    it('navigates sentences with shift+arrow', () => {
-      render(<RSVPPlayer text="First sentence. Second sentence." />);
-
-      expect(screen.getByLabelText('Current word: First')).toBeInTheDocument();
-
-      fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
-
-      expect(screen.getByLabelText('Current word: Second')).toBeInTheDocument();
-    });
   });
 
-  describe('state display', () => {
-    it('shows Ready state initially', () => {
+  describe('settings panel', () => {
+    it('opens settings panel when settings button is clicked', () => {
       render(<RSVPPlayer text="Hello" />);
 
-      expect(screen.getByText('Ready')).toBeInTheDocument();
+      fireEvent.click(screen.getByLabelText('Player settings'));
+
+      expect(screen.getByText('Player Settings')).toBeInTheDocument();
     });
 
-    it('shows Playing state when playing', () => {
-      render(<RSVPPlayer text="Hello world" />);
+    it('closes settings panel with Escape key', () => {
+      render(<RSVPPlayer text="Hello" />);
 
-      fireEvent.click(screen.getByLabelText('Play'));
+      // Open settings
+      fireEvent.click(screen.getByLabelText('Player settings'));
+      expect(screen.getByText('Player Settings')).toBeInTheDocument();
 
-      expect(screen.getByText('Playing')).toBeInTheDocument();
-    });
+      // Press Escape
+      fireEvent.keyDown(window, { key: 'Escape' });
 
-    it('shows Paused state when paused', () => {
-      render(<RSVPPlayer text="Hello world" />);
-
-      fireEvent.click(screen.getByLabelText('Play'));
-      fireEvent.click(screen.getByLabelText('Pause'));
-
-      expect(screen.getByText('Paused')).toBeInTheDocument();
-    });
-
-    it('shows Finished state when complete', () => {
-      render(<RSVPPlayer text="One" />);
-
-      fireEvent.click(screen.getByLabelText('Play'));
-
-      // Advance past the word
-      act(() => {
-        vi.advanceTimersByTime(500);
-      });
-
-      expect(screen.getByText('Finished')).toBeInTheDocument();
+      // Settings should be closed
+      expect(screen.queryByText('Player Settings')).not.toBeInTheDocument();
     });
   });
 
@@ -290,26 +266,17 @@ describe('RSVPPlayer', () => {
   });
 
   describe('accessibility', () => {
-    it('has accessible progress bar', () => {
-      render(<RSVPPlayer text="One Two Three" />);
-
-      const progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveAttribute('aria-valuenow', '1');
-      expect(progressbar).toHaveAttribute('aria-valuemin', '0');
-      expect(progressbar).toHaveAttribute('aria-valuemax', '3');
-    });
-
     it('has accessible word display', () => {
       render(<RSVPPlayer text="Hello" />);
 
       expect(screen.getByLabelText('Current word: Hello')).toBeInTheDocument();
     });
 
-    it('announces state changes', () => {
-      render(<RSVPPlayer text="Hello world" />);
+    it('has accessible skip buttons with skip amount', () => {
+      render(<RSVPPlayer text="Hello world" initialSkipAmount={5} />);
 
-      const stateIndicator = screen.getByText('Ready').parentElement;
-      expect(stateIndicator).toHaveAttribute('aria-live', 'polite');
+      expect(screen.getByLabelText('Skip back 5 words')).toBeInTheDocument();
+      expect(screen.getByLabelText('Skip forward 5 words')).toBeInTheDocument();
     });
   });
 });

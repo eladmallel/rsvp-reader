@@ -1,125 +1,84 @@
-/* RSVPPlayer.module.css */
+/* RSVPPlayer.module.css - Redesigned Layout */
 
 .container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 100dvh;
-  background-color: var(--bg-primary);
+  max-width: 560px;
+  margin: 0 auto;
+  background-color: var(--bg-app);
   color: var(--text-primary);
 }
 
-/* Header */
-.header {
+/* Top Bar */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--bg-app);
+  padding: 0.75rem 1rem;
+}
+
+.topBarInner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.topActions {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-md);
-  border-bottom: 1px solid var(--bg-elevated);
+  margin-bottom: 0.75rem;
 }
 
-.title {
-  font-size: var(--font-size-body);
-  font-weight: 500;
-  margin: 0;
-  color: var(--text-secondary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  max-width: 80%;
-}
-
-/* Main display area */
-.main {
-  flex: 1;
+.actionRight {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
+  gap: 0.25rem;
 }
 
-.displayArea {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-lg);
-  width: 100%;
-  max-width: 800px;
+/* Article meta */
+.articleMeta {
+  text-align: center;
 }
 
-/* State indicator */
-.stateIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.state {
-  font-size: var(--font-size-small);
-  font-weight: 500;
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: 4px;
+.articleSource {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.25rem;
 }
 
-.state.idle {
-  color: var(--text-secondary);
-  background-color: var(--bg-secondary);
+.articleTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.state.playing {
-  color: var(--success);
-  background-color: rgba(34, 197, 94, 0.1);
-}
-
-.state.paused {
-  color: var(--warning);
-  background-color: rgba(245, 158, 11, 0.1);
-}
-
-.state.finished {
-  color: var(--accent-secondary);
-  background-color: rgba(59, 130, 246, 0.1);
-}
-
-/* Footer */
-.footer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
-  background-color: var(--bg-secondary);
-  border-top: 1px solid var(--bg-elevated);
-}
-
-.progressContainer {
-  padding: 0 var(--space-sm);
-}
-
-/* Keyboard hint */
-.keyboardHint {
-  display: none;
-  justify-content: center;
-  gap: var(--space-lg);
-  padding-top: var(--space-sm);
-  font-size: var(--font-size-small);
-  color: var(--text-secondary);
-  opacity: 0.7;
-}
-
-.keyboardHint span {
+/* Stage - The Word Display */
+.stage {
+  position: absolute;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: var(--cockpit-height);
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-}
-
-/* Show keyboard hints on desktop */
-@media (min-width: 768px) and (hover: hover) {
-  .keyboardHint {
-    display: flex;
-  }
+  justify-content: center;
+  padding: 1rem;
 }
 
 /* Empty state */
@@ -130,24 +89,16 @@
   height: 100%;
   min-height: 100dvh;
   color: var(--text-secondary);
-  font-size: var(--font-size-body);
+  font-size: var(--font-size-base);
 }
 
-/* Desktop adjustments */
-@media (min-width: 768px) {
+/* Responsive */
+@media (min-width: 900px) {
   .container {
-    padding: var(--space-lg);
+    max-width: 900px;
   }
 
-  .main {
-    padding: var(--space-xl);
-  }
-
-  .footer {
-    padding: var(--space-lg);
-    border-radius: 12px;
-    max-width: 600px;
-    margin: 0 auto;
-    width: 100%;
+  .topBarInner {
+    max-width: 900px;
   }
 }

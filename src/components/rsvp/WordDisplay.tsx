@@ -11,8 +11,11 @@ export function WordDisplay({ word, orpIndex }: WordDisplayProps) {
   if (!word) {
     return (
       <div className={styles.container}>
-        <div className={styles.word}>
-          <span className={styles.placeholder}>Ready</span>
+        <div className={styles.wordWrapper}>
+          <div className={styles.word}>
+            <span className={styles.placeholder}>Ready</span>
+          </div>
+          <div className={styles.focusLine} aria-hidden="true" />
         </div>
       </div>
     );
@@ -26,16 +29,19 @@ export function WordDisplay({ word, orpIndex }: WordDisplayProps) {
 
   return (
     <div className={styles.container}>
-      <div
-        className={`${styles.word} ${isRtl ? styles.rtl : ''}`}
-        dir={isRtl ? 'rtl' : 'ltr'}
-        aria-label={`Current word: ${word}`}
-      >
-        <span className={styles.left}>{leftPart}</span>
-        <span className={styles.orp}>{orpChar}</span>
-        <span className={styles.right}>{rightPart}</span>
+      <div className={styles.wordWrapper}>
+        <div
+          className={`${styles.word} ${isRtl ? styles.rtl : ''}`}
+          dir={isRtl ? 'rtl' : 'ltr'}
+          aria-label={`Current word: ${word}`}
+          aria-live="polite"
+        >
+          <span className={styles.left}>{leftPart}</span>
+          <span className={styles.orp}>{orpChar}</span>
+          <span className={styles.right}>{rightPart}</span>
+        </div>
+        <div className={styles.focusLine} aria-hidden="true" />
       </div>
-      <div className={styles.focusLine} aria-hidden="true" />
     </div>
   );
 }

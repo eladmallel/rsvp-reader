@@ -1,0 +1,29 @@
+.chip {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.chip:hover:not(.disabled) {
+  background: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+}
+
+.active {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

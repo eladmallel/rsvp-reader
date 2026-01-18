@@ -6,6 +6,21 @@ Complete UI redesign based on 8 prototype screens in `docs/redesign/prototypes/`
 
 ---
 
+## Progress Tracker
+
+| Phase                             | Status         | Notes                                             |
+| --------------------------------- | -------------- | ------------------------------------------------- |
+| Phase 0: Design System Foundation | ✅ Complete    | Tokens, fonts, and shared UI components done      |
+| Phase 1: RSVP Player              | ✅ Complete    | New Cockpit controls, WordDisplay, Settings panel |
+| Phase 2: Navigation Shell         | ✅ Complete    | Route groups, BottomNav, placeholder pages        |
+| Phase 3: Library & Feed           | 🔲 Not Started |                                                   |
+| Phase 4: Search Screen            | 🔲 Not Started |                                                   |
+| Phase 5: Settings Screen          | 🔲 Not Started |                                                   |
+| Phase 6: Auth Screens             | 🔲 Not Started |                                                   |
+| Phase 7: Home Dashboard           | 🔲 Not Started |                                                   |
+
+---
+
 ## ⚠️ CRITICAL: Backend-First Rule
 
 **When building any page, you MUST:**

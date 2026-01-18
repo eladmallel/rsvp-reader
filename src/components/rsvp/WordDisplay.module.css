@@ -1,20 +1,33 @@
+/* Word container - the card that holds the word */
 .container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-surface);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xl);
-  position: relative;
+  box-shadow: var(--shadow-card);
+}
+
+.wordWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .word {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-rsvp);
-  font-weight: var(--font-weight-medium);
-  line-height: 1;
+  font-family: var(--font-rsvp);
+  font-size: 32px;
+  line-height: 43px;
+  text-align: center;
+  white-space: nowrap;
   user-select: none;
 }
 
@@ -24,22 +37,22 @@
 }
 
 .left {
-  text-align: right;
-  min-width: 4ch;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  font-family: var(--font-rsvp);
+  font-size: 32px;
 }
 
 .orp {
-  color: var(--accent-primary);
-  font-weight: var(--font-weight-bold);
-  min-width: 1ch;
-  text-align: center;
+  color: var(--orp-color);
+  font-family: var(--font-rsvp);
+  font-size: 32px;
+  font-weight: 600;
 }
 
 .right {
-  text-align: left;
-  min-width: 4ch;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  font-family: var(--font-rsvp);
+  font-size: 32px;
 }
 
 .placeholder {
@@ -48,38 +61,25 @@
   font-weight: var(--font-weight-normal);
 }
 
+/* ORP marker line - positioned below the word, centered */
 .focusLine {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 2px;
-  height: 60%;
-  background-color: var(--accent-primary);
-  opacity: 0.3;
-  pointer-events: none;
+  height: 10px;
+  background: var(--orp-color);
+  opacity: 0.6;
+  margin-top: 4px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Responsive */
+@media (min-width: 900px) {
   .container {
-    padding: var(--space-lg);
+    max-width: 600px;
   }
 
+  .word,
   .left,
-  .right {
-    min-width: 3ch;
-  }
-}
-
-/* Large screens - bigger display */
-@media (min-width: 1024px) {
-  .word {
-    font-size: calc(var(--font-size-rsvp) * 1.2);
-  }
-
-  .left,
-  .right {
-    min-width: 6ch;
+  .right,
+  .orp {
+    font-size: 42px;
   }
 }

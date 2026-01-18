@@ -1,7 +1,7 @@
 /*
  * RSVP Reader Design Tokens
- * Based on PROJECT_PLAN.md Section 2.3
- * 
+ * Updated for UI Redesign - January 2026
+ *
  * Theme switching: Use data-theme="light" on <html> to switch to light mode.
  * Default is dark mode (matches prefers-color-scheme: dark).
  */
@@ -11,32 +11,61 @@
    ========================================================================== */
 
 :root {
-  /* Colors - Background */
-  --bg-primary: #0a0a0b;
-  --bg-secondary: #141416;
-  --bg-elevated: #1c1c1f;
+  /* Colors - Background (New Redesign Palette) */
+  --bg-app: #151515;
+  --bg-surface: #1c1c1c;
+  --bg-surface-elevated: #242424;
+
+  /* Legacy aliases for backwards compatibility */
+  --bg-primary: var(--bg-app);
+  --bg-secondary: var(--bg-surface);
+  --bg-elevated: var(--bg-surface-elevated);
 
   /* Colors - Text */
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  --text-primary: #eaeaea;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #636366;
 
   /* Colors - Accent */
-  --accent-primary: #ef4444; /* ORP highlight red */
-  --accent-secondary: #3b82f6; /* Interactive blue */
+  --accent: #f2c94c;
+  --accent-text: #000;
+  --accent-hover: #e0b83d;
+  --orp-color: #ff6b6b;
+
+  /* Legacy aliases */
+  --accent-primary: var(--orp-color);
+  --accent-secondary: #3b82f6;
 
   /* Colors - Semantic */
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
+  --danger: #ef4444;
 
   /* Colors - Border */
-  --border-primary: #27272a;
+  --border-subtle: #2c2c2e;
+  --border-primary: var(--border-subtle);
   --border-secondary: #3f3f46;
 
-  /* Typography - Font Families */
-  --font-reading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Colors - UI Specific */
+  --progress-bg: #2c2c2e;
+  --unread-dot: #007aff;
+  --tag-bg: #2c2c2e;
+  --tag-text: #8e8e93;
+  --nav-bg: #1c1c1c;
+  --continue-bg: #2c2c2e;
+
+  /* Typography - Font Families (using next/font CSS variables) */
+  --font-ui:
+    var(--font-ibm-plex-sans), 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-display: var(--font-fraunces), 'Fraunces', 'Georgia', serif;
+  --font-rsvp:
+    var(--font-ibm-plex-mono), 'IBM Plex Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+
+  /* Legacy aliases */
+  --font-reading: var(--font-ui);
+  --font-mono: var(--font-rsvp);
 
   /* Typography - Font Sizes */
   --font-size-xs: 0.75rem; /* 12px */
@@ -79,6 +108,9 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-panel: 0 10px 40px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-banner: 0 4px 12px rgba(0, 0, 0, 0.3);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -90,6 +122,12 @@
   --z-modal: 1100;
   --z-toast: 1200;
 
+  /* Layout Heights */
+  --header-height: 80px;
+  --cockpit-height: 200px;
+  --nav-height: 72px;
+  --sub-tabs-height: 48px;
+
   /* Color scheme for browser UI */
   color-scheme: dark;
 }
@@ -99,19 +137,35 @@
    ========================================================================== */
 
 [data-theme='light'] {
-  /* Colors - Background */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f4f4f5;
-  --bg-elevated: #fafafa;
+  /* Colors - Background (New Redesign Palette) */
+  --bg-app: #f9f9f7;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f0f0ee;
+
+  /* Legacy aliases */
+  --bg-primary: var(--bg-app);
+  --bg-secondary: var(--bg-surface);
+  --bg-elevated: var(--bg-surface-elevated);
 
   /* Colors - Text */
-  --text-primary: #18181b;
-  --text-secondary: #71717a;
-  --text-tertiary: #a1a1aa;
+  --text-primary: #242424;
+  --text-secondary: #6b6b6b;
+  --text-tertiary: #8e8e93;
+
+  /* Colors - Accent */
+  --orp-color: #d93025;
 
   /* Colors - Border */
-  --border-primary: #e4e4e7;
+  --border-subtle: #e5e5e5;
+  --border-primary: var(--border-subtle);
   --border-secondary: #d4d4d8;
+
+  /* Colors - UI Specific */
+  --progress-bg: #e8e8e6;
+  --tag-bg: #e8e8e6;
+  --tag-text: #6b6b6b;
+  --nav-bg: #ffffff;
+  --continue-bg: #ffffff;
 
   /* Color scheme for browser UI */
   color-scheme: light;
@@ -122,19 +176,35 @@
    ========================================================================== */
 
 [data-theme='dark'] {
-  /* Colors - Background */
-  --bg-primary: #0a0a0b;
-  --bg-secondary: #141416;
-  --bg-elevated: #1c1c1f;
+  /* Colors - Background (New Redesign Palette) */
+  --bg-app: #151515;
+  --bg-surface: #1c1c1c;
+  --bg-surface-elevated: #242424;
+
+  /* Legacy aliases */
+  --bg-primary: var(--bg-app);
+  --bg-secondary: var(--bg-surface);
+  --bg-elevated: var(--bg-surface-elevated);
 
   /* Colors - Text */
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  --text-primary: #eaeaea;
+  --text-secondary: #8e8e93;
+  --text-tertiary: #636366;
+
+  /* Colors - Accent */
+  --orp-color: #ff6b6b;
 
   /* Colors - Border */
-  --border-primary: #27272a;
+  --border-subtle: #2c2c2e;
+  --border-primary: var(--border-subtle);
   --border-secondary: #3f3f46;
+
+  /* Colors - UI Specific */
+  --progress-bg: #2c2c2e;
+  --tag-bg: #2c2c2e;
+  --tag-text: #8e8e93;
+  --nav-bg: #1c1c1c;
+  --continue-bg: #2c2c2e;
 
   /* Color scheme for browser UI */
   color-scheme: dark;
@@ -143,19 +213,35 @@
 /* System preference detection (when no data-theme is set) */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    /* Colors - Background */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f4f4f5;
-    --bg-elevated: #fafafa;
+    /* Colors - Background (New Redesign Palette) */
+    --bg-app: #f9f9f7;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #f0f0ee;
+
+    /* Legacy aliases */
+    --bg-primary: var(--bg-app);
+    --bg-secondary: var(--bg-surface);
+    --bg-elevated: var(--bg-surface-elevated);
 
     /* Colors - Text */
-    --text-primary: #18181b;
-    --text-secondary: #71717a;
-    --text-tertiary: #a1a1aa;
+    --text-primary: #242424;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #8e8e93;
+
+    /* Colors - Accent */
+    --orp-color: #d93025;
 
     /* Colors - Border */
-    --border-primary: #e4e4e7;
+    --border-subtle: #e5e5e5;
+    --border-primary: var(--border-subtle);
     --border-secondary: #d4d4d8;
+
+    /* Colors - UI Specific */
+    --progress-bg: #e8e8e6;
+    --tag-bg: #e8e8e6;
+    --tag-text: #6b6b6b;
+    --nav-bg: #ffffff;
+    --continue-bg: #ffffff;
 
     /* Color scheme for browser UI */
     color-scheme: light;
@@ -188,11 +274,11 @@ body {
 }
 
 body {
-  font-family: var(--font-reading);
+  font-family: var(--font-ui);
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   color: var(--text-primary);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-app);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 

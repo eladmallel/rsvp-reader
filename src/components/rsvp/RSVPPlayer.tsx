@@ -1,22 +1,28 @@
 'use client';
 
 /**
- * RSVPPlayer - Complete RSVP reading component
+ * RSVPPlayer - Complete RSVP reading component (Redesigned)
  *
- * Combines WordDisplay, Controls, and ProgressBar into a full-featured
- * RSVP reading experience with automatic playback.
+ * Features the new cockpit-style controls with:
+ * - Word display in a centered card with ORP marker
+ * - Progress bar with elapsed/remaining time
+ * - Play/pause and skip controls
+ * - WPM and skip amount steppers
+ * - Settings panel for theme/font
  *
  * Supports position persistence: if an articleId is provided, the current
  * reading position will be saved to localStorage and restored when the
  * user returns to the article.
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { WordDisplay } from './WordDisplay';
-import { Controls } from './Controls';
-import { ProgressBar } from './ProgressBar';
-import { useRSVPPlayer, RSVPPlayerConfig, PlayerState } from './useRSVPPlayer';
+import { Cockpit } from './Cockpit';
+import { PlayerSettingsPanel } from './PlayerSettingsPanel';
+import { useRSVPPlayer, RSVPPlayerConfig } from './useRSVPPlayer';
 import { useReadingPosition } from '@/hooks/useReadingPosition';
+import { Icon } from '@/components/ui/Icon';
+import { IconButton } from '@/components/ui/IconButton';
 import styles from './RSVPPlayer.module.css';
 
 export interface RSVPPlayerProps extends RSVPPlayerConfig {
@@ -28,28 +34,21 @@ export interface RSVPPlayerProps extends RSVPPlayerConfig {
   onExit?: () => void;
   /** Optional title to display */
   title?: string;
-  /** Whether to show progress labels */
-  showProgressLabels?: boolean;
+  /** Source name (e.g., "X.COM") */
+  source?: string;
+  /** Initial skip amount in words */
+  initialSkipAmount?: number;
   /** Custom class name for the container */
   className?: string;
 }
 
 /**
- * State indicator component
+ * Format seconds to MM:SS
  */
-function StateIndicator({ state }: { state: PlayerState }) {
-  const labels: Record<PlayerState, string> = {
-    idle: 'Ready',
-    playing: 'Playing',
-    paused: 'Paused',
-    finished: 'Finished',
-  };
-
-  return (
-    <div className={styles.stateIndicator} aria-live="polite">
-      <span className={`${styles.state} ${styles[state]}`}>{labels[state]}</span>
-    </div>
-  );
+function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60);
+  return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
 }
 
 /**
@@ -59,6 +58,8 @@ function StateIndicator({ state }: { state: PlayerState }) {
  * <RSVPPlayer
  *   text="Hello world. This is a test."
  *   articleId="article-123"
+ *   title="My Article"
+ *   source="EXAMPLE.COM"
  *   initialWpm={300}
  *   onComplete={() => console.log("Done!")}
  *   onExit={() => router.push("/library")}
@@ -69,21 +70,25 @@ export function RSVPPlayer({
   articleId = null,
   onExit,
   title,
-  showProgressLabels = true,
+  source,
+  initialSkipAmount = 3,
   className,
   ...config
 }: RSVPPlayerProps) {
-  // Position persistence - savedPosition is read synchronously from localStorage on mount
+  // Position persistence
   const { savedPosition, savePosition, clearPosition } = useReadingPosition(articleId);
 
-  // RSVP player state - savedPosition is used as initialIndex only on first render
-  // The hook internally handles clamping to valid range
+  // RSVP player state
   const player = useRSVPPlayer(text, {
     ...config,
     initialIndex: savedPosition,
   });
 
-  // Save position when index changes (debounced by useReadingPosition)
+  // Local state
+  const [skipAmount, setSkipAmount] = useState(initialSkipAmount);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Save position when index changes
   useEffect(() => {
     if (player.state === 'playing' || player.state === 'paused') {
       savePosition(player.currentIndex);
@@ -97,10 +102,18 @@ export function RSVPPlayer({
     }
   }, [player.state, clearPosition]);
 
+  // Handlers defined before keyboard effect
+  const handleSkipBack = useCallback(() => {
+    player.goToIndex(Math.max(0, player.currentIndex - skipAmount));
+  }, [player, skipAmount]);
+
+  const handleSkipForward = useCallback(() => {
+    player.goToIndex(Math.min(player.totalWords - 1, player.currentIndex + skipAmount));
+  }, [player, skipAmount]);
+
   // Handle keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -112,53 +125,38 @@ export function RSVPPlayer({
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          if (e.shiftKey) {
-            player.previousSentence();
-          } else {
-            player.previousWord();
-          }
+          handleSkipBack();
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (e.shiftKey) {
-            player.nextSentence();
-          } else {
-            player.nextWord();
-          }
+          handleSkipForward();
           break;
         case 'ArrowUp':
           e.preventDefault();
-          player.setWpm(player.wpm + 50);
+          player.setWpm(player.wpm + 10);
           break;
         case 'ArrowDown':
           e.preventDefault();
-          player.setWpm(player.wpm - 50);
+          player.setWpm(player.wpm - 10);
           break;
         case 'Escape':
           e.preventDefault();
-          onExit?.();
-          break;
-        case 'Home':
-          e.preventDefault();
-          player.reset();
+          if (settingsOpen) {
+            setSettingsOpen(false);
+          } else {
+            onExit?.();
+          }
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [player, onExit]);
+  }, [player, onExit, settingsOpen, handleSkipBack, handleSkipForward]);
 
+  // Handlers
   const handlePlayPause = useCallback(() => {
     player.togglePlayPause();
-  }, [player]);
-
-  const handleRewind = useCallback(() => {
-    player.previousWord();
-  }, [player]);
-
-  const handleForward = useCallback(() => {
-    player.nextWord();
   }, [player]);
 
   const handleWpmChange = useCallback(
@@ -173,6 +171,11 @@ export function RSVPPlayer({
     onExit?.();
   }, [player, onExit]);
 
+  // Calculate times
+  const totalSeconds = player.totalWords > 0 ? (player.totalWords / player.wpm) * 60 : 0;
+  const elapsedSeconds = player.totalWords > 0 ? (player.currentIndex / player.wpm) * 60 : 0;
+  const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+
   // Empty text state
   if (player.totalWords === 0) {
     return (
@@ -186,51 +189,58 @@ export function RSVPPlayer({
 
   return (
     <div className={`${styles.container} ${className ?? ''}`}>
-      {/* Header with title */}
-      {title && (
-        <header className={styles.header}>
-          <h1 className={styles.title}>{title}</h1>
-        </header>
-      )}
+      {/* Top bar with back button, settings, and menu */}
+      <header className={styles.topBar}>
+        <div className={styles.topBarInner}>
+          <div className={styles.topActions}>
+            <IconButton onClick={handleExit} aria-label="Back to library">
+              <Icon name="chevron-left" />
+            </IconButton>
+            <div className={styles.actionRight}>
+              <IconButton
+                onClick={() => setSettingsOpen(!settingsOpen)}
+                aria-label="Player settings"
+              >
+                <Icon name="settings" />
+              </IconButton>
+              <IconButton aria-label="Article menu">
+                <Icon name="more-vertical" />
+              </IconButton>
+            </div>
+          </div>
 
-      {/* Main display area */}
-      <main className={styles.main}>
-        <div className={styles.displayArea}>
-          <WordDisplay word={player.currentWord} />
-          <StateIndicator state={player.state} />
+          {/* Article meta */}
+          <div className={styles.articleMeta}>
+            {source && <div className={styles.articleSource}>{source}</div>}
+            {title && <h1 className={styles.articleTitle}>{title}</h1>}
+          </div>
         </div>
+      </header>
+
+      {/* Main display area - the stage */}
+      <main className={styles.stage}>
+        <WordDisplay word={player.currentWord} />
       </main>
 
-      {/* Footer with progress and controls */}
-      <footer className={styles.footer}>
-        <div className={styles.progressContainer}>
-          <ProgressBar
-            current={player.currentIndex + 1}
-            total={player.totalWords}
-            showLabels={showProgressLabels}
-          />
-        </div>
+      {/* Cockpit with controls */}
+      <Cockpit
+        progress={player.progress}
+        elapsedTime={formatTime(elapsedSeconds)}
+        remainingTime={formatTime(remainingSeconds)}
+        isPlaying={player.state === 'playing'}
+        onPlayPause={handlePlayPause}
+        onSkipBack={handleSkipBack}
+        onSkipForward={handleSkipForward}
+        skipAmount={skipAmount}
+        wpm={player.wpm}
+        onWpmChange={handleWpmChange}
+        onSkipAmountChange={setSkipAmount}
+        minWpm={config.minWpm}
+        maxWpm={config.maxWpm}
+      />
 
-        <Controls
-          isPlaying={player.state === 'playing'}
-          wpm={player.wpm}
-          onPlayPause={handlePlayPause}
-          onRewind={handleRewind}
-          onForward={handleForward}
-          onWpmChange={handleWpmChange}
-          onExit={handleExit}
-          minWpm={config.minWpm}
-          maxWpm={config.maxWpm}
-        />
-
-        {/* Keyboard hint */}
-        <div className={styles.keyboardHint}>
-          <span>Space: Play/Pause</span>
-          <span>←/→: Word</span>
-          <span>↑/↓: Speed</span>
-          <span>Esc: Exit</span>
-        </div>
-      </footer>
+      {/* Settings panel */}
+      <PlayerSettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
