@@ -195,6 +195,12 @@ E2E tests automatically detect and use a free port. No manual server management 
 
 ## 7. UI/UX Quality
 
+### Feedback Loops (Required for UI/UX)
+
+- Build one screen at a time and pause for review
+- Incorporate feedback before moving to the next screen
+- Favor tight iteration loops over batching multiple screens
+
 ### Screenshots Are Required
 
 - Capture screenshots during E2E tests for all key screens
