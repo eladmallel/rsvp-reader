@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Search - Prototype</title>
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <style>
+      :root {
+        --font-ui:
+          'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        --font-display: 'Fraunces', 'Georgia', serif;
+        --header-height: 140px;
+        --nav-height: 72px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-ui);
+        color: var(--text-primary);
+        background: var(--bg-app);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      body.theme-light {
+        --bg-app: #f9f9f7;
+        --bg-surface: #ffffff;
+        --bg-surface-elevated: #f0f0ee;
+        --text-primary: #242424;
+        --text-secondary: #6b6b6b;
+        --text-tertiary: #8e8e93;
+        --border-subtle: #e5e5e5;
+        --nav-bg: #ffffff;
+        --accent: #f2c94c;
+        --accent-text: #000;
+        --highlight-bg: rgba(242, 201, 76, 0.3);
+        --tag-bg: #e8e8e6;
+        --tag-text: #6b6b6b;
+      }
+
+      body.theme-dark {
+        --bg-app: #151515;
+        --bg-surface: #1c1c1c;
+        --bg-surface-elevated: #242424;
+        --text-primary: #eaeaea;
+        --text-secondary: #8e8e93;
+        --text-tertiary: #636366;
+        --border-subtle: #2c2c2e;
+        --nav-bg: #1c1c1c;
+        --accent: #f2c94c;
+        --accent-text: #000;
+        --highlight-bg: rgba(242, 201, 76, 0.25);
+        --tag-bg: #2c2c2e;
+        --tag-text: #8e8e93;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        max-width: 560px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      /* Header with search */
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        background: var(--bg-app);
+        padding: 0.75rem 1rem 0.75rem;
+      }
+
+      .top-bar-inner {
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      .page-header {
+        margin-bottom: 1rem;
+        padding-top: 0.5rem;
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      /* Search input */
+      .search-container {
+        position: relative;
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 1rem;
+        width: 20px;
+        height: 20px;
+        color: var(--text-tertiary);
+        pointer-events: none;
+      }
+
+      .search-input {
+        width: 100%;
+        height: 48px;
+        padding: 0 3rem 0 3rem;
+        font-size: 1rem;
+        font-family: inherit;
+        color: var(--text-primary);
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        outline: none;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .search-input::placeholder {
+        color: var(--text-tertiary);
+      }
+
+      .search-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--highlight-bg);
+      }
+
+      .search-clear {
+        position: absolute;
+        right: 0.75rem;
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        background: var(--bg-surface-elevated);
+        border: none;
+        border-radius: 50%;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+
+      .search-clear.visible {
+        opacity: 1;
+      }
+
+      .search-clear:hover {
+        color: var(--text-primary);
+      }
+
+      .search-clear svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Filter chips */
+      .filter-chips {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .filter-chips::-webkit-scrollbar {
+        display: none;
+      }
+
+      .filter-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        font-family: inherit;
+        color: var(--text-secondary);
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+      }
+
+      .filter-chip:hover {
+        background: var(--bg-surface-elevated);
+      }
+
+      .filter-chip.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-text);
+      }
+
+      .filter-chip svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Content */
+      .content-area {
+        flex: 1;
+        padding: calc(var(--header-height) + 8px) 0 calc(var(--nav-height) + 24px);
+        overflow-y: auto;
+      }
+
+      /* Search states */
+      .search-state {
+        display: none;
+        padding: 2rem 1rem;
+      }
+
+      .search-state.active {
+        display: block;
+      }
+
+      /* Empty state */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        text-align: center;
+      }
+
+      .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1rem;
+        color: var(--text-tertiary);
+      }
+
+      .empty-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .empty-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      /* Recent searches */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .section-action {
+        font-size: 0.8rem;
+        color: var(--accent);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .recent-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .recent-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        cursor: pointer;
+        transition: background 0.1s ease;
+      }
+
+      .recent-item:hover {
+        background: var(--bg-surface);
+      }
+
+      .recent-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--bg-surface-elevated);
+        display: grid;
+        place-items: center;
+        color: var(--text-tertiary);
+      }
+
+      .recent-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .recent-text {
+        flex: 1;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+      }
+
+      .recent-remove {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        background: none;
+        border: none;
+        border-radius: 50%;
+        color: var(--text-tertiary);
+        cursor: pointer;
+      }
+
+      .recent-remove:hover {
+        background: var(--bg-surface-elevated);
+        color: var(--text-secondary);
+      }
+
+      .recent-remove svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Search results */
+      .results-header {
+        padding: 0 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .results-count {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .results-count strong {
+        color: var(--text-primary);
+      }
+
+      .result-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .result-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-subtle);
+        cursor: pointer;
+      }
+
+      .result-item:hover {
+        background: var(--bg-surface);
+      }
+
+      .result-main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .result-source {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.3rem;
+      }
+
+      .source-icon {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        background: var(--bg-surface-elevated);
+        display: grid;
+        place-items: center;
+        font-size: 10px;
+      }
+
+      .source-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .result-title {
+        margin: 0 0 0.3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--text-primary);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .result-title mark {
+        background: var(--highlight-bg);
+        color: inherit;
+        padding: 0.1em 0;
+        border-radius: 2px;
+      }
+
+      .result-snippet {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 0.4rem;
+      }
+
+      .result-snippet mark {
+        background: var(--highlight-bg);
+        color: inherit;
+        padding: 0.1em 0;
+        border-radius: 2px;
+      }
+
+      .result-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+      }
+
+      .result-tag {
+        display: inline-block;
+        background: var(--tag-bg);
+        color: var(--tag-text);
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        text-transform: lowercase;
+      }
+
+      .result-thumbnail {
+        width: 72px;
+        height: 72px;
+        border-radius: 8px;
+        background: var(--bg-surface-elevated);
+        flex-shrink: 0;
+        overflow: hidden;
+        align-self: center;
+      }
+
+      .result-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* No results state */
+      .no-results {
+        text-align: center;
+        padding: 3rem 2rem;
+      }
+
+      .no-results-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 1rem;
+        color: var(--text-tertiary);
+      }
+
+      .no-results-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.35rem;
+      }
+
+      .no-results-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+      }
+
+      /* Bottom navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        background: var(--nav-bg);
+        border-top: 1px solid var(--border-subtle);
+        padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+      }
+
+      .bottom-nav-inner {
+        max-width: 560px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        background: transparent;
+        border: none;
+        color: var(--text-tertiary);
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.7rem;
+        font-weight: 500;
+        min-width: 60px;
+      }
+
+      .nav-item:hover {
+        color: var(--text-secondary);
+      }
+
+      .nav-item.active {
+        color: var(--text-primary);
+      }
+
+      .nav-item svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* Responsive */
+      @media (min-width: 900px) {
+        .app {
+          max-width: 900px;
+        }
+
+        .top-bar-inner,
+        .bottom-nav-inner {
+          max-width: 900px;
+        }
+
+        .result-thumbnail {
+          width: 88px;
+          height: 88px;
+        }
+      }
+    </style>
+  </head>
+  <body class="theme-dark">
+    <div class="app">
+      <header class="top-bar">
+        <div class="top-bar-inner">
+          <div class="page-header">
+            <h1 class="page-title">Search</h1>
+          </div>
+
+          <div class="search-container">
+            <div class="search-input-wrapper">
+              <svg
+                class="search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                class="search-input"
+                id="search-input"
+                placeholder="Articles, highlights, notes..."
+                autocomplete="off"
+              />
+              <button
+                class="search-clear"
+                type="button"
+                id="search-clear"
+                aria-label="Clear search"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="filter-chips">
+              <button class="filter-chip active" data-filter="all">All</button>
+              <button class="filter-chip" data-filter="library">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                >
+                  <line x1="4" y1="6" x2="4" y2="18"></line>
+                  <line x1="8" y1="6" x2="8" y2="18"></line>
+                  <line x1="12" y1="6" x2="12" y2="18"></line>
+                </svg>
+                Library
+              </button>
+              <button class="filter-chip" data-filter="feed">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M4 11a9 9 0 0 1 9 9"></path>
+                  <path d="M4 4a16 16 0 0 1 16 16"></path>
+                  <circle cx="5" cy="19" r="1"></circle>
+                </svg>
+                Feed
+              </button>
+              <button class="filter-chip" data-filter="highlights">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                  <path d="M2 17l10 5 10-5"></path>
+                </svg>
+                Highlights
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <!-- Initial empty state -->
+        <div class="search-state active" id="state-empty">
+          <div class="section-header">
+            <span class="section-title">Recent</span>
+            <button class="section-action" type="button">Clear All</button>
+          </div>
+          <div class="recent-list">
+            <div class="recent-item">
+              <div class="recent-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <span class="recent-text">AI agents orchestration</span>
+              <button class="recent-remove" type="button" aria-label="Remove">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="recent-item">
+              <div class="recent-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <span class="recent-text">Claude Code Anthropic</span>
+              <button class="recent-remove" type="button" aria-label="Remove">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="recent-item">
+              <div class="recent-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <span class="recent-text">investing twitter</span>
+              <button class="recent-remove" type="button" aria-label="Remove">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="recent-item">
+              <div class="recent-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <span class="recent-text">system design interview</span>
+              <button class="recent-remove" type="button" aria-label="Remove">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results state -->
+        <div class="search-state" id="state-results">
+          <div class="results-header">
+            <span class="results-count"><strong>12 results</strong> for "agents"</span>
+          </div>
+          <div class="result-list" id="results-list">
+            <!-- Results injected by JS -->
+          </div>
+        </div>
+
+        <!-- No results state -->
+        <div class="search-state" id="state-no-results">
+          <div class="no-results">
+            <svg
+              class="no-results-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="8" y1="8" x2="14" y2="14"></line>
+              <line x1="14" y1="8" x2="8" y2="14"></line>
+            </svg>
+            <div class="no-results-title">No results found</div>
+            <div class="no-results-description">Try different keywords or check your filters</div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Bottom Navigation -->
+      <nav class="bottom-nav">
+        <div class="bottom-nav-inner">
+          <button class="nav-item" data-nav="home">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Home</span>
+          </button>
+          <button class="nav-item" data-nav="library">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <line x1="4" y1="6" x2="4" y2="18"></line>
+              <line x1="8" y1="6" x2="8" y2="18"></line>
+              <line x1="12" y1="6" x2="12" y2="18"></line>
+              <line x1="16" y1="8" x2="16" y2="16"></line>
+              <line x1="20" y1="10" x2="20" y2="14"></line>
+            </svg>
+            <span>Library</span>
+          </button>
+          <button class="nav-item" data-nav="feed">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 11a9 9 0 0 1 9 9"></path>
+              <path d="M4 4a16 16 0 0 1 16 16"></path>
+              <circle cx="5" cy="19" r="1"></circle>
+            </svg>
+            <span>Feed</span>
+          </button>
+          <button class="nav-item active" data-nav="search">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Search</span>
+          </button>
+          <button class="nav-item" data-nav="account">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
+              ></path>
+            </svg>
+            <span>Settings</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <script>
+      const searchResults = [
+        {
+          id: 1,
+          source: 'X.COM',
+          sourceIcon: 'X',
+          title:
+            '<mark>Agents</mark> 201: Orchestrating Multiple <mark>Agents</mark> That Actually Work',
+          snippet:
+            'Multiple <mark>agents</mark> help by dividing tasks, working in parallel, and specializing in different domains...',
+          time: '2:53 pm',
+          author: 'Rohit Ghumare',
+          readTime: '7 mins',
+          tags: ['dev'],
+          thumbnail: true,
+        },
+        {
+          id: 2,
+          source: 'GITHUB.COM',
+          sourceIcon: 'G',
+          title: 'Building Autonomous <mark>Agents</mark> with LangGraph',
+          snippet:
+            'Learn how to build reliable AI <mark>agents</mark> that can handle complex, multi-step tasks...',
+          time: 'Yesterday',
+          author: 'LangChain',
+          readTime: '12 mins',
+          tags: ['dev', 'ai'],
+          thumbnail: true,
+        },
+        {
+          id: 3,
+          source: 'SUBSTACK',
+          sourceIcon: 'S',
+          title: 'The Rise of AI <mark>Agents</mark>: From Assistants to Autonomous Workers',
+          snippet:
+            'Why 2026 is the year AI <mark>agents</mark> go mainstream and transform how we work...',
+          time: 'Jan 15th',
+          author: 'AI Weekly',
+          readTime: '9 mins',
+          tags: [],
+          thumbnail: false,
+        },
+        {
+          id: 4,
+          source: 'MEDIUM.COM',
+          sourceIcon: 'M',
+          title: 'Multi-<mark>Agent</mark> Systems: A Practical Guide',
+          snippet:
+            'How to coordinate multiple AI <mark>agents</mark> for complex workflows and decision making...',
+          time: 'Jan 14th',
+          author: 'Tech Insights',
+          readTime: '15 mins',
+          tags: ['dev'],
+          thumbnail: true,
+        },
+      ];
+
+      const searchInput = document.getElementById('search-input');
+      const searchClear = document.getElementById('search-clear');
+      const stateEmpty = document.getElementById('state-empty');
+      const stateResults = document.getElementById('state-results');
+      const stateNoResults = document.getElementById('state-no-results');
+      const resultsList = document.getElementById('results-list');
+      const filterChips = document.querySelectorAll('.filter-chip');
+
+      // Generate thumbnail
+      function getThumbnail(hasThumbnail, index) {
+        if (!hasThumbnail) return '';
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#a29bfe'];
+        const color = colors[index % colors.length];
+        return `<div class="result-thumbnail"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='${encodeURIComponent(color)}' width='100' height='100'/%3E%3C/svg%3E" alt=""></div>`;
+      }
+
+      // Render result
+      function renderResult(result, index) {
+        const tags = result.tags.map((tag) => `<span class="result-tag">${tag}</span>`).join(' ');
+        return `
+          <article class="result-item" data-id="${result.id}">
+            <div class="result-main">
+              <div class="result-source">
+                <div class="source-icon">${result.sourceIcon}</div>
+                <span class="source-name">${result.source}</span>
+              </div>
+              <h2 class="result-title">${result.title}</h2>
+              <p class="result-snippet">${result.snippet}</p>
+              <div class="result-meta">
+                <span>${result.author}</span>
+                <span>·</span>
+                <span>${result.readTime}</span>
+                ${tags ? '<span>·</span>' + tags : ''}
+              </div>
+            </div>
+            ${getThumbnail(result.thumbnail, index)}
+          </article>
+        `;
+      }
+
+      function showState(state) {
+        stateEmpty.classList.toggle('active', state === 'empty');
+        stateResults.classList.toggle('active', state === 'results');
+        stateNoResults.classList.toggle('active', state === 'no-results');
+      }
+
+      function handleSearch(query) {
+        searchClear.classList.toggle('visible', query.length > 0);
+
+        if (query.length === 0) {
+          showState('empty');
+          return;
+        }
+
+        // Simulate search - in real app, filter based on query
+        if (query.toLowerCase().includes('xyz')) {
+          showState('no-results');
+        } else {
+          resultsList.innerHTML = searchResults.map((r, i) => renderResult(r, i)).join('');
+          showState('results');
+        }
+      }
+
+      searchInput.addEventListener('input', (e) => {
+        handleSearch(e.target.value);
+      });
+
+      searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+        handleSearch('');
+      });
+
+      // Filter chips
+      filterChips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          filterChips.forEach((c) => c.classList.remove('active'));
+          chip.classList.add('active');
+        });
+      });
+
+      // Recent item clicks
+      document.querySelectorAll('.recent-item').forEach((item) => {
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.recent-remove')) return;
+          const text = item.querySelector('.recent-text').textContent;
+          searchInput.value = text;
+          handleSearch(text);
+        });
+      });
+    </script>
+  </body>
+</html>

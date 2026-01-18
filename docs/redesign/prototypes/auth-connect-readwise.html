@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connect Readwise - RSVP Reader</title>
+    <link rel="stylesheet" href="../design-tokens.css" />
+    <style>
+      :root {
+        --font-ui:
+          'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        --font-display: 'Fraunces', 'Georgia', serif;
+        --readwise-brand: #fbbf24;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-ui);
+        color: var(--text-primary);
+        background: var(--bg-app);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      body.theme-light {
+        --bg-app: #f9f9f7;
+        --bg-surface: #ffffff;
+        --bg-surface-elevated: #f0f0ee;
+        --text-primary: #242424;
+        --text-secondary: #6b6b6b;
+        --text-tertiary: #8e8e93;
+        --border-subtle: #e5e5e5;
+        --accent: #f2c94c;
+        --accent-text: #000;
+        --accent-hover: #e0b83d;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --input-bg: #ffffff;
+      }
+
+      body.theme-dark {
+        --bg-app: #151515;
+        --bg-surface: #1c1c1c;
+        --bg-surface-elevated: #242424;
+        --text-primary: #eaeaea;
+        --text-secondary: #8e8e93;
+        --text-tertiary: #636366;
+        --border-subtle: #2c2c2e;
+        --accent: #f2c94c;
+        --accent-text: #000;
+        --accent-hover: #e0b83d;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --input-bg: #1c1c1c;
+      }
+
+      .auth-container {
+        width: 100%;
+        max-width: 440px;
+        padding: 2rem 1.5rem;
+      }
+
+      /* Logo */
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-bottom: 2.5rem;
+      }
+
+      .logo-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--accent);
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+      }
+
+      .logo-icon svg {
+        width: 28px;
+        height: 28px;
+        color: var(--accent-text);
+      }
+
+      .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+      }
+
+      /* Integration card */
+      .integration-card {
+        background: var(--bg-surface);
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      .integration-logos {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .integration-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+      }
+
+      .integration-logo.rsvp {
+        background: var(--accent);
+      }
+
+      .integration-logo.rsvp svg {
+        width: 36px;
+        height: 36px;
+        color: var(--accent-text);
+      }
+
+      .integration-logo.readwise {
+        background: var(--readwise-brand);
+      }
+
+      .integration-logo.readwise svg {
+        width: 36px;
+        height: 36px;
+        color: #000;
+      }
+
+      .integration-connector {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: var(--bg-surface-elevated);
+        border-radius: 50%;
+        color: var(--text-tertiary);
+      }
+
+      .integration-connector svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .integration-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--text-primary);
+      }
+
+      .integration-description {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      /* Features list */
+      .features-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin: 2rem 0;
+        padding: 0 0.5rem;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .feature-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        color: var(--success);
+      }
+
+      .feature-text {
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        line-height: 1.4;
+      }
+
+      /* Token form */
+      .token-section {
+        margin-top: 2rem;
+      }
+
+      .token-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .token-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .token-help {
+        font-size: 0.8rem;
+        color: var(--accent);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .token-help:hover {
+        text-decoration: underline;
+      }
+
+      .token-help svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .token-input-wrapper {
+        position: relative;
+      }
+
+      .token-input {
+        width: 100%;
+        height: 56px;
+        padding: 0 3.5rem 0 1rem;
+        font-size: 0.95rem;
+        font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+        color: var(--text-primary);
+        background: var(--input-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        outline: none;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .token-input::placeholder {
+        color: var(--text-tertiary);
+        font-family: var(--font-ui);
+      }
+
+      .token-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(242, 201, 76, 0.25);
+      }
+
+      .token-paste {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        font-family: inherit;
+        color: var(--text-secondary);
+        background: var(--bg-surface-elevated);
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      .token-paste:hover {
+        color: var(--text-primary);
+      }
+
+      .token-paste svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .token-hint {
+        font-size: 0.8rem;
+        color: var(--text-tertiary);
+        margin-top: 0.75rem;
+        line-height: 1.5;
+      }
+
+      .token-hint a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .token-hint a:hover {
+        text-decoration: underline;
+      }
+
+      /* Buttons */
+      .btn-primary {
+        width: 100%;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: inherit;
+        color: var(--accent-text);
+        background: var(--accent);
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          transform 0.1s ease;
+        margin-top: 1.5rem;
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-primary:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-primary svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .btn-secondary {
+        width: 100%;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 500;
+        font-family: inherit;
+        color: var(--text-secondary);
+        background: transparent;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        margin-top: 0.75rem;
+      }
+
+      .btn-secondary:hover {
+        color: var(--text-primary);
+      }
+
+      /* Theme toggle */
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 10px;
+        color: var(--text-secondary);
+        cursor: pointer;
+      }
+
+      .theme-toggle:hover {
+        background: var(--bg-surface-elevated);
+      }
+
+      .theme-toggle svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* Success state */
+      .success-state {
+        display: none;
+        text-align: center;
+        padding: 2rem 0;
+      }
+
+      .success-state.visible {
+        display: block;
+      }
+
+      .success-icon {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1.5rem;
+        background: rgba(34, 197, 94, 0.15);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: var(--success);
+      }
+
+      .success-icon svg {
+        width: 36px;
+        height: 36px;
+      }
+
+      .success-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--text-primary);
+      }
+
+      .success-description {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        margin: 0 0 2rem;
+      }
+
+      /* Form state */
+      .form-state {
+        display: block;
+      }
+
+      .form-state.hidden {
+        display: none;
+      }
+
+      /* Responsive */
+      @media (min-height: 700px) {
+        .auth-container {
+          padding: 3rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="theme-dark">
+    <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Toggle theme">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      >
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+      </svg>
+    </button>
+
+    <div class="auth-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <line x1="4" y1="6" x2="4" y2="18"></line>
+            <line x1="8" y1="6" x2="8" y2="18"></line>
+            <line x1="12" y1="6" x2="12" y2="18"></line>
+            <line x1="16" y1="8" x2="16" y2="16"></line>
+            <line x1="20" y1="10" x2="20" y2="14"></line>
+          </svg>
+        </div>
+        <span class="logo-text">RSVP Reader</span>
+      </div>
+
+      <!-- Form state -->
+      <div class="form-state" id="form-state">
+        <div class="integration-card">
+          <div class="integration-logos">
+            <div class="integration-logo rsvp">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              >
+                <line x1="4" y1="6" x2="4" y2="18"></line>
+                <line x1="8" y1="6" x2="8" y2="18"></line>
+                <line x1="12" y1="6" x2="12" y2="18"></line>
+                <line x1="16" y1="8" x2="16" y2="16"></line>
+                <line x1="20" y1="10" x2="20" y2="14"></line>
+              </svg>
+            </div>
+            <div class="integration-connector">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M5 12h14"></path>
+                <path d="M12 5l7 7-7 7"></path>
+              </svg>
+            </div>
+            <div class="integration-logo readwise">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+              </svg>
+            </div>
+          </div>
+          <h1 class="integration-title">Connect Readwise Reader</h1>
+          <p class="integration-description">
+            Sync your reading list and read articles at lightning speed with RSVP
+          </p>
+        </div>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <svg
+              class="feature-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span class="feature-text">Access your entire Readwise library instantly</span>
+          </div>
+          <div class="feature-item">
+            <svg
+              class="feature-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span class="feature-text">Automatically sync read status and progress</span>
+          </div>
+          <div class="feature-item">
+            <svg
+              class="feature-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span class="feature-text">Save highlights back to your Readwise account</span>
+          </div>
+        </div>
+
+        <form class="token-section" id="token-form">
+          <div class="token-header">
+            <label class="token-label" for="token">Access Token</label>
+            <a
+              href="https://readwise.io/access_token"
+              target="_blank"
+              rel="noopener"
+              class="token-help"
+            >
+              Get your token
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+          </div>
+          <div class="token-input-wrapper">
+            <input
+              type="password"
+              id="token"
+              class="token-input"
+              placeholder="Paste your Readwise access token"
+              autocomplete="off"
+              required
+            />
+            <button type="button" class="token-paste" id="paste-btn">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+              </svg>
+              Paste
+            </button>
+          </div>
+          <p class="token-hint">
+            Your token is stored securely and only used to sync with Readwise.
+            <a href="https://readwise.io/access_token" target="_blank" rel="noopener"
+              >Get your token here</a
+            >.
+          </p>
+
+          <button type="submit" class="btn-primary">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            Connect Readwise
+          </button>
+          <button type="button" class="btn-secondary" id="skip-btn">Skip for now</button>
+        </form>
+      </div>
+
+      <!-- Success state -->
+      <div class="success-state" id="success-state">
+        <div class="success-icon">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h2 class="success-title">Connected!</h2>
+        <p class="success-description">Your Readwise account is now linked. Let's start reading.</p>
+        <button type="button" class="btn-primary" id="continue-btn">Go to Library</button>
+      </div>
+    </div>
+
+    <script>
+      // Theme toggle
+      const themeToggle = document.getElementById('theme-toggle');
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('theme-dark');
+        document.body.classList.toggle('theme-light');
+      });
+
+      // Paste button
+      const pasteBtn = document.getElementById('paste-btn');
+      const tokenInput = document.getElementById('token');
+      pasteBtn.addEventListener('click', async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          tokenInput.value = text;
+          tokenInput.focus();
+        } catch (err) {
+          console.log('Could not read clipboard');
+        }
+      });
+
+      // Form submission
+      const formState = document.getElementById('form-state');
+      const successState = document.getElementById('success-state');
+      const tokenForm = document.getElementById('token-form');
+
+      tokenForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Simulate connection - in real app, validate token with API
+        formState.classList.add('hidden');
+        successState.classList.add('visible');
+      });
+
+      // Skip button
+      const skipBtn = document.getElementById('skip-btn');
+      skipBtn.addEventListener('click', () => {
+        // Navigate to library without connecting
+        console.log('Skipped Readwise connection');
+      });
+
+      // Continue button
+      const continueBtn = document.getElementById('continue-btn');
+      continueBtn.addEventListener('click', () => {
+        // Navigate to library
+        console.log('Continue to library');
+      });
+    </script>
+  </body>
+</html>
