@@ -215,36 +215,33 @@ test.describe('Connect Reader Page', () => {
       page.getByRole('heading', { name: 'Connect Readwise Reader', level: 1 })
     ).toBeVisible();
     await expect(page.getByLabel('Access Token')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Connect Reader' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Connect Readwise' })).toBeVisible();
   });
 
-  test('shows info box explaining the feature', async ({ page }) => {
-    await expect(page.getByText('What is this?')).toBeVisible();
-    await expect(page.getByText('RSVP Reader uses your Readwise')).toBeVisible();
+  test('shows features list', async ({ page }) => {
+    await expect(page.getByText('Access your entire Readwise library instantly')).toBeVisible();
+    await expect(page.getByText('Automatically sync read status and progress')).toBeVisible();
+    await expect(page.getByText('Save highlights back to your Readwise account')).toBeVisible();
   });
 
   test('shows link to get access token', async ({ page }) => {
-    const tokenLink = page.getByRole('link', { name: /Get your access token/i });
+    const tokenLink = page.getByRole('link', { name: 'Get your token', exact: true });
     await expect(tokenLink).toBeVisible();
     await expect(tokenLink).toHaveAttribute('href', 'https://readwise.io/access_token');
     await expect(tokenLink).toHaveAttribute('target', '_blank');
   });
 
-  test('shows token toggle button', async ({ page }) => {
+  test('shows paste button for token', async ({ page }) => {
     const tokenField = page.getByLabel('Access Token');
     await expect(tokenField).toHaveAttribute('type', 'password');
 
-    // Click toggle to show token
-    await page.getByRole('button', { name: 'Show token' }).click();
-    await expect(tokenField).toHaveAttribute('type', 'text');
-
-    // Click again to hide
-    await page.getByRole('button', { name: 'Hide token' }).click();
-    await expect(tokenField).toHaveAttribute('type', 'password');
+    // Check paste button is visible
+    const pasteButton = page.getByRole('button', { name: 'Paste from clipboard' });
+    await expect(pasteButton).toBeVisible();
   });
 
   test('shows error for empty token submission', async ({ page }) => {
-    await page.getByRole('button', { name: 'Connect Reader' }).click();
+    await page.getByRole('button', { name: 'Connect Readwise' }).click();
 
     // HTML5 validation should prevent submission or show error
     const tokenField = page.getByLabel('Access Token');
@@ -253,7 +250,7 @@ test.describe('Connect Reader Page', () => {
 
   test('shows error for short/invalid token', async ({ page }) => {
     await page.getByLabel('Access Token').fill('short');
-    await page.getByRole('button', { name: 'Connect Reader' }).click();
+    await page.getByRole('button', { name: 'Connect Readwise' }).click();
 
     await expect(
       page.getByRole('alert').filter({ hasText: "doesn't look like a valid access token" })
@@ -272,7 +269,7 @@ test.describe('Connect Reader Page', () => {
     });
 
     await page.getByLabel('Access Token').fill('valid_token_that_is_long_enough_1234567890');
-    await page.getByRole('button', { name: 'Connect Reader' }).click();
+    await page.getByRole('button', { name: 'Connect Readwise' }).click();
 
     await expect(page.getByRole('button', { name: 'Connecting...' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Connecting...' })).toBeDisabled();
@@ -292,7 +289,7 @@ test.describe('Connect Reader Page', () => {
     });
 
     await page.getByLabel('Access Token').fill('invalid_token_that_is_long_enough');
-    await page.getByRole('button', { name: 'Connect Reader' }).click();
+    await page.getByRole('button', { name: 'Connect Readwise' }).click();
 
     // Wait for API response
     await expect(page.getByRole('alert').filter({ hasText: 'Invalid access token' })).toBeVisible({
@@ -300,7 +297,7 @@ test.describe('Connect Reader Page', () => {
     });
   });
 
-  test('redirects to library on successful connection', async ({ page }) => {
+  test('shows success state on successful connection', async ({ page }) => {
     // Mock successful API response
     await page.route('/api/auth/connect-reader', (route) => {
       route.fulfill({
@@ -311,15 +308,39 @@ test.describe('Connect Reader Page', () => {
     });
 
     await page.getByLabel('Access Token').fill('valid_reader_access_token_12345');
-    await page.getByRole('button', { name: 'Connect Reader' }).click();
+    await page.getByRole('button', { name: 'Connect Readwise' }).click();
 
-    // Should redirect to library
-    await expect(page).toHaveURL('/', { timeout: 5000 });
+    // Should show success state with "Go to Library" button
+    await expect(page.getByRole('heading', { name: 'Connected!' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: 'Go to Library' })).toBeVisible();
+  });
+
+  test('redirects to library from success state', async ({ page }) => {
+    // Mock successful API response
+    await page.route('/api/auth/connect-reader', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
+    await page.getByLabel('Access Token').fill('valid_reader_access_token_12345');
+    await page.getByRole('button', { name: 'Connect Readwise' }).click();
+
+    // Wait for success state
+    await expect(page.getByRole('button', { name: 'Go to Library' })).toBeVisible({
+      timeout: 5000,
+    });
+
+    // Click to go to library
+    await page.getByRole('button', { name: 'Go to Library' }).click();
+    await expect(page).toHaveURL('/');
   });
 
   test('has skip option to continue without connecting', async ({ page }) => {
-    await expect(page.getByRole('link', { name: 'Skip for now' })).toBeVisible();
-    await page.getByRole('link', { name: 'Skip for now' }).click();
+    await expect(page.getByRole('button', { name: 'Skip for now' })).toBeVisible();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
     await expect(page).toHaveURL('/');
   });
 

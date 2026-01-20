@@ -1,11 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ui';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../auth.module.css';
+
+interface PasswordStrength {
+  score: number; // 0-4
+  label: string;
+}
+
+function calculatePasswordStrength(password: string): PasswordStrength {
+  if (!password) return { score: 0, label: '' };
+
+  let score = 0;
+
+  // Length checks
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+
+  // Character type checks
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+  // Cap at 4
+  score = Math.min(score, 4);
+
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  return { score, label: labels[score] };
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,6 +41,8 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const passwordStrength = useMemo(() => calculatePasswordStrength(password), [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +107,23 @@ export default function SignupPage() {
     }
   };
 
+  const getStrengthBarClass = (index: number): string => {
+    if (index >= passwordStrength.score) return styles.strengthBar;
+
+    switch (passwordStrength.score) {
+      case 1:
+        return `${styles.strengthBar} ${styles.weak}`;
+      case 2:
+        return `${styles.strengthBar} ${styles.medium}`;
+      case 3:
+        return `${styles.strengthBar} ${styles.strong}`;
+      case 4:
+        return `${styles.strengthBar} ${styles.veryStrong}`;
+      default:
+        return styles.strengthBar;
+    }
+  };
+
   return (
     <div className={styles.container}>
       <ThemeToggle className={styles.themeToggle} />
@@ -139,7 +184,7 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={styles.input}
-                placeholder="At least 8 characters"
+                placeholder="Create a password"
                 autoComplete="new-password"
                 required
               />
@@ -162,6 +207,20 @@ export default function SignupPage() {
                 )}
               </button>
             </div>
+            {/* Password strength indicator */}
+            {password && (
+              <>
+                <div className={styles.passwordStrength}>
+                  {[0, 1, 2, 3].map((index) => (
+                    <div key={index} className={getStrengthBarClass(index)} />
+                  ))}
+                </div>
+                <p className={styles.passwordHint}>
+                  {passwordStrength.label && `${passwordStrength.label} - `}
+                  At least 8 characters with a number and symbol
+                </p>
+              </>
+            )}
           </div>
 
           <div className={styles.inputGroup}>
