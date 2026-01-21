@@ -61,6 +61,14 @@
   font-weight: var(--font-weight-normal);
 }
 
+/* Invisible padding characters - used to maintain fixed word width */
+.invisible {
+  color: transparent;
+  font-family: var(--font-rsvp);
+  font-size: 32px;
+  user-select: none;
+}
+
 /* ORP marker line - positioned below the word, centered */
 .focusLine {
   width: 2px;
@@ -79,7 +87,8 @@
   .word,
   .left,
   .right,
-  .orp {
+  .orp,
+  .invisible {
     font-size: 42px;
   }
 }
