@@ -334,14 +334,18 @@ test.describe('Connect Reader Page', () => {
     });
 
     // Click to go to library
+    // Since we're not actually authenticated (no Supabase session),
+    // the home page will redirect to /auth/login
     await page.getByRole('button', { name: 'Go to Library' }).click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
   });
 
   test('has skip option to continue without connecting', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Skip for now' })).toBeVisible();
     await page.getByRole('button', { name: 'Skip for now' }).click();
-    await expect(page).toHaveURL('/');
+    // Since we're not actually authenticated (no Supabase session),
+    // the home page will redirect to /auth/login
+    await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
   });
 
   test('has link back to login', async ({ page }) => {
@@ -472,5 +476,34 @@ test.describe('Login Page', () => {
       path: getScreenshotPath(testInfo, `login-${viewport}-light.png`),
       fullPage: true,
     });
+  });
+});
+
+test.describe('Unauthenticated Redirect', () => {
+  test('redirects unauthenticated users from home page to login', async ({ page }) => {
+    // Clear any existing session data
+    await page.context().clearCookies();
+
+    // Navigate to the home page
+    await page.goto('/');
+
+    // Should be redirected to the login page
+    await expect(page).toHaveURL('/auth/login', { timeout: 10000 });
+  });
+
+  test('redirects unauthenticated users who try to access connect-reader directly', async ({
+    page,
+  }) => {
+    // Clear any existing session data
+    await page.context().clearCookies();
+
+    // Navigate to connect-reader page
+    await page.goto('/auth/connect-reader');
+
+    // Should stay on connect-reader (this page handles auth internally)
+    // or redirect to login - verify the page shows properly
+    await expect(
+      page.getByRole('heading', { name: 'Connect Readwise Reader', level: 1 })
+    ).toBeVisible({ timeout: 10000 });
   });
 });

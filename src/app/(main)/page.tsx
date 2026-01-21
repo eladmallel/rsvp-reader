@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import styles from './page.module.css';
 
 interface ConnectionResponse {
@@ -11,30 +12,52 @@ interface ConnectionResponse {
 
 export default function HomePage() {
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    async function checkConnection() {
-      try {
-        const response = await fetch('/api/auth/connect-reader');
-        const data: ConnectionResponse = await response.json();
-        setIsConnected(data.connected);
-      } catch {
-        setIsConnected(false);
-      }
-    }
-
-    checkConnection();
+  const checkAuth = useCallback(async () => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const authenticated = !!user;
+    setIsAuthenticated(authenticated);
+    return authenticated;
   }, []);
 
-  // Redirect to connect if not connected
+  const checkConnection = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/connect-reader');
+      const data: ConnectionResponse = await response.json();
+      setIsConnected(data.connected);
+      return data.connected;
+    } catch {
+      setIsConnected(false);
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
-    if (isConnected === false) {
+    async function loadAuthAndConnection() {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        router.push('/auth/login');
+        return;
+      }
+      await checkConnection();
+    }
+
+    loadAuthAndConnection();
+  }, [checkAuth, checkConnection, router]);
+
+  // Redirect to connect if authenticated but not connected
+  useEffect(() => {
+    if (isAuthenticated === true && isConnected === false) {
       router.push('/auth/connect-reader');
     }
-  }, [isConnected, router]);
+  }, [isAuthenticated, isConnected, router]);
 
-  if (isConnected === null) {
+  if (isAuthenticated === null || isConnected === null) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>Loading...</div>

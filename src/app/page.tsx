@@ -12,6 +12,7 @@ import {
   type TabId,
 } from '@/components/library';
 import { ThemeToggle } from '@/components/ui';
+import { createClient } from '@/lib/supabase/client';
 import styles from './page.module.css';
 
 interface DocumentFromApi {
@@ -79,6 +80,7 @@ export default function LibraryPage() {
   // API state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
 
   // Data from API
@@ -86,6 +88,17 @@ export default function LibraryPage() {
   const [feedArticles, setFeedArticles] = useState<Article[]>([]);
   const [historyArticles] = useState<Article[]>([]); // Will be implemented in Phase 4
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+
+  // Check if user is authenticated
+  const checkAuth = useCallback(async () => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const authenticated = !!user;
+    setIsAuthenticated(authenticated);
+    return authenticated;
+  }, []);
 
   // Check if Reader is connected
   const checkConnection = useCallback(async () => {
@@ -142,17 +155,23 @@ export default function LibraryPage() {
     }
   }, []);
 
-  // Initial connection check
+  // Initial auth and connection check
   useEffect(() => {
-    async function loadConnection() {
+    async function loadAuthAndConnection() {
+      const authenticated = await checkAuth();
+      if (!authenticated) {
+        router.push('/auth/login');
+        return;
+      }
+
       const connected = await checkConnection();
       if (!connected) {
         setIsLoading(false);
       }
     }
 
-    loadConnection();
-  }, [checkConnection]);
+    loadAuthAndConnection();
+  }, [checkAuth, checkConnection, router]);
 
   // Load tags once connected
   useEffect(() => {
@@ -241,7 +260,26 @@ export default function LibraryPage() {
     router.push(`/rsvp?id=${article.id}`);
   };
 
-  // Not connected state
+  // If not authenticated, show loading while redirect happens
+  if (isAuthenticated === false) {
+    return (
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>RSVP Reader</h1>
+          <ThemeToggle />
+        </header>
+
+        <main className={styles.main}>
+          <div className={styles.loadingState}>
+            <div className={styles.spinner}></div>
+            <p>Redirecting to login...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Not connected state (user is authenticated but hasn't connected Readwise)
   if (isConnected === false) {
     return (
       <div className={styles.container}>
