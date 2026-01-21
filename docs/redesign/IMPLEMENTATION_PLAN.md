@@ -441,13 +441,13 @@ After deletion, visiting `http://localhost:3000/` should show:
 **Checklist**:
 
 - [x] **DELETE old `/src/app/page.tsx` and `/src/app/page.module.css`** (blocking issue)
-- [ ] Bottom nav height is exactly `72px` (72px + safe area inset)
-- [ ] Nav background uses `var(--nav-bg)` (light: #ffffff, dark: #1c1c1c)
-- [ ] Border-top is `1px solid var(--border-subtle)`
-- [ ] Nav item icons are `24px × 24px`
-- [ ] Nav item labels are `0.7rem`, weight 500
-- [ ] Active state uses `var(--text-primary)`, inactive uses `var(--text-tertiary)`
-- [ ] Max-width inner container is `560px` (900px on desktop)
+- [x] Bottom nav height is exactly `72px` (72px + safe area inset)
+- [x] Nav background uses `var(--nav-bg)` (light: #ffffff, dark: #1c1c1c)
+- [x] Border-top is `1px solid var(--border-subtle)`
+- [x] Nav item icons are `24px × 24px`
+- [x] Nav item labels are `0.7rem`, weight 500
+- [x] Active state uses `var(--text-primary)`, inactive uses `var(--text-tertiary)`
+- [x] Max-width inner container is `560px` (900px on desktop)
 
 ### 6.5.1b RSVP Player Alignment
 
@@ -497,10 +497,10 @@ The RSVP player page has **multiple structural issues**:
 - [x] Pass `source` prop to RSVPPlayer (extract from article URL or siteName)
 - [x] Remove duplicate page header from RsvpPageClient
 - [x] Make RSVP page full-screen (no page.module.css container)
-- [ ] Article source shows centered above title (uppercase, 0.7rem, tertiary color)
-- [ ] Article title shows centered below source (1rem, weight 600, single line ellipsis)
-- [ ] Header height matches prototype (`--header-height: 80px`)
-- [ ] Cockpit height matches prototype (`--cockpit-height: 200px`)
+- [x] Article source shows centered above title (uppercase, 0.7rem, tertiary color)
+- [x] Article title shows centered below source (1rem, weight 600, single line ellipsis)
+- [x] Header height matches prototype (`--header-height: 80px`)
+- [x] Cockpit height matches prototype (`--cockpit-height: 200px`)
 
 ---
 
@@ -526,15 +526,15 @@ The RSVP player page has **multiple structural issues**:
 
 **Checklist**:
 
-- [ ] Header is fixed with proper z-index (10)
-- [ ] Header height is `120px` (--header-height)
-- [ ] Top bar has hamburger menu button (left) + action buttons (right)
-- [ ] Page title is `2rem`, weight 700, letter-spacing `-0.02em`
-- [ ] Page count next to title is `2rem`, weight 400, color `var(--text-tertiary)`
-- [ ] Sub-tabs are fixed below header with border-bottom
-- [ ] Sub-tab active state: background `var(--bg-surface-elevated)`, color `var(--text-primary)`
-- [ ] Content area has proper padding for fixed header + sub-tabs + bottom nav
-- [ ] Continue reading banner matches prototype exactly
+- [x] Header is fixed with proper z-index (10)
+- [x] Header height is `120px` (--header-height)
+- [x] Top bar has hamburger menu button (left) + action buttons (right)
+- [x] Page title is `2rem`, weight 700, letter-spacing `-0.02em`
+- [x] Page count next to title is `2rem`, weight 400, color `var(--text-tertiary)`
+- [x] Sub-tabs are fixed below header with border-bottom
+- [x] Sub-tab active state: background `var(--bg-surface-elevated)`, color `var(--text-primary)`
+- [x] Content area has proper padding for fixed header + sub-tabs + bottom nav
+- [x] Continue reading banner component exists (integration pending)
 
 ### 6.5.3 Home Dashboard Alignment
 
