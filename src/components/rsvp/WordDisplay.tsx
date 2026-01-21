@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { isRTLWord } from '@/lib/rtl';
 import { calculateORPIndex } from '@/lib/rsvp';
 import styles from './WordDisplay.module.css';
@@ -32,7 +35,6 @@ function padWordWithORP(
   orp: string;
   right: string;
 } {
-  const length = word.length;
   const leftPart = word.slice(0, orpIndex);
   const orpChar = word[orpIndex] || '';
   const rightPart = word.slice(orpIndex + 1);
@@ -73,7 +75,17 @@ function renderWithInvisibleDots(text: string) {
 }
 
 export function WordDisplay({ word, orpIndex }: WordDisplayProps) {
-  if (!word) {
+  // Only render actual content after hydration to avoid SSR/client mismatches
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Intentional: Set mounted state after hydration to prevent SSR/client mismatches
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  // During SSR and initial hydration, show placeholder
+  if (!mounted || !word) {
     return (
       <div className={styles.container}>
         <div className={styles.wordWrapper}>
