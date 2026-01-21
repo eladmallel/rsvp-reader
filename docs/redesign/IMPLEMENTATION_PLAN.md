@@ -8,16 +8,17 @@ Complete UI redesign based on 8 prototype screens in `docs/redesign/prototypes/`
 
 ## Progress Tracker
 
-| Phase                             | Status         | Notes                                              |
-| --------------------------------- | -------------- | -------------------------------------------------- |
-| Phase 0: Design System Foundation | ✅ Complete    | Tokens, fonts, and shared UI components done       |
-| Phase 1: RSVP Player              | ✅ Complete    | New Cockpit controls, WordDisplay, Settings panel  |
-| Phase 2: Navigation Shell         | ✅ Complete    | Route groups, BottomNav, placeholder pages         |
-| Phase 3: Library & Feed           | ✅ Complete    | ArticleListItem, SubTabs, ContinueReadingBanner    |
-| Phase 4: Search Screen            | ✅ Complete    | Search API, filter chips, recent searches          |
-| Phase 5: Settings Screen          | ✅ Complete    | User preferences API, profile display, toggles     |
-| Phase 6: Auth Screens             | ✅ Complete    | Login, Signup w/ password strength, Connect Reader |
-| Phase 7: Home Dashboard           | 🔲 Not Started |                                                    |
+| Phase                                 | Status               | Notes                                              |
+| ------------------------------------- | -------------------- | -------------------------------------------------- |
+| Phase 0: Design System Foundation     | ✅ Complete          | Tokens, fonts, and shared UI components done       |
+| Phase 1: RSVP Player                  | ✅ Complete          | New Cockpit controls, WordDisplay, Settings panel  |
+| Phase 2: Navigation Shell             | ✅ Complete          | Route groups, BottomNav, placeholder pages         |
+| Phase 3: Library & Feed               | ✅ Complete          | ArticleListItem, SubTabs, ContinueReadingBanner    |
+| Phase 4: Search Screen                | ✅ Complete          | Search API, filter chips, recent searches          |
+| Phase 5: Settings Screen              | ✅ Complete          | User preferences API, profile display, toggles     |
+| Phase 6: Auth Screens                 | ✅ Complete          | Login, Signup w/ password strength, Connect Reader |
+| **Phase 6.5: UI Prototype Alignment** | 🔴 **HIGH PRIORITY** | App-wide alignment to prototype designs            |
+| Phase 7: Home Dashboard               | 🔲 Not Started       |                                                    |
 
 ---
 
@@ -358,6 +359,349 @@ src/app/
 - Update all existing tests for new layouts
 - Test theme toggle
 - Screenshots for all 3 screens
+
+---
+
+## Phase 6.5: UI Prototype Alignment (Priority: HIGH - Must complete before Phase 7)
+
+> **⚠️ CRITICAL**: All screens must EXACTLY match their corresponding HTML prototype files. This phase addresses gaps found between current implementation and prototype designs.
+
+**Goal**: Ensure every page in the app matches its prototype design pixel-perfectly. The prototypes in `docs/redesign/prototypes/` are the source of truth for all visual design.
+
+### 6.5.0 CRITICAL: Route Architecture Fix (BLOCKING ISSUE)
+
+> **🚨 BLOCKING**: The bottom navigation is NOT visible because of a routing architecture issue.
+
+**Root Cause**:
+
+There are **two** conflicting `page.tsx` files:
+
+1. `/src/app/page.tsx` (OLD) - 412 lines, uses old design with "RSVP Reader" header, TabBar, TagFilter
+2. `/src/app/(main)/page.tsx` (NEW) - 108 lines, uses `(main)` layout with BottomNav
+
+When users visit `http://localhost:3000/`, Next.js routes to `/src/app/page.tsx` (the OLD file), completely bypassing the `(main)` route group and its layout with BottomNav.
+
+**Current File Structure (PROBLEMATIC)**:
+
+```
+src/app/
+├── page.tsx              ← OLD: Catches "/" route, NO bottom nav
+├── page.module.css       ← OLD styles
+├── (main)/
+│   ├── layout.tsx        ← NEW: Has BottomNav
+│   ├── page.tsx          ← NEW: Home dashboard (NEVER REACHED for "/" )
+│   ├── library/page.tsx  ← NEW library (reached via "/library")
+│   ├── feed/page.tsx     ← NEW feed
+│   └── ...
+```
+
+**Required Fix**:
+
+1. DELETE `/src/app/page.tsx` and `/src/app/page.module.css` (old files)
+2. The `(main)` route group with its layout.tsx containing BottomNav will then catch the "/" route
+3. Migrate any unique functionality from old page.tsx into `(main)/page.tsx` or `(main)/library/page.tsx`
+
+**Files to Delete**:
+
+- `src/app/page.tsx` (old 412-line file)
+- `src/app/page.module.css` (old styles)
+
+**Files to Keep/Update**:
+
+- `src/app/(main)/layout.tsx` - This has the BottomNav
+- `src/app/(main)/page.tsx` - Home dashboard (will now serve "/")
+- `src/app/(main)/library/page.tsx` - Library page (serves "/library")
+
+**Verification**:
+
+After deletion, visiting `http://localhost:3000/` should show:
+
+- Bottom navigation with 5 tabs (Home, Library, Feed, Search, Settings)
+- The new home dashboard UI (not "RSVP Reader" header)
+
+---
+
+### 6.5.1 Global Navigation & Shell Alignment
+
+**Reference**: All prototype files use consistent bottom navigation
+
+**Current Gaps**:
+
+- Bottom nav implementation exists in `(main)` layout but is not reached due to routing issue above
+- Once routing is fixed, verify styling matches prototypes exactly
+- Need to verify `--nav-bg` CSS variable is properly defined in both themes
+
+**Files to Review/Update**:
+
+- `src/components/ui/BottomNav.tsx` - Verify structure matches prototypes
+- `src/components/ui/BottomNav.module.css` - Match exact styling
+- `src/components/ui/Icon.tsx` - Verify icons match prototype SVGs exactly
+- `src/app/globals.css` - Ensure all nav-related CSS variables are defined
+
+**Checklist**:
+
+- [ ] **DELETE old `/src/app/page.tsx` and `/src/app/page.module.css`** (blocking issue)
+- [ ] Bottom nav height is exactly `72px` (72px + safe area inset)
+- [ ] Nav background uses `var(--nav-bg)` (light: #ffffff, dark: #1c1c1c)
+- [ ] Border-top is `1px solid var(--border-subtle)`
+- [ ] Nav item icons are `24px × 24px`
+- [ ] Nav item labels are `0.7rem`, weight 500
+- [ ] Active state uses `var(--text-primary)`, inactive uses `var(--text-tertiary)`
+- [ ] Max-width inner container is `560px` (900px on desktop)
+
+### 6.5.1b RSVP Player Alignment
+
+**Reference**: `docs/redesign/prototypes/rsvp-player.html`
+
+**Current Gaps**:
+
+The RSVP player page has **multiple structural issues**:
+
+1. **Missing title/source in player header**: The RSVPPlayer component accepts `title` and `source` props but `RsvpPageClient.tsx` doesn't pass them:
+
+   ```tsx
+   // Current (WRONG):
+   <RSVPPlayer
+     text={text}
+     articleId={articleId || 'demo'}
+     onExit={handleExit}
+     initialWpm={300}
+     className={styles.playerContainer}
+   />
+
+   // Should be:
+   <RSVPPlayer
+     text={text}
+     articleId={articleId || 'demo'}
+     onExit={handleExit}
+     initialWpm={300}
+     title={article?.title}
+     source={extractSource(article)}  // e.g., "X.COM"
+     className={styles.playerContainer}
+   />
+   ```
+
+2. **Duplicate header**: `RsvpPageClient.tsx` has its own header (lines 151-161) PLUS RSVPPlayer has its own header. The page header should be removed - the RSVPPlayer should be the only full-screen component.
+
+3. **Page layout not full-screen**: The RSVP page should be a full-screen immersive experience matching the prototype (no external header/footer).
+
+**Files to Update**:
+
+- `src/app/rsvp/RsvpPageClient.tsx` - Pass title/source props, remove duplicate header
+- `src/app/rsvp/page.module.css` - Adjust for full-screen layout
+- `src/components/rsvp/RSVPPlayer.module.css` - Verify matches prototype styling
+
+**Checklist**:
+
+- [ ] Pass `title` prop to RSVPPlayer
+- [ ] Pass `source` prop to RSVPPlayer (extract from article URL or siteName)
+- [ ] Remove duplicate page header from RsvpPageClient
+- [ ] Make RSVP page full-screen (no page.module.css container)
+- [ ] Article source shows centered above title (uppercase, 0.7rem, tertiary color)
+- [ ] Article title shows centered below source (1rem, weight 600, single line ellipsis)
+- [ ] Header height matches prototype (`--header-height: 80px`)
+- [ ] Cockpit height matches prototype (`--cockpit-height: 200px`)
+
+---
+
+### 6.5.2 Library & Feed Page Alignment
+
+**Reference**: `docs/redesign/prototypes/library-feed.html`
+
+**Current Gaps**:
+
+- Fixed header structure may not match prototype layout
+- Sub-tabs styling needs verification
+- Page title + count styling needs exact match
+- Top bar icons (hamburger menu, add, more options) layout
+
+**Files to Review/Update**:
+
+- `src/app/(main)/library/page.tsx`
+- `src/app/(main)/library/page.module.css`
+- `src/app/(main)/feed/page.tsx`
+- `src/app/(main)/feed/page.module.css`
+- `src/components/library/SubTabs.tsx`
+- `src/components/library/SubTabs.module.css`
+
+**Checklist**:
+
+- [ ] Header is fixed with proper z-index (10)
+- [ ] Header height is `120px` (--header-height)
+- [ ] Top bar has hamburger menu button (left) + action buttons (right)
+- [ ] Page title is `2rem`, weight 700, letter-spacing `-0.02em`
+- [ ] Page count next to title is `2rem`, weight 400, color `var(--text-tertiary)`
+- [ ] Sub-tabs are fixed below header with border-bottom
+- [ ] Sub-tab active state: background `var(--bg-surface-elevated)`, color `var(--text-primary)`
+- [ ] Content area has proper padding for fixed header + sub-tabs + bottom nav
+- [ ] Continue reading banner matches prototype exactly
+
+### 6.5.3 Home Dashboard Alignment
+
+**Reference**: `docs/redesign/prototypes/home.html`
+
+**Current Gaps**:
+
+- Current home page is a minimal placeholder
+- Missing greeting section with proper styling
+- Missing stats grid with icon containers
+- Missing continue reading card with thumbnail + progress bar
+- Missing quick action buttons with proper styling
+- Missing recently added article list
+
+**Files to Review/Update**:
+
+- `src/app/(main)/page.tsx`
+- `src/app/(main)/page.module.css`
+
+**Checklist**:
+
+- [ ] Greeting section: h1 `1.75rem`, weight 700, letter-spacing `-0.02em`
+- [ ] Subtitle: `1rem`, color `var(--text-secondary)`
+- [ ] Stats grid: 2 columns on mobile, 4 on desktop (900px+)
+- [ ] Stat card icons: 32px × 32px, rounded 8px, background `var(--stat-bg)`
+- [ ] Stat values: `1.75rem`, weight 700
+- [ ] Continue reading card: 16px border-radius, 1.25rem padding
+- [ ] Progress bar: 4px height, accent fill color
+- [ ] Quick action buttons: centered icons 44px × 44px
+- [ ] Article list items match prototype style
+
+### 6.5.4 Search Page Alignment
+
+**Reference**: `docs/redesign/prototypes/search.html`
+
+**Current Gaps**:
+
+- Verify search input styling matches (48px height, 12px border-radius)
+- Filter chips styling and active states
+- Recent searches list styling
+- Search results with `<mark>` highlighting
+
+**Files to Review/Update**:
+
+- `src/app/(main)/search/page.tsx`
+- `src/app/(main)/search/page.module.css`
+- `src/components/ui/FilterChip.tsx`
+- `src/components/ui/FilterChip.module.css`
+
+**Checklist**:
+
+- [ ] Search input: 48px height, 12px border-radius, 1rem font
+- [ ] Focus state: accent border + box-shadow glow
+- [ ] Clear button: 28px, only shows when input has text
+- [ ] Filter chips: 20px border-radius, proper padding
+- [ ] Active chip: accent background, black text
+- [ ] Recent items: 32px icon container, 8px border-radius
+- [ ] Results: source icon 18px, title `1rem` weight 600
+- [ ] Mark tags: use `var(--highlight-bg)` for highlights
+
+### 6.5.5 Settings Page Alignment
+
+**Reference**: `docs/redesign/prototypes/settings.html`
+
+**Current Gaps**:
+
+- Profile card styling (avatar gradient, badge)
+- Settings sections with proper grouping
+- Settings items with icon containers
+- Connection status indicators (green dot)
+
+**Files to Review/Update**:
+
+- `src/app/(main)/settings/page.tsx`
+- `src/app/(main)/settings/page.module.css`
+- `src/components/ui/ToggleSwitch.tsx`
+- `src/components/ui/ToggleSwitch.module.css`
+
+**Checklist**:
+
+- [ ] Profile avatar: 56px, gradient background
+- [ ] Profile badge: uppercase, accent bg, 0.7rem font
+- [ ] Settings cards: 12px border-radius, grouped items
+- [ ] Settings item icons: 32px × 32px, 8px border-radius
+- [ ] Chevron arrows for navigable items
+- [ ] Toggle switches: 52px × 32px, 24px knob
+- [ ] Active toggle: accent bg, black knob
+- [ ] Connection status: 8px dot, green for connected
+- [ ] Version footer: centered, 0.75rem, tertiary color
+
+### 6.5.6 CSS Variables & Design Tokens
+
+**Reference**: All prototypes define consistent CSS variables
+
+**Ensure globals.css has ALL these variables**:
+
+```css
+/* Light Theme */
+--bg-app: #f9f9f7;
+--bg-surface: #ffffff;
+--bg-surface-elevated: #f0f0ee;
+--text-primary: #242424;
+--text-secondary: #6b6b6b;
+--text-tertiary: #8e8e93;
+--border-subtle: #e5e5e5;
+--accent: #f2c94c;
+--accent-text: #000;
+--nav-bg: #ffffff;
+--stat-bg: rgba(242, 201, 76, 0.12);
+--highlight-bg: rgba(242, 201, 76, 0.3);
+--tag-bg: #e8e8e6;
+--tag-text: #6b6b6b;
+--unread-dot: #007aff;
+--danger: #ef4444;
+--success: #22c55e;
+
+/* Dark Theme */
+--bg-app: #151515;
+--bg-surface: #1c1c1c;
+--bg-surface-elevated: #242424;
+--text-primary: #eaeaea;
+--text-secondary: #8e8e93;
+--text-tertiary: #636366;
+--border-subtle: #2c2c2e;
+--nav-bg: #1c1c1c;
+--stat-bg: rgba(242, 201, 76, 0.08);
+--highlight-bg: rgba(242, 201, 76, 0.25);
+--tag-bg: #2c2c2e;
+--tag-text: #8e8e93;
+```
+
+### 6.5.7 Typography & Spacing Constants
+
+**Ensure these are consistent app-wide**:
+
+| Element          | Size         | Weight  | Letter-spacing |
+| ---------------- | ------------ | ------- | -------------- |
+| Page title (h1)  | 2rem         | 700     | -0.02em        |
+| Section title    | 1.1rem       | 600     | -              |
+| Settings section | 0.75rem      | 600     | 0.05em         |
+| Article title    | 1rem-1.05rem | 600     | -              |
+| Source name      | 0.7-0.75rem  | 600     | 0.03em         |
+| Meta text        | 0.75-0.8rem  | 400-500 | -              |
+| Nav item label   | 0.7rem       | 500     | -              |
+
+### 6.5.8 E2E Tests & Visual Verification
+
+**File**: `tests/e2e/visual-alignment.spec.ts` (NEW)
+
+Create a new E2E test file specifically for visual alignment verification:
+
+- [ ] Capture screenshots of all main screens at mobile (375×667) viewport
+- [ ] Capture screenshots at desktop (1440×900) viewport
+- [ ] Test both light and dark themes
+- [ ] Verify bottom nav appears on all main screens
+- [ ] Verify bottom nav is hidden on RSVP player and auth screens
+- [ ] Compare key measurements (use Playwright's `toHaveCSS` assertions)
+
+**Manual verification**:
+
+For each screen, open the prototype HTML file in a browser side-by-side with the live app and verify:
+
+1. Overall layout matches
+2. Colors and contrast match
+3. Typography sizes and weights match
+4. Spacing and padding match
+5. Interactive states (hover, active, focus) match
 
 ---
 
