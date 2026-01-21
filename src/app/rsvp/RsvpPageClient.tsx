@@ -14,6 +14,8 @@ interface ArticleContent {
   content?: string | null;
   htmlContent?: string | null;
   wordCount: number | null;
+  siteName?: string | null;
+  url?: string;
 }
 
 interface ArticleResponse {
@@ -23,6 +25,33 @@ interface ArticleResponse {
 
 // Sample text for when no article is loaded (demo mode)
 const sampleText = `The quick brown fox jumps over the lazy dog. This is a sample text that demonstrates the RSVP reading experience. Speed reading is a technique that allows readers to consume text at a much faster rate than traditional reading methods. By presenting words one at a time at a fixed focal point, the reader's eyes don't need to move across the page, eliminating saccades and improving reading speed. The Optimal Recognition Point, or ORP, is the letter in each word that the eye naturally focuses on. By highlighting this letter and aligning it to the center of the display, we can further optimize the reading experience. This prototype demonstrates the core RSVP functionality that will be used to read articles from your Readwise Reader library.`;
+
+/**
+ * Extract a display-friendly source name from article data.
+ * Uses siteName if available, otherwise extracts hostname from URL.
+ */
+function extractSource(article: ArticleContent | null): string | undefined {
+  if (!article) return undefined;
+
+  // Prefer siteName if available
+  if (article.siteName) {
+    return article.siteName.toUpperCase();
+  }
+
+  // Fall back to extracting hostname from URL
+  if (article.url) {
+    try {
+      const hostname = new URL(article.url).hostname;
+      // Remove 'www.' prefix and convert to uppercase
+      return hostname.replace(/^www\./, '').toUpperCase();
+    } catch {
+      // Invalid URL, return undefined
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
 
 export default function RsvpPageClient() {
   const router = useRouter();
@@ -88,7 +117,7 @@ export default function RsvpPageClient() {
     return sampleText;
   };
 
-  // Loading state
+  // Loading state - uses RSVPPlayer's built-in header structure for consistency
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -144,30 +173,19 @@ export default function RsvpPageClient() {
   // Demo mode when no article ID provided
   const isDemo = !articleId;
   const title = article?.title || (isDemo ? 'RSVP Demo' : 'Sample Article');
+  const source = extractSource(article);
   const text = getTextContent();
 
+  // RSVPPlayer is a full-screen component with its own header
+  // No need for additional page-level header when player is shown
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <Link href="/" className={styles.backLink}>
-            ← Back to Library
-          </Link>
-          <h1 className={styles.title}>{title}</h1>
-          {article?.author && <span className={styles.author}>by {article.author}</span>}
-        </div>
-        <ThemeToggle />
-      </header>
-
-      {/* RSVP Player */}
-      <RSVPPlayer
-        text={text}
-        articleId={articleId || 'demo'}
-        onExit={handleExit}
-        initialWpm={300}
-        className={styles.playerContainer}
-      />
-    </div>
+    <RSVPPlayer
+      text={text}
+      articleId={articleId || 'demo'}
+      onExit={handleExit}
+      initialWpm={300}
+      title={title}
+      source={source}
+    />
   );
 }
