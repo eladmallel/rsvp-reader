@@ -672,12 +672,12 @@ The RSVP player page has **multiple structural issues**:
 
 Create a new E2E test file specifically for visual alignment verification:
 
-- [ ] Capture screenshots of all main screens at mobile (375×667) viewport
-- [ ] Capture screenshots at desktop (1440×900) viewport
-- [ ] Test both light and dark themes
-- [ ] Verify bottom nav appears on all main screens
-- [ ] Verify bottom nav is hidden on RSVP player and auth screens
-- [ ] Compare key measurements (use Playwright's `toHaveCSS` assertions)
+- [x] Capture screenshots of all main screens at mobile (375×667) viewport
+- [x] Capture screenshots at desktop (1440×900) viewport
+- [x] Test both light and dark themes
+- [x] Verify bottom nav appears on all main screens
+- [x] Verify bottom nav is hidden on RSVP player and auth screens
+- [x] Compare key measurements (use Playwright's `toHaveCSS` assertions)
 
 **Manual verification**:
 
