@@ -54,6 +54,8 @@
   --tag-text: #8e8e93;
   --nav-bg: #1c1c1c;
   --continue-bg: #2c2c2e;
+  --stat-bg: rgba(242, 201, 76, 0.08);
+  --highlight-bg: rgba(242, 201, 76, 0.25);
 
   /* Typography - Font Families (using next/font CSS variables) */
   --font-ui:
@@ -166,6 +168,8 @@
   --tag-text: #6b6b6b;
   --nav-bg: #ffffff;
   --continue-bg: #ffffff;
+  --stat-bg: rgba(242, 201, 76, 0.12);
+  --highlight-bg: rgba(242, 201, 76, 0.3);
 
   /* Color scheme for browser UI */
   color-scheme: light;
@@ -205,6 +209,8 @@
   --tag-text: #8e8e93;
   --nav-bg: #1c1c1c;
   --continue-bg: #2c2c2e;
+  --stat-bg: rgba(242, 201, 76, 0.08);
+  --highlight-bg: rgba(242, 201, 76, 0.25);
 
   /* Color scheme for browser UI */
   color-scheme: dark;
@@ -242,6 +248,8 @@
     --tag-text: #6b6b6b;
     --nav-bg: #ffffff;
     --continue-bg: #ffffff;
+    --stat-bg: rgba(242, 201, 76, 0.12);
+    --highlight-bg: rgba(242, 201, 76, 0.3);
 
     /* Color scheme for browser UI */
     color-scheme: light;

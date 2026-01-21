@@ -586,14 +586,14 @@ The RSVP player page has **multiple structural issues**:
 
 **Checklist**:
 
-- [ ] Search input: 48px height, 12px border-radius, 1rem font
-- [ ] Focus state: accent border + box-shadow glow
-- [ ] Clear button: 28px, only shows when input has text
-- [ ] Filter chips: 20px border-radius, proper padding
-- [ ] Active chip: accent background, black text
-- [ ] Recent items: 32px icon container, 8px border-radius
-- [ ] Results: source icon 18px, title `1rem` weight 600
-- [ ] Mark tags: use `var(--highlight-bg)` for highlights
+- [x] Search input: 48px height, 12px border-radius, 1rem font
+- [x] Focus state: accent border + box-shadow glow
+- [x] Clear button: 28px, only shows when input has text
+- [x] Filter chips: 20px border-radius, proper padding
+- [x] Active chip: accent background, black text
+- [x] Recent items: 32px icon container, 8px border-radius
+- [x] Results: source icon 18px, title `1rem` weight 600
+- [x] Mark tags: use `var(--highlight-bg)` for highlights
 
 ### 6.5.5 Settings Page Alignment
 

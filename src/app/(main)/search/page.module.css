@@ -402,7 +402,7 @@
 }
 
 .resultTitle :global(mark) {
-  background: rgba(242, 201, 76, 0.3);
+  background: var(--highlight-bg);
   color: inherit;
   padding: 0.1em 0;
   border-radius: 2px;
@@ -420,7 +420,7 @@
 }
 
 .resultSnippet :global(mark) {
-  background: rgba(242, 201, 76, 0.3);
+  background: var(--highlight-bg);
   color: inherit;
   padding: 0.1em 0;
   border-radius: 2px;
