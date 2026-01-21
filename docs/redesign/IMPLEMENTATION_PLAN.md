@@ -493,10 +493,10 @@ The RSVP player page has **multiple structural issues**:
 
 **Checklist**:
 
-- [ ] Pass `title` prop to RSVPPlayer
-- [ ] Pass `source` prop to RSVPPlayer (extract from article URL or siteName)
-- [ ] Remove duplicate page header from RsvpPageClient
-- [ ] Make RSVP page full-screen (no page.module.css container)
+- [x] Pass `title` prop to RSVPPlayer
+- [x] Pass `source` prop to RSVPPlayer (extract from article URL or siteName)
+- [x] Remove duplicate page header from RsvpPageClient
+- [x] Make RSVP page full-screen (no page.module.css container)
 - [ ] Article source shows centered above title (uppercase, 0.7rem, tertiary color)
 - [ ] Article title shows centered below source (1rem, weight 600, single line ellipsis)
 - [ ] Header height matches prototype (`--header-height: 80px`)
