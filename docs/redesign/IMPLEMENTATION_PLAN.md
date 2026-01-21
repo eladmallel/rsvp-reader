@@ -440,7 +440,7 @@ After deletion, visiting `http://localhost:3000/` should show:
 
 **Checklist**:
 
-- [ ] **DELETE old `/src/app/page.tsx` and `/src/app/page.module.css`** (blocking issue)
+- [x] **DELETE old `/src/app/page.tsx` and `/src/app/page.module.css`** (blocking issue)
 - [ ] Bottom nav height is exactly `72px` (72px + safe area inset)
 - [ ] Nav background uses `var(--nav-bg)` (light: #ffffff, dark: #1c1c1c)
 - [ ] Border-top is `1px solid var(--border-subtle)`
