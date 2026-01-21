@@ -15,7 +15,7 @@
  * user returns to the article.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { WordDisplay } from './WordDisplay';
 import { Cockpit } from './Cockpit';
 import { PlayerSettingsPanel } from './PlayerSettingsPanel';
@@ -75,6 +75,9 @@ export function RSVPPlayer({
   className,
   ...config
 }: RSVPPlayerProps) {
+  // Only render after hydration to avoid SSR/client mismatches with localStorage
+  const [mounted, setMounted] = useState(false);
+
   // Position persistence
   const { savedPosition, savePosition, clearPosition } = useReadingPosition(articleId);
 
@@ -87,6 +90,14 @@ export function RSVPPlayer({
   // Local state
   const [skipAmount, setSkipAmount] = useState(initialSkipAmount);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Set mounted after hydration
+  useEffect(() => {
+    // Intentional: Set mounted state after hydration to prevent SSR/client mismatches
+    // This component uses localStorage (via useReadingPosition) which is only available on client
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   // Save position when index changes
   useEffect(() => {
@@ -175,6 +186,17 @@ export function RSVPPlayer({
   const totalSeconds = player.totalWords > 0 ? (player.totalWords / player.wpm) * 60 : 0;
   const elapsedSeconds = player.totalWords > 0 ? (player.currentIndex / player.wpm) * 60 : 0;
   const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+
+  // Show loading state during SSR and initial hydration
+  if (!mounted) {
+    return (
+      <div className={`${styles.container} ${className ?? ''}`}>
+        <div className={styles.emptyState}>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Empty text state
   if (player.totalWords === 0) {
