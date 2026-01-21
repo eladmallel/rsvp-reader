@@ -615,15 +615,15 @@ The RSVP player page has **multiple structural issues**:
 
 **Checklist**:
 
-- [ ] Profile avatar: 56px, gradient background
-- [ ] Profile badge: uppercase, accent bg, 0.7rem font
-- [ ] Settings cards: 12px border-radius, grouped items
-- [ ] Settings item icons: 32px × 32px, 8px border-radius
-- [ ] Chevron arrows for navigable items
-- [ ] Toggle switches: 52px × 32px, 24px knob
-- [ ] Active toggle: accent bg, black knob
-- [ ] Connection status: 8px dot, green for connected
-- [ ] Version footer: centered, 0.75rem, tertiary color
+- [x] Profile avatar: 56px, gradient background
+- [x] Profile badge: uppercase, accent bg, 0.7rem font
+- [x] Settings cards: 12px border-radius, grouped items
+- [x] Settings item icons: 32px × 32px, 8px border-radius
+- [x] Chevron arrows for navigable items
+- [x] Toggle switches: 52px × 32px, 24px knob
+- [x] Active toggle: accent bg, black knob
+- [x] Connection status: 8px dot, green for connected
+- [x] Version footer: centered, 0.75rem, tertiary color
 
 ### 6.5.6 CSS Variables & Design Tokens
 
