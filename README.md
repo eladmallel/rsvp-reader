@@ -156,6 +156,59 @@ npm run build
 
 ---
 
+## 🔄 Syncing Readwise Content
+
+The app syncs your Readwise Reader content into a local database for fast access. This is done via a dedicated API endpoint.
+
+### Prerequisites
+
+Set the `SYNC_API_KEY` environment variable in your `.env.local` file:
+
+```bash
+SYNC_API_KEY=your-secret-sync-key
+```
+
+This key protects the sync endpoint from unauthorized access.
+
+### Manual Sync (via curl)
+
+Trigger a one-time sync using curl:
+
+```bash
+# Using query parameter
+curl "http://localhost:3000/api/sync/readwise?token=your-secret-sync-key"
+
+# Or using header
+curl -H "x-readwise-sync-secret: your-secret-sync-key" \
+  "http://localhost:3000/api/sync/readwise"
+```
+
+For production/Vercel deployments, replace `http://localhost:3000` with your deployed URL.
+
+### Automated Sync (via cron script)
+
+For continuous syncing, use the provided script [`scripts/run-readwise-sync-cron.sh`](./scripts/run-readwise-sync-cron.sh):
+
+```bash
+# Set required environment variables
+export SYNC_URL="http://localhost:3000/api/sync/readwise?token=your-secret-sync-key"
+export SYNC_INTERVAL_SECONDS=60  # Optional, defaults to 60
+
+# Run the cron loop
+./scripts/run-readwise-sync-cron.sh
+```
+
+**How it works:**
+
+1. The script runs in an infinite loop
+2. Every `SYNC_INTERVAL_SECONDS` (default: 60), it calls the sync endpoint
+3. The sync respects Readwise's rate limit (20 requests/minute) and handles pagination automatically
+4. New and updated documents are cached in the database
+
+> 💡 **Tip**: Run this script as a background process or in a separate terminal tab during development.
+
+---
+
 ## 📚 Documentation
 
 - **[Project Plan](./docs/PROJECT_PLAN.md)** - Full project spec and task breakdown
