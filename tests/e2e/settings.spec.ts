@@ -114,6 +114,129 @@ test.describe('Settings Page', () => {
     await expect(page.getByText('RSVP Font')).toBeVisible();
   });
 
+  test('can open and close WPM setting modal', async ({ page }) => {
+    // Click on Default Speed setting
+    const defaultSpeedItem = page.locator('text=Default Speed').locator('..').locator('..');
+    await defaultSpeedItem.click();
+
+    // Modal should be visible
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Default Speed' })).toBeVisible();
+    await expect(page.getByText(/Set your preferred reading speed/)).toBeVisible();
+
+    // Close button should be visible
+    const closeButton = page.getByRole('button', { name: 'Close' });
+    await expect(closeButton).toBeVisible();
+
+    // Click close button
+    await closeButton.click();
+
+    // Modal should be hidden
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+
+  test('can adjust WPM value in modal', async ({ page }) => {
+    let updatedPreferences = { ...mockUserPreferences };
+
+    // Mock the PUT endpoint to update preferences
+    await page.route('/api/user/preferences', (route) => {
+      if (route.request().method() === 'PUT') {
+        const postData = route.request().postDataJSON();
+        updatedPreferences = { ...updatedPreferences, ...postData };
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(updatedPreferences),
+        });
+      } else {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(updatedPreferences),
+        });
+      }
+    });
+
+    // Open modal
+    const defaultSpeedItem = page.locator('text=Default Speed').locator('..').locator('..');
+    await defaultSpeedItem.click();
+
+    // Find and click increment button
+    const incrementButton = page.getByRole('button', { name: /Increase/ });
+    await incrementButton.click();
+
+    // Save button should be visible
+    const saveButton = page.getByRole('button', { name: 'Save' });
+    await expect(saveButton).toBeVisible();
+    await saveButton.click();
+
+    // Wait for modal to close
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+
+  test('can open and close Skip Amount modal', async ({ page }) => {
+    // Click on Skip Amount setting
+    const skipAmountItem = page.locator('text=Skip Amount').locator('..').locator('..');
+    await skipAmountItem.click();
+
+    // Modal should be visible
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Skip Amount' })).toBeVisible();
+
+    // Cancel button should work
+    const cancelButton = page.getByRole('button', { name: 'Cancel' });
+    await cancelButton.click();
+
+    // Modal should be hidden
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+
+  test('can select font in font selector modal', async ({ page }) => {
+    let updatedPreferences = { ...mockUserPreferences };
+
+    // Mock the PUT endpoint
+    await page.route('/api/user/preferences', (route) => {
+      if (route.request().method() === 'PUT') {
+        const postData = route.request().postDataJSON();
+        updatedPreferences = { ...updatedPreferences, ...postData };
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(updatedPreferences),
+        });
+      } else {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(updatedPreferences),
+        });
+      }
+    });
+
+    // Open font modal
+    const fontItem = page.locator('text=RSVP Font').locator('..').locator('..');
+    await fontItem.click();
+
+    // Modal should be visible
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'RSVP Font' })).toBeVisible();
+
+    // Should show font options - look for the description text
+    await expect(dialog.getByText(/Choose the font used to display words/)).toBeVisible();
+
+    // Select Sans Serif font
+    const sansSerifOption = dialog.getByRole('button', { name: /Sans Serif/ });
+    await sansSerifOption.click();
+
+    // Save
+    const saveButton = page.getByRole('button', { name: 'Save' });
+    await saveButton.click();
+
+    // Modal should close
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+
   test('displays appearance toggles', async ({ page }) => {
     await expect(page.getByText('Dark Mode')).toBeVisible();
     await expect(page.getByText('System Theme')).toBeVisible();
@@ -185,6 +308,90 @@ test.describe('Settings Page', () => {
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, `settings-${viewport}-light.png`),
+      fullPage: true,
+    });
+  });
+
+  test('screenshot: WPM setting modal - dark mode', async ({ page }, testInfo) => {
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+
+    // Open modal
+    const defaultSpeedItem = page.locator('text=Default Speed').locator('..').locator('..');
+    await defaultSpeedItem.click();
+
+    // Wait for modal animation
+    await page.waitForTimeout(400);
+
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: getScreenshotPath(testInfo, `settings-wpm-modal-${viewport}-dark.png`),
+      fullPage: true,
+    });
+  });
+
+  test('screenshot: WPM setting modal - light mode', async ({ page }, testInfo) => {
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'light');
+    });
+    await page.waitForTimeout(300);
+
+    // Open modal
+    const defaultSpeedItem = page.locator('text=Default Speed').locator('..').locator('..');
+    await defaultSpeedItem.click();
+
+    // Wait for modal animation
+    await page.waitForTimeout(400);
+
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: getScreenshotPath(testInfo, `settings-wpm-modal-${viewport}-light.png`),
+      fullPage: true,
+    });
+  });
+
+  test('screenshot: Skip Amount modal - dark mode', async ({ page }, testInfo) => {
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    });
+    await page.waitForTimeout(300);
+
+    // Open modal
+    const skipAmountItem = page.locator('text=Skip Amount').locator('..').locator('..');
+    await skipAmountItem.click();
+
+    // Wait for modal animation
+    await page.waitForTimeout(400);
+
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: getScreenshotPath(testInfo, `settings-skip-modal-${viewport}-dark.png`),
+      fullPage: true,
+    });
+  });
+
+  test('screenshot: Font selector modal - light mode', async ({ page }, testInfo) => {
+    await page.evaluate(() => {
+      document.documentElement.setAttribute('data-theme', 'light');
+    });
+    await page.waitForTimeout(300);
+
+    // Open modal
+    const fontItem = page.locator('text=RSVP Font').locator('..').locator('..');
+    await fontItem.click();
+
+    // Wait for modal animation
+    await page.waitForTimeout(400);
+
+    const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    await page.screenshot({
+      path: getScreenshotPath(testInfo, `settings-font-modal-${viewport}-light.png`),
       fullPage: true,
     });
   });

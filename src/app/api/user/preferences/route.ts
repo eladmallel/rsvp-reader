@@ -27,9 +27,10 @@ export async function GET(): Promise<NextResponse<PreferencesResponse>> {
     }
 
     // Get user preferences from database
+    // Note: skip_amount and rsvp_font columns are added via migration
     const { data: userData, error: queryError } = await supabase
       .from('users')
-      .select('default_wpm, theme, font_size')
+      .select('default_wpm, theme, font_size, skip_amount, rsvp_font')
       .eq('id', user.id)
       .single();
 
@@ -39,11 +40,13 @@ export async function GET(): Promise<NextResponse<PreferencesResponse>> {
     }
 
     // Return preferences with defaults
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = userData as any;
     return NextResponse.json({
-      defaultWpm: userData?.default_wpm ?? 300,
-      skipAmount: 3, // Not stored in DB, use default (can be stored in localStorage)
-      rsvpFont: 'monospace', // Not stored in DB, use default
-      theme: userData?.theme ?? 'system',
+      defaultWpm: data?.default_wpm ?? 300,
+      skipAmount: data?.skip_amount ?? 3,
+      rsvpFont: data?.rsvp_font ?? 'monospace',
+      theme: data?.theme ?? 'system',
     });
   } catch (error) {
     console.error('Error in preferences GET:', error);
@@ -69,7 +72,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse<Preference
     }
 
     const body = await request.json();
-    const { defaultWpm, theme } = body;
+    const { defaultWpm, theme, skipAmount, rsvpFont } = body;
 
     // Validate WPM if provided
     if (defaultWpm !== undefined) {
@@ -91,8 +94,32 @@ export async function PUT(request: NextRequest): Promise<NextResponse<Preference
       }
     }
 
+    // Validate skip amount if provided
+    if (skipAmount !== undefined) {
+      if (typeof skipAmount !== 'number' || skipAmount < 1 || skipAmount > 20) {
+        return NextResponse.json(
+          { error: 'Skip amount must be a number between 1 and 20' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate font if provided
+    if (rsvpFont !== undefined) {
+      const validFonts = ['monospace', 'ibm-plex-mono', 'sans-serif', 'serif'];
+      if (!validFonts.includes(rsvpFont)) {
+        return NextResponse.json({ error: 'Invalid font value' }, { status: 400 });
+      }
+    }
+
     // Build update object
-    const updates: { default_wpm?: number; theme?: string; updated_at: string } = {
+    const updates: {
+      default_wpm?: number;
+      theme?: string;
+      skip_amount?: number;
+      rsvp_font?: string;
+      updated_at: string;
+    } = {
       updated_at: new Date().toISOString(),
     };
 
@@ -101,6 +128,12 @@ export async function PUT(request: NextRequest): Promise<NextResponse<Preference
     }
     if (theme !== undefined) {
       updates.theme = theme;
+    }
+    if (skipAmount !== undefined) {
+      updates.skip_amount = skipAmount;
+    }
+    if (rsvpFont !== undefined) {
+      updates.rsvp_font = rsvpFont;
     }
 
     // Update preferences
@@ -114,7 +147,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse<Preference
     // Return updated preferences
     const { data: userData, error: fetchError } = await supabase
       .from('users')
-      .select('default_wpm, theme, font_size')
+      .select('default_wpm, theme, font_size, skip_amount, rsvp_font')
       .eq('id', user.id)
       .single();
 
@@ -123,11 +156,13 @@ export async function PUT(request: NextRequest): Promise<NextResponse<Preference
       return NextResponse.json({ error: 'Failed to fetch updated preferences' }, { status: 500 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = userData as any;
     return NextResponse.json({
-      defaultWpm: userData?.default_wpm ?? 300,
-      skipAmount: 3,
-      rsvpFont: 'monospace',
-      theme: userData?.theme ?? 'system',
+      defaultWpm: data?.default_wpm ?? 300,
+      skipAmount: data?.skip_amount ?? 3,
+      rsvpFont: data?.rsvp_font ?? 'monospace',
+      theme: data?.theme ?? 'system',
     });
   } catch (error) {
     console.error('Error in preferences PUT:', error);

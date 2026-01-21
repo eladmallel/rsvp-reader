@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { createClient } from '@/lib/supabase/client';
+import { WpmSettingModal } from '@/components/settings/WpmSettingModal';
+import { SkipAmountModal } from '@/components/settings/SkipAmountModal';
+import { FontSelectorModal } from '@/components/settings/FontSelectorModal';
 import styles from './page.module.css';
 
 interface UserProfile {
@@ -31,6 +34,11 @@ export default function SettingsPage() {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Modal state
+  const [isWpmModalOpen, setIsWpmModalOpen] = useState(false);
+  const [isSkipModalOpen, setIsSkipModalOpen] = useState(false);
+  const [isFontModalOpen, setIsFontModalOpen] = useState(false);
 
   const useSystemTheme = theme === 'system';
 
@@ -108,6 +116,51 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Error disconnecting Reader:', error);
+    }
+  }, []);
+
+  const handleSaveWpm = useCallback(async (wpm: number) => {
+    const response = await fetch('/api/user/preferences', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ defaultWpm: wpm }),
+    });
+
+    if (response.ok) {
+      const updated = await response.json();
+      setPreferences((prev) => (prev ? { ...prev, defaultWpm: updated.defaultWpm } : null));
+    } else {
+      throw new Error('Failed to save WPM');
+    }
+  }, []);
+
+  const handleSaveSkipAmount = useCallback(async (amount: number) => {
+    const response = await fetch('/api/user/preferences', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ skipAmount: amount }),
+    });
+
+    if (response.ok) {
+      const updated = await response.json();
+      setPreferences((prev) => (prev ? { ...prev, skipAmount: updated.skipAmount } : null));
+    } else {
+      throw new Error('Failed to save skip amount');
+    }
+  }, []);
+
+  const handleSaveFont = useCallback(async (font: string) => {
+    const response = await fetch('/api/user/preferences', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rsvpFont: font }),
+    });
+
+    if (response.ok) {
+      const updated = await response.json();
+      setPreferences((prev) => (prev ? { ...prev, rsvpFont: updated.rsvpFont } : null));
+    } else {
+      throw new Error('Failed to save font');
     }
   }, []);
 
@@ -208,7 +261,18 @@ export default function SettingsPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Reading Preferences</h2>
           <div className={styles.settingsCard}>
-            <div className={styles.settingsItem}>
+            <div
+              className={styles.settingsItem}
+              onClick={() => setIsWpmModalOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsWpmModalOpen(true);
+                }
+              }}
+            >
               <div className={styles.settingsItemLeft}>
                 <div className={styles.settingsIcon}>
                   <svg
@@ -229,10 +293,32 @@ export default function SettingsPage() {
               </div>
               <div className={styles.settingsItemRight}>
                 <span className={styles.settingsValue}>{preferences?.defaultWpm || 300} WPM</span>
+                <span className={styles.chevron}>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </span>
               </div>
             </div>
 
-            <div className={styles.settingsItem}>
+            <div
+              className={styles.settingsItem}
+              onClick={() => setIsSkipModalOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsSkipModalOpen(true);
+                }
+              }}
+            >
               <div className={styles.settingsItemLeft}>
                 <div className={styles.settingsIcon}>
                   <svg
@@ -253,10 +339,32 @@ export default function SettingsPage() {
               </div>
               <div className={styles.settingsItemRight}>
                 <span className={styles.settingsValue}>{preferences?.skipAmount || 3} words</span>
+                <span className={styles.chevron}>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </span>
               </div>
             </div>
 
-            <div className={styles.settingsItem}>
+            <div
+              className={styles.settingsItem}
+              onClick={() => setIsFontModalOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsFontModalOpen(true);
+                }
+              }}
+            >
               <div className={styles.settingsItemLeft}>
                 <div className={styles.settingsIcon}>
                   <svg
@@ -280,7 +388,24 @@ export default function SettingsPage() {
                 <span className={styles.settingsValue}>
                   {preferences?.rsvpFont === 'monospace'
                     ? 'System Mono'
-                    : preferences?.rsvpFont || 'System Mono'}
+                    : preferences?.rsvpFont === 'ibm-plex-mono'
+                      ? 'IBM Plex Mono'
+                      : preferences?.rsvpFont === 'sans-serif'
+                        ? 'Sans Serif'
+                        : preferences?.rsvpFont === 'serif'
+                          ? 'Serif'
+                          : 'System Mono'}
+                </span>
+                <span className={styles.chevron}>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </span>
               </div>
             </div>
@@ -496,6 +621,30 @@ export default function SettingsPage() {
           <span className={styles.version}>RSVP Reader v1.0.0</span>
         </footer>
       </main>
+
+      {/* Setting Modals */}
+      {preferences && (
+        <>
+          <WpmSettingModal
+            isOpen={isWpmModalOpen}
+            onClose={() => setIsWpmModalOpen(false)}
+            currentValue={preferences.defaultWpm}
+            onSave={handleSaveWpm}
+          />
+          <SkipAmountModal
+            isOpen={isSkipModalOpen}
+            onClose={() => setIsSkipModalOpen(false)}
+            currentValue={preferences.skipAmount}
+            onSave={handleSaveSkipAmount}
+          />
+          <FontSelectorModal
+            isOpen={isFontModalOpen}
+            onClose={() => setIsFontModalOpen(false)}
+            currentValue={preferences.rsvpFont}
+            onSave={handleSaveFont}
+          />
+        </>
+      )}
     </div>
   );
 }
