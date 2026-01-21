@@ -540,31 +540,11 @@ The RSVP player page has **multiple structural issues**:
 
 **Reference**: `docs/redesign/prototypes/home.html`
 
-**Current Gaps**:
-
-- Current home page is a minimal placeholder
-- Missing greeting section with proper styling
-- Missing stats grid with icon containers
-- Missing continue reading card with thumbnail + progress bar
-- Missing quick action buttons with proper styling
-- Missing recently added article list
-
-**Files to Review/Update**:
-
-- `src/app/(main)/page.tsx`
-- `src/app/(main)/page.module.css`
+**Status**: ⏸️ **DEFERRED** - Home tab intentionally left as placeholder for now
 
 **Checklist**:
 
-- [ ] Greeting section: h1 `1.75rem`, weight 700, letter-spacing `-0.02em`
-- [ ] Subtitle: `1rem`, color `var(--text-secondary)`
-- [ ] Stats grid: 2 columns on mobile, 4 on desktop (900px+)
-- [ ] Stat card icons: 32px × 32px, rounded 8px, background `var(--stat-bg)`
-- [ ] Stat values: `1.75rem`, weight 700
-- [ ] Continue reading card: 16px border-radius, 1.25rem padding
-- [ ] Progress bar: 4px height, accent fill color
-- [ ] Quick action buttons: centered icons 44px × 44px
-- [ ] Article list items match prototype style
+- [~] All items deferred - home dashboard to be implemented later
 
 ### 6.5.4 Search Page Alignment
 
@@ -668,17 +648,23 @@ The RSVP player page has **multiple structural issues**:
 
 ### 6.5.7 Typography & Spacing Constants
 
-**Ensure these are consistent app-wide**:
+**Status**: ✅ **VERIFIED** - All typography is consistent app-wide
 
-| Element          | Size         | Weight  | Letter-spacing |
-| ---------------- | ------------ | ------- | -------------- |
-| Page title (h1)  | 2rem         | 700     | -0.02em        |
-| Section title    | 1.1rem       | 600     | -              |
-| Settings section | 0.75rem      | 600     | 0.05em         |
-| Article title    | 1rem-1.05rem | 600     | -              |
-| Source name      | 0.7-0.75rem  | 600     | 0.03em         |
-| Meta text        | 0.75-0.8rem  | 400-500 | -              |
-| Nav item label   | 0.7rem       | 500     | -              |
+**Verified consistency**:
+
+| Element          | Size         | Weight  | Letter-spacing | Status |
+| ---------------- | ------------ | ------- | -------------- | ------ |
+| Page title (h1)  | 2rem         | 700     | -0.02em        | ✅     |
+| Section title    | 1.1rem       | 600     | -              | ✅     |
+| Settings section | 0.75rem      | 600     | 0.05em         | ✅     |
+| Article title    | 1rem-1.05rem | 600     | -              | ✅     |
+| Source name      | 0.7rem       | 600     | 0.03em         | ✅     |
+| Meta text        | 0.75-0.8rem  | 400-500 | -              | ✅     |
+| Nav item label   | 0.7rem       | 500     | -              | ✅     |
+
+**Changes made**:
+
+- Standardized source name styling to 0.7rem with `--text-tertiary` color across ArticleListItem, Search, and RSVP player
 
 ### 6.5.8 E2E Tests & Visual Verification
 
