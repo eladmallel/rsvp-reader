@@ -1,15 +1,22 @@
 export function htmlToPlainText(html: string): string {
   const withoutScripts = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ');
   const withoutStyles = withoutScripts.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ');
-  const withLineBreaks = withoutStyles.replace(/<(br|p|div|li|h[1-6]|tr|td|th)[^>]*>/gi, '\n');
-  const withoutTags = withLineBreaks.replace(/<[^>]+>/g, ' ');
+  // Add newlines for block-level closing tags to create paragraph breaks
+  const withClosingBreaks = withoutStyles.replace(
+    /<\/(p|div|li|h[1-6]|blockquote|article|section)[^>]*>/gi,
+    '\n\n'
+  );
+  // Add newlines for self-closing br/hr tags
+  const withLineBreaks = withClosingBreaks.replace(/<(br|hr)[^>]*\/?>/gi, '\n');
+  // Remove all remaining tags without adding spaces
+  const withoutTags = withLineBreaks.replace(/<[^>]+>/g, '');
   const decoded = decodeBasicEntities(withoutTags);
 
   return decoded
-    .replace(/\s+\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .replace(/[ \t]{2,}/g, ' ')
-    .replace(/\s+([.,!?;:])/g, '$1')
+    .replace(/[ \t]+\n/g, '\n') // Remove spaces/tabs before newlines (but not other newlines)
+    .replace(/\n{3,}/g, '\n\n') // Collapse 3+ newlines to 2
+    .replace(/[ \t]{2,}/g, ' ') // Collapse multiple spaces/tabs to single space
+    .replace(/\s+([.,!?;:])/g, '$1') // Remove whitespace before punctuation
     .trim();
 }
 

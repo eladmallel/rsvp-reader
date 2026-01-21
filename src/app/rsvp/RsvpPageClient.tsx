@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { RSVPPlayer } from '@/components/rsvp';
 import { ThemeToggle } from '@/components/ui';
+import { htmlToPlainText } from '@/lib/reader/html';
 import styles from './page.module.css';
 
 interface ArticleContent {
@@ -106,12 +107,9 @@ export default function RsvpPageClient() {
       if (article.content && article.content.trim()) {
         return article.content;
       }
-      // Fall back to stripped HTML
+      // Fall back to stripped HTML with proper paragraph preservation
       if (article.htmlContent) {
-        // Strip HTML tags to get plain text
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = article.htmlContent;
-        return tempDiv.textContent || tempDiv.innerText || sampleText;
+        return htmlToPlainText(article.htmlContent);
       }
     }
     return sampleText;
