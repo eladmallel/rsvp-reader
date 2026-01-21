@@ -80,7 +80,6 @@ export function WordDisplay({ word, orpIndex }: WordDisplayProps) {
           <div className={styles.word}>
             <span className={styles.placeholder}>Ready</span>
           </div>
-          <div className={styles.focusLine} aria-hidden="true" />
         </div>
       </div>
     );
@@ -100,10 +99,12 @@ export function WordDisplay({ word, orpIndex }: WordDisplayProps) {
           aria-live="polite"
         >
           <span className={styles.left}>{renderWithInvisibleDots(left)}</span>
-          <span className={styles.orp}>{orp}</span>
+          <span className={styles.orp}>
+            {orp}
+            <div className={styles.focusLine} aria-hidden="true" />
+          </span>
           <span className={styles.right}>{renderWithInvisibleDots(right)}</span>
         </div>
-        <div className={styles.focusLine} aria-hidden="true" />
       </div>
     </div>
   );

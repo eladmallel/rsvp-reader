@@ -47,6 +47,8 @@
   font-family: var(--font-rsvp);
   font-size: 32px;
   font-weight: 600;
+  position: relative;
+  display: inline-block;
 }
 
 .right {
@@ -69,13 +71,16 @@
   user-select: none;
 }
 
-/* ORP marker line - positioned below the word, centered */
+/* ORP marker line - positioned below the ORP character */
 .focusLine {
+  position: absolute;
   width: 2px;
   height: 10px;
-  background: var(--orp-color);
-  opacity: 0.6;
-  margin-top: 4px;
+  background: var(--text-tertiary);
+  opacity: 0.8;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Responsive */
