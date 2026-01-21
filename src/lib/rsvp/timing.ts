@@ -213,9 +213,7 @@ export interface TimingConfig {
  *   sentenceEndMultiplier: 4, // longer pause at sentences
  * });
  */
-export function createTimingCalculator(
-  config: TimingConfig = {}
-): (word: string) => number {
+export function createTimingCalculator(config: TimingConfig = {}): (word: string) => number {
   const {
     wpm = 300,
     sentenceEndMultiplier = SENTENCE_END_MULTIPLIER,

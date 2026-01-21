@@ -55,10 +55,7 @@ export function calculateORP(wordLength: number): number {
  * // RTL examples (Hebrew reads right-to-left)
  * calculateORPIndex(4, true)   // 2 - "שלום" -> 'ו' at index 2 (from left, but visually from right)
  */
-export function calculateORPIndex(
-  wordLength: number,
-  isRtl: boolean = false
-): number {
+export function calculateORPIndex(wordLength: number, isRtl: boolean = false): number {
   if (wordLength <= 0) return 0;
 
   const orpOffset = calculateORP(wordLength);

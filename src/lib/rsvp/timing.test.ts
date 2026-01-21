@@ -198,9 +198,7 @@ describe('Timing Calculations', () => {
     });
 
     it('excludes punctuation from length calculation', () => {
-      expect(getLengthAdjustment('hello', 200)).toBe(
-        getLengthAdjustment('hello.', 200)
-      );
+      expect(getLengthAdjustment('hello', 200)).toBe(getLengthAdjustment('hello.', 200));
     });
   });
 

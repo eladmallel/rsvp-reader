@@ -225,11 +225,7 @@ describe('Tokenizer', () => {
       const sentence0 = getSentenceTokens(tokens, 0, 0);
       const sentence1 = getSentenceTokens(tokens, 0, 1);
 
-      expect(sentence0.map((t) => t.word)).toEqual([
-        'First',
-        'sentence',
-        'here.',
-      ]);
+      expect(sentence0.map((t) => t.word)).toEqual(['First', 'sentence', 'here.']);
       expect(sentence1.map((t) => t.word)).toEqual(['Second', 'sentence.']);
     });
 

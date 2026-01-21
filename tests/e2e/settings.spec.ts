@@ -89,7 +89,8 @@ test.describe('Settings Page', () => {
   test('displays user profile information', async ({ page }) => {
     await expect(page.getByText('Test User')).toBeVisible();
     await expect(page.getByText('testuser@example.com')).toBeVisible();
-    await expect(page.getByText('TU')).toBeVisible();
+    // Use exact: true to avoid matching the email which also contains 'TU'
+    await expect(page.getByText('TU', { exact: true })).toBeVisible();
   });
 
   test('displays section headers', async ({ page }) => {
@@ -133,19 +134,30 @@ test.describe('Settings Page', () => {
   });
 
   test('dark mode toggle works', async ({ page }) => {
-    // Set to light mode first
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
+    // First, ensure system theme is OFF so the dark mode toggle is enabled
+    // The System Theme toggle controls whether dark mode toggle is disabled
+    const systemThemeToggle = page.getByRole('switch', { name: 'System theme' });
+    const darkModeToggle = page.getByRole('switch', { name: 'Dark mode' });
 
-    // Find the dark mode toggle
-    const darkModeRow = page.locator('text=Dark Mode').locator('..');
-    const toggle = darkModeRow.locator('[role="switch"]');
+    // If system theme is on, turn it off first
+    const isSystemThemeOn = await systemThemeToggle.getAttribute('aria-checked');
+    if (isSystemThemeOn === 'true') {
+      await systemThemeToggle.click();
+      // Wait for the dark mode toggle to become enabled
+      await expect(darkModeToggle).toBeEnabled();
+    }
 
-    // Toggle dark mode on
-    await toggle.click();
+    // Set to light mode first via the toggle if it's currently dark
+    const isDarkMode = await darkModeToggle.getAttribute('aria-checked');
+    if (isDarkMode === 'true') {
+      await darkModeToggle.click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    }
 
-    // Verify theme changed
+    // Now toggle dark mode on
+    await darkModeToggle.click();
+
+    // Verify theme changed to dark
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 

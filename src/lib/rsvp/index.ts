@@ -3,12 +3,7 @@
  */
 
 // ORP (Optimal Recognition Point) calculations
-export {
-  calculateORP,
-  calculateORPIndex,
-  getORPCharacter,
-  splitWordByORP,
-} from './orp';
+export { calculateORP, calculateORPIndex, getORPCharacter, splitWordByORP } from './orp';
 
 // Timing calculations
 export {

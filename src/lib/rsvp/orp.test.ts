@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateORP,
-  calculateORPIndex,
-  getORPCharacter,
-  splitWordByORP,
-} from './orp';
+import { calculateORP, calculateORPIndex, getORPCharacter, splitWordByORP } from './orp';
 
 describe('ORP (Optimal Recognition Point)', () => {
   describe('calculateORP', () => {

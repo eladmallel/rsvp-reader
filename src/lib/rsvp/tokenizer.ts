@@ -85,10 +85,7 @@ function splitIntoWords(paragraph: string): string[] {
  * tokenize("שלום עולם")
  * // Returns tokens with isRtl: true for Hebrew words
  */
-export function tokenize(
-  text: string,
-  options: TokenizerOptions = {}
-): WordToken[] {
+export function tokenize(text: string, options: TokenizerOptions = {}): WordToken[] {
   const { preserveParagraphs = true, trackSentences = true } = options;
 
   if (!text || text.trim().length === 0) {
@@ -176,9 +173,7 @@ export function getSentenceStartIndex(
   paragraph: number,
   sentence: number
 ): number {
-  const token = tokens.find(
-    (t) => t.paragraph === paragraph && t.sentence === sentence
-  );
+  const token = tokens.find((t) => t.paragraph === paragraph && t.sentence === sentence);
   return token?.index ?? -1;
 }
 
@@ -195,9 +190,7 @@ export function getSentenceTokens(
   paragraph: number,
   sentence: number
 ): WordToken[] {
-  return tokens.filter(
-    (t) => t.paragraph === paragraph && t.sentence === sentence
-  );
+  return tokens.filter((t) => t.paragraph === paragraph && t.sentence === sentence);
 }
 
 /**
@@ -207,10 +200,7 @@ export function getSentenceTokens(
  * @param paragraph - Paragraph number
  * @returns Index of first word, or -1 if not found
  */
-export function getParagraphStartIndex(
-  tokens: WordToken[],
-  paragraph: number
-): number {
+export function getParagraphStartIndex(tokens: WordToken[], paragraph: number): number {
   const token = tokens.find((t) => t.paragraph === paragraph);
   return token?.index ?? -1;
 }
@@ -222,10 +212,7 @@ export function getParagraphStartIndex(
  * @param paragraph - Paragraph number
  * @returns Array of tokens in the paragraph
  */
-export function getParagraphTokens(
-  tokens: WordToken[],
-  paragraph: number
-): WordToken[] {
+export function getParagraphTokens(tokens: WordToken[], paragraph: number): WordToken[] {
   return tokens.filter((t) => t.paragraph === paragraph);
 }
 
@@ -248,10 +235,7 @@ export function getParagraphCount(tokens: WordToken[]): number {
  * @param paragraph - Paragraph number
  * @returns Number of sentences in the paragraph
  */
-export function getSentenceCount(
-  tokens: WordToken[],
-  paragraph: number
-): number {
+export function getSentenceCount(tokens: WordToken[], paragraph: number): number {
   const paragraphTokens = getParagraphTokens(tokens, paragraph);
   if (paragraphTokens.length === 0) return 0;
   const lastToken = paragraphTokens[paragraphTokens.length - 1];
@@ -281,39 +265,21 @@ export function getPositionForIndex(
  * @param currentIndex - Current word index
  * @returns Index of previous sentence start, or 0 if at beginning
  */
-export function getPreviousSentenceStart(
-  tokens: WordToken[],
-  currentIndex: number
-): number {
+export function getPreviousSentenceStart(tokens: WordToken[], currentIndex: number): number {
   const current = tokens.find((t) => t.index === currentIndex);
   if (!current) return 0;
 
   // If we're at the start of a sentence, go to previous sentence
-  const currentSentenceStart = getSentenceStartIndex(
-    tokens,
-    current.paragraph,
-    current.sentence
-  );
+  const currentSentenceStart = getSentenceStartIndex(tokens, current.paragraph, current.sentence);
 
   if (currentIndex === currentSentenceStart) {
     // Go to previous sentence
     if (current.sentence > 0) {
-      return getSentenceStartIndex(
-        tokens,
-        current.paragraph,
-        current.sentence - 1
-      );
+      return getSentenceStartIndex(tokens, current.paragraph, current.sentence - 1);
     } else if (current.paragraph > 0) {
       // Go to last sentence of previous paragraph
-      const prevParagraphSentences = getSentenceCount(
-        tokens,
-        current.paragraph - 1
-      );
-      return getSentenceStartIndex(
-        tokens,
-        current.paragraph - 1,
-        prevParagraphSentences - 1
-      );
+      const prevParagraphSentences = getSentenceCount(tokens, current.paragraph - 1);
+      return getSentenceStartIndex(tokens, current.paragraph - 1, prevParagraphSentences - 1);
     }
     return 0;
   }
@@ -329,10 +295,7 @@ export function getPreviousSentenceStart(
  * @param currentIndex - Current word index
  * @returns Index of next sentence start, or last index if at end
  */
-export function getNextSentenceStart(
-  tokens: WordToken[],
-  currentIndex: number
-): number {
+export function getNextSentenceStart(tokens: WordToken[], currentIndex: number): number {
   const current = tokens.find((t) => t.index === currentIndex);
   if (!current) return tokens.length > 0 ? tokens.length - 1 : 0;
 
@@ -341,11 +304,7 @@ export function getNextSentenceStart(
 
   // Try next sentence in current paragraph
   if (current.sentence < sentenceCount - 1) {
-    return getSentenceStartIndex(
-      tokens,
-      current.paragraph,
-      current.sentence + 1
-    );
+    return getSentenceStartIndex(tokens, current.paragraph, current.sentence + 1);
   }
 
   // Try first sentence of next paragraph
