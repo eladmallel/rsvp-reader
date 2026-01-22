@@ -140,12 +140,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
       location: doc.location,
       tags: extractTagNames(doc.tags),
       wordCount: doc.word_count,
-      readingProgress: doc.reading_progress,
+      readingProgress: doc.reading_progress ?? 0,
       summary: doc.summary,
       imageUrl: doc.image_url,
       publishedDate: doc.published_date,
       createdAt:
-        doc.reader_last_moved_at || doc.reader_updated_at || doc.reader_created_at || doc.cached_at,
+        doc.reader_last_moved_at ||
+        doc.reader_updated_at ||
+        doc.reader_created_at ||
+        doc.cached_at ||
+        new Date().toISOString(),
     }));
 
     // Calculate next cursor

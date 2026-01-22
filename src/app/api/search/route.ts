@@ -170,7 +170,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<SearchResp
           doc.reader_last_moved_at ||
           doc.reader_updated_at ||
           doc.reader_created_at ||
-          doc.cached_at,
+          doc.cached_at ||
+          new Date().toISOString(),
       };
     });
 

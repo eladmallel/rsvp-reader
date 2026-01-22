@@ -112,7 +112,7 @@ export async function GET(
         ]);
 
         // Use cache if both content and metadata exist and are fresh
-        if (cachedArticle?.html_content && cachedDocument) {
+        if (cachedArticle?.html_content && cachedArticle.cached_at && cachedDocument?.cached_at) {
           const contentCachedAt = new Date(cachedArticle.cached_at);
           const metadataCachedAt = new Date(cachedDocument.cached_at);
           const contentHoursSinceCached =
@@ -135,11 +135,11 @@ export async function GET(
                 location: cachedDocument.location,
                 tags: Object.keys(cachedDocument.tags || {}),
                 wordCount: cachedArticle.word_count || cachedDocument.word_count,
-                readingProgress: cachedDocument.reading_progress,
+                readingProgress: cachedDocument.reading_progress ?? 0,
                 summary: cachedDocument.summary,
                 imageUrl: cachedDocument.image_url,
                 publishedDate: cachedDocument.published_date,
-                createdAt: cachedDocument.reader_created_at,
+                createdAt: cachedDocument.reader_created_at ?? new Date().toISOString(),
                 htmlContent: cachedArticle.html_content,
               },
             });
