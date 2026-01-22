@@ -96,40 +96,50 @@ export async function GET(
     try {
       // Check cache first if including content
       if (includeContent) {
-        const { data: cachedArticle } = await supabase
-          .from('cached_articles')
-          .select('html_content, plain_text, word_count, cached_at')
-          .eq('user_id', user.id)
-          .eq('reader_document_id', documentId)
-          .single();
+        const [{ data: cachedArticle }, { data: cachedDocument }] = await Promise.all([
+          supabase
+            .from('cached_articles')
+            .select('html_content, plain_text, word_count, cached_at')
+            .eq('user_id', user.id)
+            .eq('reader_document_id', documentId)
+            .single(),
+          supabase
+            .from('cached_documents')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('reader_document_id', documentId)
+            .single(),
+        ]);
 
-        // Use cache if it exists and is less than 24 hours old
-        if (cachedArticle?.html_content) {
-          const cachedAt = new Date(cachedArticle.cached_at);
-          const hoursSinceCached = (Date.now() - cachedAt.getTime()) / (1000 * 60 * 60);
+        // Use cache if both content and metadata exist and are fresh
+        if (cachedArticle?.html_content && cachedDocument) {
+          const contentCachedAt = new Date(cachedArticle.cached_at);
+          const metadataCachedAt = new Date(cachedDocument.cached_at);
+          const contentHoursSinceCached =
+            (Date.now() - contentCachedAt.getTime()) / (1000 * 60 * 60);
+          const metadataHoursSinceCached =
+            (Date.now() - metadataCachedAt.getTime()) / (1000 * 60 * 60);
 
-          if (hoursSinceCached < 24) {
-            // Get document metadata from Reader API
-            const doc = await readerClient.getDocument(documentId, false);
-
+          // Use cache if both are less than 24 hours old
+          if (contentHoursSinceCached < 24 && metadataHoursSinceCached < 24) {
             return NextResponse.json({
               document: {
-                id: doc.id,
-                title: doc.title,
-                author: doc.author,
-                source: doc.source,
-                siteName: doc.site_name,
-                url: doc.url,
-                sourceUrl: doc.source_url,
-                category: doc.category,
-                location: doc.location,
-                tags: Object.keys(doc.tags || {}),
-                wordCount: cachedArticle.word_count || doc.word_count,
-                readingProgress: doc.reading_progress,
-                summary: doc.summary,
-                imageUrl: doc.image_url,
-                publishedDate: doc.published_date,
-                createdAt: doc.created_at,
+                id: cachedDocument.reader_document_id,
+                title: cachedDocument.title,
+                author: cachedDocument.author,
+                source: cachedDocument.source,
+                siteName: cachedDocument.site_name,
+                url: cachedDocument.url,
+                sourceUrl: cachedDocument.source_url,
+                category: cachedDocument.category,
+                location: cachedDocument.location,
+                tags: Object.keys(cachedDocument.tags || {}),
+                wordCount: cachedArticle.word_count || cachedDocument.word_count,
+                readingProgress: cachedDocument.reading_progress,
+                summary: cachedDocument.summary,
+                imageUrl: cachedDocument.image_url,
+                publishedDate: cachedDocument.published_date,
+                createdAt: cachedDocument.reader_created_at,
                 htmlContent: cachedArticle.html_content,
               },
             });

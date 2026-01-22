@@ -19,6 +19,7 @@
     "test:e2e:direct": "playwright test",
     "test:integration": "source .env.test && READWISE_ACCESS_TOKEN=$READWISE_ACCESS_TOKEN vitest run api.integration",
     "db:migrate": "supabase db push",
+    "db:migrate:prod": "supabase db push --linked",
     "prepare": "husky"
   },
   "lint-staged": {
