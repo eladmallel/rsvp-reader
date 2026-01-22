@@ -122,7 +122,7 @@ describe('GET /api/sync/readwise', () => {
     expect(data.ok).toBe(true);
 
     const locations = mockListDocuments.mock.calls.map((call) => call[0].location);
-    expect(locations).toEqual(['new', 'later', 'feed']);
+    expect(locations).toEqual(['new', 'later', 'archive', 'shortlist', 'feed']);
 
     const finalUpdate = updateSpy.mock.calls.at(-1)?.[0] ?? {};
     expect(finalUpdate.initial_backfill_done).toBe(true);
@@ -135,6 +135,8 @@ describe('GET /api/sync/readwise', () => {
       inbox_cursor: cursor,
       library_cursor: cursor,
       feed_cursor: cursor,
+      archive_cursor: cursor,
+      shortlist_cursor: cursor,
       next_allowed_at: null,
       last_sync_at: null,
       in_progress: false,

@@ -85,7 +85,11 @@ export async function syncUser({
     'library:',
     state.library_cursor,
     'feed:',
-    state.feed_cursor
+    state.feed_cursor,
+    'archive:',
+    state.archive_cursor,
+    'shortlist:',
+    state.shortlist_cursor
   );
 
   const readerClient = createReaderClient(userToken);
@@ -108,10 +112,14 @@ export async function syncUser({
   const inboxDone = isTimestamp(state.inbox_cursor);
   const libraryDone = isTimestamp(state.library_cursor);
   const feedDone = isTimestamp(state.feed_cursor);
+  const archiveDone = isTimestamp(state.archive_cursor);
+  const shortlistDone = isTimestamp(state.shortlist_cursor);
   const updates: Database['public']['Tables']['readwise_sync_state']['Update'] = {
     inbox_cursor: state.inbox_cursor,
     library_cursor: state.library_cursor,
     feed_cursor: state.feed_cursor,
+    archive_cursor: state.archive_cursor,
+    shortlist_cursor: state.shortlist_cursor,
     initial_backfill_done: state.initial_backfill_done,
     window_started_at: window.windowStartedAt?.toISOString() ?? null,
     window_request_count: budget.used(),
@@ -125,6 +133,8 @@ export async function syncUser({
       let inboxComplete = inboxDone;
       let libraryComplete = libraryDone;
       let feedComplete = feedDone;
+      let archiveComplete = archiveDone;
+      let shortlistComplete = shortlistDone;
 
       if (!inboxComplete) {
         const inboxResult = await syncLocation({
@@ -156,7 +166,50 @@ export async function syncUser({
         libraryComplete = libraryResult.completed;
       }
 
-      if (inboxComplete && libraryComplete && budget.remaining() > 0 && !feedComplete) {
+      if (inboxComplete && libraryComplete && budget.remaining() > 0 && !archiveComplete) {
+        const archiveResult = await syncLocation({
+          supabase,
+          readerClient,
+          budget,
+          userId: state.user_id,
+          location: 'archive',
+          mode: 'initial',
+          cursorValue: state.archive_cursor,
+        });
+        updates.archive_cursor = archiveResult.nextCursor;
+        updates.window_request_count = budget.used();
+        archiveComplete = archiveResult.completed;
+      }
+
+      if (
+        inboxComplete &&
+        libraryComplete &&
+        archiveComplete &&
+        budget.remaining() > 0 &&
+        !shortlistComplete
+      ) {
+        const shortlistResult = await syncLocation({
+          supabase,
+          readerClient,
+          budget,
+          userId: state.user_id,
+          location: 'shortlist',
+          mode: 'initial',
+          cursorValue: state.shortlist_cursor,
+        });
+        updates.shortlist_cursor = shortlistResult.nextCursor;
+        updates.window_request_count = budget.used();
+        shortlistComplete = shortlistResult.completed;
+      }
+
+      if (
+        inboxComplete &&
+        libraryComplete &&
+        archiveComplete &&
+        shortlistComplete &&
+        budget.remaining() > 0 &&
+        !feedComplete
+      ) {
         const feedResult = await syncLocation({
           supabase,
           readerClient,
@@ -171,12 +224,18 @@ export async function syncUser({
         feedComplete = feedResult.completed;
       }
 
-      if (inboxComplete && libraryComplete && feedComplete) {
+      if (
+        inboxComplete &&
+        libraryComplete &&
+        archiveComplete &&
+        shortlistComplete &&
+        feedComplete
+      ) {
         updates.initial_backfill_done = true;
       }
     } else {
       const locations: Array<{
-        location: 'new' | 'later' | 'feed';
+        location: 'new' | 'later' | 'feed' | 'archive' | 'shortlist';
         cursorValue: string | null;
         setCursor: (value: string | null) => void;
       }> = [
@@ -192,6 +251,20 @@ export async function syncUser({
           cursorValue: state.library_cursor,
           setCursor: (value) => {
             updates.library_cursor = value;
+          },
+        },
+        {
+          location: 'archive',
+          cursorValue: state.archive_cursor,
+          setCursor: (value) => {
+            updates.archive_cursor = value;
+          },
+        },
+        {
+          location: 'shortlist',
+          cursorValue: state.shortlist_cursor,
+          setCursor: (value) => {
+            updates.shortlist_cursor = value;
           },
         },
         {
@@ -295,7 +368,7 @@ async function syncLocation({
   readerClient: ReturnType<typeof createReaderClient>;
   budget: RequestBudget;
   userId: string;
-  location: 'new' | 'later' | 'feed';
+  location: 'new' | 'later' | 'feed' | 'archive' | 'shortlist';
   mode: 'initial' | 'incremental';
   cursorValue: string | null;
 }): Promise<SyncLocationResult> {

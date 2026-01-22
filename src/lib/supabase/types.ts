@@ -301,6 +301,8 @@ export interface Database {
           library_cursor: string | null;
           inbox_cursor: string | null;
           feed_cursor: string | null;
+          archive_cursor: string | null;
+          shortlist_cursor: string | null;
           next_allowed_at: string | null;
           last_sync_at: string | null;
           in_progress: boolean;
@@ -314,6 +316,8 @@ export interface Database {
           library_cursor?: string | null;
           inbox_cursor?: string | null;
           feed_cursor?: string | null;
+          archive_cursor?: string | null;
+          shortlist_cursor?: string | null;
           next_allowed_at?: string | null;
           last_sync_at?: string | null;
           in_progress?: boolean;
@@ -327,6 +331,8 @@ export interface Database {
           library_cursor?: string | null;
           inbox_cursor?: string | null;
           feed_cursor?: string | null;
+          archive_cursor?: string | null;
+          shortlist_cursor?: string | null;
           next_allowed_at?: string | null;
           last_sync_at?: string | null;
           in_progress?: boolean;
