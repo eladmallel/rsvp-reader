@@ -21,7 +21,10 @@ export async function POST() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log('[SYNC TRIGGER] User:', user?.id);
+
   if (!user) {
+    console.log('[SYNC TRIGGER] No user found - unauthorized');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -33,6 +36,8 @@ export async function POST() {
     .eq('user_id', user.id)
     .single();
 
+  console.log('[SYNC TRIGGER] Sync state:', state?.user_id, 'Error:', stateError?.message);
+
   if (stateError || !state) {
     console.error('Failed to fetch sync state:', stateError);
     return NextResponse.json({ error: 'Sync state not found' }, { status: 404 });
@@ -42,12 +47,16 @@ export async function POST() {
   const userRecord = state.users as unknown as { reader_access_token: string | null } | null;
   const userToken = userRecord?.reader_access_token;
 
+  console.log('[SYNC TRIGGER] Has token:', !!userToken);
+
   if (!userToken) {
+    console.log('[SYNC TRIGGER] No Reader token found');
     return NextResponse.json({ error: 'Readwise not connected' }, { status: 400 });
   }
 
   // 3. Check if already syncing
   if (state.in_progress) {
+    console.log('[SYNC TRIGGER] Sync already in progress');
     return NextResponse.json({ error: 'Sync already in progress' }, { status: 400 });
   }
 
@@ -84,6 +93,7 @@ export async function POST() {
   }
 
   // 6. Start sync asynchronously (don't await)
+  console.log('[SYNC TRIGGER] Starting async sync for user:', user.id);
   syncUserAsync(user.id, locked, userToken, now, adminSupabase);
 
   return NextResponse.json({ success: true, jobId: user.id });
@@ -101,7 +111,10 @@ async function syncUserAsync(
 ) {
   const nowIso = now.toISOString();
 
+  console.log('[SYNC ASYNC] Starting sync for user:', userId);
+
   try {
+    console.log('[SYNC ASYNC] Calling syncUser...');
     const update = await syncUser({
       supabase,
       state,
@@ -109,7 +122,8 @@ async function syncUserAsync(
       now,
     });
 
-    await supabase
+    console.log('[SYNC ASYNC] syncUser completed, updating state...');
+    const { error: updateError } = await supabase
       .from('readwise_sync_state')
       .update({
         ...update,
@@ -117,6 +131,12 @@ async function syncUserAsync(
         last_sync_at: nowIso,
       })
       .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('[SYNC ASYNC] Failed to update sync state:', updateError);
+    } else {
+      console.log('[SYNC ASYNC] Sync completed successfully for user:', userId);
+    }
   } catch (syncError) {
     console.error('Manual sync failed for user', userId, ':', syncError);
 

@@ -77,11 +77,25 @@ export async function syncUser({
   userToken: string;
   now: Date;
 }): Promise<Database['public']['Tables']['readwise_sync_state']['Update']> {
+  console.log('[syncUser] Starting sync for user:', state.user_id);
+  console.log('[syncUser] Initial backfill done:', state.initial_backfill_done);
+  console.log(
+    '[syncUser] Cursors - inbox:',
+    state.inbox_cursor,
+    'library:',
+    state.library_cursor,
+    'feed:',
+    state.feed_cursor
+  );
+
   const readerClient = createReaderClient(userToken);
   const window = normalizeWindow(state.window_started_at, state.window_request_count, now);
   const budget = new RequestBudget(window.windowRequestCount, MAX_REQUESTS_PER_MINUTE);
 
+  console.log('[syncUser] Budget - used:', budget.used(), 'remaining:', budget.remaining());
+
   if (!budget.canRequest()) {
+    console.log('[syncUser] No budget remaining, returning early');
     return {
       next_allowed_at: window.windowStartedAt
         ? new Date(window.windowStartedAt.getTime() + WINDOW_MS).toISOString()
@@ -285,6 +299,10 @@ async function syncLocation({
   mode: 'initial' | 'incremental';
   cursorValue: string | null;
 }): Promise<SyncLocationResult> {
+  console.log(
+    `[syncLocation] Syncing location: ${location}, mode: ${mode}, cursor: ${cursorValue}`
+  );
+
   const cursorState = parseCursor(cursorValue);
   const updatedAfter =
     mode === 'incremental'
@@ -294,12 +312,17 @@ async function syncLocation({
   let pageCursor = cursorState.pageCursor;
   let latestUpdatedAt: string | null = null;
   let completed = false;
+  let totalDocs = 0;
 
   while (true) {
     if (!budget.canRequest()) {
+      console.log(`[syncLocation] ${location}: Budget exhausted, processed ${totalDocs} docs`);
       break;
     }
 
+    console.log(
+      `[syncLocation] ${location}: Fetching page (budget remaining: ${budget.remaining()})`
+    );
     const response = await budget.track(() =>
       readerClient.listDocuments({
         location,
@@ -310,9 +333,11 @@ async function syncLocation({
       })
     );
 
+    console.log(`[syncLocation] ${location}: Got ${response.results.length} documents`);
     let deferredForBudget = false;
 
     for (const doc of response.results) {
+      totalDocs++;
       let html =
         'html_content' in doc && typeof doc.html_content === 'string' ? doc.html_content : null;
 
@@ -397,12 +422,17 @@ async function syncLocation({
     }
 
     if (!response.nextPageCursor) {
+      console.log(`[syncLocation] ${location}: No more pages, completed`);
       completed = true;
       break;
     }
 
     pageCursor = response.nextPageCursor;
   }
+
+  console.log(
+    `[syncLocation] ${location}: Finished - total docs: ${totalDocs}, completed: ${completed}`
+  );
 
   if (completed) {
     const fallbackCursor = latestUpdatedAt ?? updatedAfter ?? new Date().toISOString();
