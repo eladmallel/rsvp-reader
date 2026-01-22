@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -9,6 +9,8 @@ import {
   librarySubTabs,
   type ArticleListItemData,
 } from '@/components/library';
+import { DropdownMenu } from '@/components/ui';
+import type { SyncStatus, SyncTriggerResponse, SyncErrorResponse } from '@/types/sync';
 import styles from './page.module.css';
 
 interface DocumentFromApi {
@@ -79,6 +81,14 @@ export default function LibraryPage() {
   // Data from API
   const [articles, setArticles] = useState<ArticleListItemData[]>([]);
 
+  // Dropdown menu state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
   // Check if Reader is connected
   const checkConnection = useCallback(async () => {
     try {
@@ -109,6 +119,67 @@ export default function LibraryPage() {
       return [];
     }
   }, []);
+
+  // Trigger manual Readwise sync
+  const handleSyncTrigger = useCallback(async () => {
+    setIsMenuOpen(false);
+    setSyncError(null);
+
+    try {
+      const res = await fetch('/api/sync/readwise/trigger', { method: 'POST' });
+      const data: SyncTriggerResponse | SyncErrorResponse = await res.json();
+
+      if (!res.ok) {
+        const errorData = data as SyncErrorResponse;
+        setSyncError(errorData.error || 'Failed to start sync');
+        return;
+      }
+
+      setIsSyncing(true);
+    } catch (err) {
+      setSyncError('Network error');
+      console.error('Sync trigger error:', err);
+    }
+  }, []);
+
+  // Poll sync status while syncing
+  useEffect(() => {
+    if (!isSyncing) return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/sync/readwise/status');
+        const data: SyncStatus = await res.json();
+
+        if (!cancelled) {
+          if (!data.inProgress) {
+            setIsSyncing(false);
+            // Refresh articles after sync completes
+            const location = subTabToLocation[activeSubTab] || 'new';
+            const docs = await fetchDocuments(location);
+            setArticles(docs);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Status check failed:', err);
+          setSyncError('Status check failed');
+          setIsSyncing(false);
+        }
+      }
+    };
+
+    // Poll immediately, then every 3 seconds
+    poll();
+    const intervalId = setInterval(poll, 3000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [isSyncing, activeSubTab, fetchDocuments]);
 
   // Initial connection check
   useEffect(() => {
@@ -310,13 +381,30 @@ export default function LibraryPage() {
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
             </button>
-            <button className={styles.iconButton} type="button" aria-label="More options">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="6" r="1.5" />
-                <circle cx="12" cy="12" r="1.5" />
-                <circle cx="12" cy="18" r="1.5" />
-              </svg>
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                ref={menuButtonRef}
+                className={styles.iconButton}
+                type="button"
+                aria-label="More options"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="6" r="1.5" />
+                  <circle cx="12" cy="12" r="1.5" />
+                  <circle cx="12" cy="18" r="1.5" />
+                </svg>
+              </button>
+              <DropdownMenu
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                triggerRef={menuButtonRef}
+              >
+                <button onClick={handleSyncTrigger} disabled={isSyncing}>
+                  {isSyncing ? 'Syncing...' : 'Sync Readwise'}
+                </button>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         <div className={styles.pageTitle}>
@@ -324,6 +412,15 @@ export default function LibraryPage() {
           <span className={styles.count}>{tabInfo.count}</span>
         </div>
       </header>
+
+      {syncError && (
+        <div className={styles.syncError}>
+          <span>⚠️ {syncError}</span>
+          <button onClick={() => setSyncError(null)} aria-label="Dismiss">
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className={styles.subTabsContainer}>
         <SubTabs tabs={librarySubTabs} activeTab={activeSubTab} onTabChange={setActiveSubTab} />

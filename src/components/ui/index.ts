@@ -7,3 +7,4 @@ export { ToggleSwitch } from './ToggleSwitch';
 export { Stepper } from './Stepper';
 export { FilterChip } from './FilterChip';
 export { ThemeToggle } from './ThemeToggle';
+export { DropdownMenu } from './DropdownMenu';
