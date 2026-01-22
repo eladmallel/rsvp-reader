@@ -426,4 +426,28 @@ Include latest screenshots:
 
 ---
 
+## See Also
+
+### Documentation Resources
+
+- [Documentation Index](./docs/INDEX.md) - Find any documentation in < 60 seconds
+- [Project Learnings](./docs/LEARNINGS.md) - Accumulated wisdom and insights
+- [Documentation Guide](./docs/DOCUMENTATION_GUIDE.md) - Documentation standards and maintenance
+- [Architecture Decisions](./docs/decisions/) - ADRs for major architectural choices
+
+### Project Management
+
+- [Project Plan](./docs/PROJECT_PLAN.md) - Current roadmap and task breakdown
+- [Open Questions](./OPEN_QUESTIONS.md) - Active questions and decisions needed
+- [Documentation Improvement Plan](./docs/DOCUMENTATION_IMPROVEMENT_PLAN.md) - Documentation initiative
+
+### Technical Documentation
+
+- [Design Revamp Plan](./docs/redesign/DESIGN_REVAMP_PLAN.md) - UI/UX design strategy
+- [Deployment Review](./docs/devops/DEPLOYMENT-REVIEW-SUMMARY.md) - DevOps and security findings
+- [Security Checklist](./docs/devops/SECURITY-CHECKLIST.md) - Security requirements
+- [Sync Troubleshooting](./docs/SYNC_TROUBLESHOOTING.md) - Debugging sync issues
+
+---
+
 **Remember**: Quality over speed. Small commits. Never break CI. When in doubt, ask.

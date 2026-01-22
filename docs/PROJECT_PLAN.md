@@ -12,6 +12,35 @@ A Spritz-style Rapid Serial Visual Presentation (RSVP) reading app with Readwise
 
 ---
 
+## Related Documentation
+
+**Working Guidelines & Knowledge**:
+
+- [AGENTS.md](../AGENTS.md) - Development workflow and working guidelines
+- [LEARNINGS.md](./LEARNINGS.md) - Project insights and accumulated wisdom
+- [Documentation Index](./INDEX.md) - Find any documentation quickly
+
+**Design & UX**:
+
+- [Design Revamp Plan](./redesign/DESIGN_REVAMP_PLAN.md) - Comprehensive design strategy
+- [Implementation Plan](./redesign/IMPLEMENTATION_PLAN.md) - Design implementation roadmap
+
+**DevOps & Security**:
+
+- [Deployment Review](./devops/DEPLOYMENT-REVIEW-SUMMARY.md) - Infrastructure and security findings
+- [Security Checklist](./devops/SECURITY-CHECKLIST.md) - Security requirements and status
+
+**Feature Planning**:
+
+- [Readwise Sync Plan](./readwise-sync-plan.md) - Automated sync architecture
+- [Sync Troubleshooting](./SYNC_TROUBLESHOOTING.md) - Debugging sync issues
+
+**Architecture Decisions**:
+
+- [ADRs](./decisions/) - Architecture decision records
+
+---
+
 ## 1. Product Specification
 
 ### 1.1 Vision Statement
