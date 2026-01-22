@@ -447,6 +447,8 @@ Include latest screenshots:
 
 - [Design Revamp Plan](./docs/redesign/DESIGN_REVAMP_PLAN.md) - UI/UX design strategy
 - [Deployment Review](./docs/devops/DEPLOYMENT-REVIEW-SUMMARY.md) - DevOps and security findings
+- [DevOps Next Steps](./docs/devops/NEXT-STEPS-ANALYSIS.md) - Current priority implementation plans
+- [DevOps Status Dashboard](./docs/devops/STATUS-SUMMARY.md) - Current state and progress tracking
 - [Security Checklist](./docs/devops/SECURITY-CHECKLIST.md) - Security requirements
 - [Sync Troubleshooting](./docs/SYNC_TROUBLESHOOTING.md) - Debugging sync issues
 
