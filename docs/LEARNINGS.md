@@ -255,6 +255,33 @@ _Learnings about supporting RTL languages if applicable_
 
 > This section is critical - documenting failures prevents repeating mistakes.
 
+### Building Without Prototyping Screens First - 2026-01-22
+
+**What we tried**: Jumped directly into building the app by implementing React components and API routes without creating design prototypes first.
+
+**Why it didn't work**:
+
+- Led to suboptimal UI/UX decisions that were harder to change once implemented in code
+- Wasted development time on implementations that needed to be redesigned
+- Missing the opportunity to iterate quickly on design before committing to code
+- Built features that didn't feel right in actual use (e.g., RSVP player reading experience)
+
+**What we learned**:
+
+- Design prototyping phase is **critical** - don't skip it
+- Creating HTML/CSS/JS prototypes or mockups first allows rapid iteration on UX
+- Better designs emerge from a deliberate prototyping phase with user testing
+- It's much faster to iterate on design in prototypes than in production code
+
+**Better approach**:
+
+1. Create design prototypes (HTML/CSS/JS or Figma) for each screen first
+2. Build a redesign plan based on prototype learnings
+3. Only then implement in the actual application, screen by screen
+4. This prevents building the wrong thing and saves significant development time
+
+**Status**: Now following this approach - created comprehensive redesign plan before continuing implementation.
+
 ### Failed Approaches
 
 _Document attempts that didn't work out_
@@ -437,7 +464,40 @@ _Development tools and why they were chosen_
 
 ### Workflow Improvements
 
-_Process improvements that increased productivity_
+**Design-First Development Workflow** (Established 2026-01-22):
+
+After discovering that building without prototyping led to poor UX outcomes, we established a new workflow:
+
+1. **Prototype Phase**: Create design prototypes (HTML/CSS/JS or design tools) for new screens/features
+2. **Review & Iterate**: Test prototypes, gather feedback, iterate on design
+3. **Plan Phase**: Create detailed redesign/implementation plan based on validated prototypes
+4. **Implementation Phase**: Build the actual feature screen-by-screen, following the plan
+5. **Validate**: Compare implementation to prototype, ensure UX goals are met
+
+**Impact**: Prevents building the wrong thing, saves development time, produces better UX
+
+### AI Agent Feedback Loop Gap (Known Limitation)
+
+**Current State** (2026-01-22):
+
+The AI development assistant doesn't have an autonomous feedback loop for UI/UX validation:
+
+- Cannot independently see the running application UI
+- Cannot find and fix visual issues without human intervention
+- Relies on manual testing and user reports for UI problems
+
+**What's Needed**:
+
+Better feedback mechanisms for UI development:
+
+- Screenshot-based validation after UI changes
+- Automated visual regression testing with AI analysis
+- Self-service UI review capability where AI can load the app and inspect results
+- Tighter integration between code changes and visual verification
+
+**Impact**: Requires more manual testing cycles, slows down UI iteration, some issues only caught after user testing
+
+**Workaround**: Manual testing, screenshot sharing, detailed user feedback, comprehensive E2E tests with visual snapshots
 
 ### Documentation Practices
 
@@ -479,6 +539,45 @@ _This section captures very recent insights before they're organized into catego
 **Actions Taken**: Implemented local Supabase, environment separation, security headers
 
 **Reference**: [DEPLOYMENT-REVIEW-SUMMARY.md](./devops/DEPLOYMENT-REVIEW-SUMMARY.md)
+
+### 2026-01-22: Design Prototyping Breakthrough
+
+**Major Insight**: Design prototyping phase is **non-negotiable** for good UX outcomes.
+
+**What Happened**: Built significant portions of the app (including RSVP player) without proper design prototyping. Result: Poor reading experience that required redesign.
+
+**What Worked**: Created comprehensive design revamp plan with prototypes BEFORE implementing changes. This approach:
+
+- Allows rapid UX iteration without code changes
+- Produces better designs through focused design thinking
+- Saves development time by building the right thing first
+- Enables user testing before committing to implementation
+
+**Process Established**:
+
+1. Design prototyping phase first (HTML/CSS/JS or design tools)
+2. Create detailed redesign/implementation plan
+3. Build screen-by-screen following validated designs
+
+**Impact**: Better UX outcomes, faster development, less rework
+
+### 2026-01-22: Environment Separation Cleanup
+
+**Completed**: Cleaner environment separation strategy for dev/test/prod
+
+**Implementation**:
+
+- Local Supabase for development and testing (complete isolation)
+- Production database fully separated
+- Environment-specific credential management
+- Zero cross-contamination risk
+
+**Benefits**:
+
+- Development confidence (can't accidentally hit production)
+- Faster local iteration
+- Easier debugging
+- Simplified onboarding for new developers
 
 ### 2026-01-21: Documentation Infrastructure
 

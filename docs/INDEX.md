@@ -22,6 +22,7 @@
 ### Planning & Tasks
 
 - [PROJECT_PLAN.md](./PROJECT_PLAN.md) - Main project plan and task breakdown
+- [ROADMAP.md](./ROADMAP.md) - **Current priorities and roadmap** ⭐
 - [OPEN_QUESTIONS.md](../OPEN_QUESTIONS.md) - Active questions and decisions needed
 - [DOCUMENTATION_IMPROVEMENT_PLAN.md](./DOCUMENTATION_IMPROVEMENT_PLAN.md) - This documentation improvement initiative
 
@@ -47,6 +48,7 @@
 - [ADR-001: Supabase Local Development](./decisions/001-supabase-local-development.md) - Why we use local Supabase for testing
 - [ADR-002: Environment Separation Strategy](./decisions/002-environment-separation-strategy.md) - Strict dev/test/prod isolation
 - [ADR-003: E2E Test Resilience Patterns](./decisions/003-e2e-test-resilience-patterns.md) - Testing across variable backend speeds
+- [ADR-004: Design-First Development Workflow](./decisions/004-design-first-development-workflow.md) - Mandatory design prototyping before implementation ⭐
 
 ---
 
