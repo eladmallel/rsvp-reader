@@ -1,4 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load test environment variables from .env.test
+// This ensures E2E tests use local Supabase instead of production
+config({ path: resolve(__dirname, '.env.test') });
 
 /**
  * Playwright configuration for RSVP Reader E2E tests.
@@ -59,6 +65,12 @@ export default defineConfig({
     url: `http://localhost:${TEST_PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      // Override Next.js environment to use test Supabase (instead of .env.local)
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    },
   },
 
   /* Screenshot output directory */

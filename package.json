@@ -17,7 +17,7 @@
     "test:e2e": "tsx scripts/run-e2e.ts",
     "test:e2e:ui": "tsx scripts/run-e2e.ts --ui",
     "test:e2e:direct": "playwright test",
-    "test:integration": "source .env.local && READWISE_ACCESS_TOKEN=$READWISE_ACCESS_TOKEN vitest run api.integration",
+    "test:integration": "source .env.test && READWISE_ACCESS_TOKEN=$READWISE_ACCESS_TOKEN vitest run api.integration",
     "db:migrate": "supabase db push",
     "prepare": "husky"
   },
@@ -50,6 +50,7 @@
     "@vitejs/plugin-react": "^5.1.2",
     "babel-plugin-react-compiler": "1.0.0",
     "detect-port": "^2.1.0",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.2",
     "eslint-config-prettier": "^10.1.8",

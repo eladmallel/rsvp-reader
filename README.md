@@ -45,11 +45,12 @@ npm run test:coverage
 
 Tests that hit the **real Readwise API** to verify our client works correctly.
 
-**Setup required**: Add your Readwise token to `.env.local`:
+**Setup required**: Add your **TEST** Readwise token to `.env.test`:
 
 ```bash
 # Get your token from https://readwise.io/access_token
-READWISE_ACCESS_TOKEN=your-token-here
+# ⚠️  Use a TEST account, NOT your production account!
+READWISE_ACCESS_TOKEN=your-test-token-here
 ```
 
 Then run:
@@ -59,18 +60,23 @@ npm run test:integration
 ```
 
 > ⚠️ **Rate limit**: Readwise allows 20 requests/minute. Wait 60 seconds between runs if you hit the limit.
+> ⚠️ **Important**: Use a separate Readwise test account! Tests create/modify/delete documents.
 
 ### E2E Tests
 
 Full browser tests using Playwright that test the complete user experience.
 
+**Prerequisites**: Ensure Supabase is running locally (see [Local Development Environment](#local-development-environment) above).
+
 ```bash
-# Run all E2E tests
+# Run all E2E tests (uses local Supabase from .env.test)
 npm run test:e2e
 
 # Run with Playwright UI (great for debugging)
 npm run test:e2e:ui
 ```
+
+> 💡 **Note**: E2E tests automatically use the local Supabase instance, keeping your production data safe.
 
 ### Run All Tests
 
@@ -83,6 +89,44 @@ npm run test && npm run test:e2e
 ---
 
 ## 🛠️ Development
+
+### Local Development Environment
+
+For testing, this project uses **Supabase local development** to avoid touching production data.
+
+**Quick Setup:**
+
+```bash
+# 1. Start Supabase locally (downloads Docker containers on first run)
+npx supabase start
+
+# 2. Copy test environment template
+cp .env.test.example .env.test
+
+# 3. Add your TEST Readwise token to .env.test
+#    ⚠️  Use a separate test account, NOT your production Readwise account!
+```
+
+**What this gives you:**
+
+- Local PostgreSQL database (with all migrations applied)
+- Local Supabase Auth service
+- Isolated test environment (no risk to production data)
+- E2E tests run against local Supabase
+- Integration tests use test Readwise account
+
+**Managing Supabase:**
+
+```bash
+# Check status
+npx supabase status
+
+# Stop all services
+npx supabase stop
+
+# Reset database (WARNING: deletes all local data)
+npx supabase db reset
+```
 
 ### Code Quality
 
@@ -102,20 +146,42 @@ npm run format
 
 ### Environment Variables
 
-Copy the example file and fill in your values:
+**Two environment files:**
+
+1. **`.env.local`** - Production credentials (for running the app)
+2. **`.env.test`** - Test credentials (for running tests with local Supabase)
+
+**For local development (running the app):**
 
 ```bash
 cp .env.example .env.local
+# Fill in your production Supabase credentials
 ```
 
-Required variables:
+**For testing (local Supabase):**
 
-| Variable                        | Description           | Where to get it                                           |
-| ------------------------------- | --------------------- | --------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL  | [Supabase Dashboard](https://supabase.com/dashboard)      |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key     | [Supabase Dashboard](https://supabase.com/dashboard)      |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service key  | [Supabase Dashboard](https://supabase.com/dashboard)      |
-| `READWISE_ACCESS_TOKEN`         | For integration tests | [Readwise Access Token](https://readwise.io/access_token) |
+```bash
+cp .env.test.example .env.test
+# Credentials are pre-filled, just add your TEST Readwise token
+```
+
+**Production variables** (`.env.local`):
+
+| Variable                        | Description          | Where to get it                                      |
+| ------------------------------- | -------------------- | ---------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL | [Supabase Dashboard](https://supabase.com/dashboard) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key    | [Supabase Dashboard](https://supabase.com/dashboard) |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service key | [Supabase Dashboard](https://supabase.com/dashboard) |
+| `SYNC_API_KEY`                  | Sync endpoint secret | Generate with `openssl rand -hex 32`                 |
+
+**Test variables** (`.env.test`):
+
+Local Supabase credentials are pre-configured. Only add:
+
+| Variable                | Description           | Where to get it                                           |
+| ----------------------- | --------------------- | --------------------------------------------------------- |
+| `READWISE_ACCESS_TOKEN` | TEST account token    | [Readwise Access Token](https://readwise.io/access_token) |
+| `SYNC_API_KEY`          | Use a simple test key | Any string for local testing                              |
 
 ---
 

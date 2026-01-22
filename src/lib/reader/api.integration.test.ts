@@ -1,16 +1,26 @@
 /**
- * Readwise Reader API Integration Tests
+ * ⚠️ WARNING: Readwise Reader API Integration Tests
  *
- * These tests hit the real Readwise API to verify our client works correctly.
+ * These tests hit the REAL Readwise API with rate limits (20 req/min).
  * They require a valid READWISE_ACCESS_TOKEN environment variable.
  *
+ * IMPORTANT:
+ * - Use a TEST Readwise account, NOT your production account
+ * - Wait 60 seconds between test runs if you hit rate limits
+ * - These tests may fail if the external API is down
+ * - Tests are designed to minimize API calls but still consume quota
+ *
+ * TODO: Replace with stub server to avoid:
+ *   - Rate limit exhaustion (20 req/min)
+ *   - External API dependency
+ *   - Slower test execution
+ *   - Potential production data access
+ *
  * To run locally:
- *   source .env.local && READWISE_ACCESS_TOKEN=$READWISE_ACCESS_TOKEN npm run test -- api.integration
+ *   npm run test:integration
+ *   (Uses .env.test with TEST Readwise account token)
  *
  * In CI, the token should be set as a GitHub Actions secret.
- *
- * NOTE: These tests are designed to minimize API calls to avoid rate limiting
- * (Readwise allows 20 requests per minute).
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';

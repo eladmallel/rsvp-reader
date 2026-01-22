@@ -10,8 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
     steps:
       - uses: actions/checkout@v4
 
@@ -29,14 +27,21 @@ jobs:
       - name: Run type check
         run: npm run type-check
 
+      - name: Set up test environment
+        run: cp .env.test.example .env.test
+
+      - name: Start Supabase local development
+        run: npx supabase start
+
       - name: Run unit tests
         env:
           READWISE_ACCESS_TOKEN: ${{ secrets.READWISE_ACCESS_TOKEN }}
         run: npm run test
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Run E2E tests
-        env:
-          HOME: /root
         run: npm run test:e2e
 
       - name: Upload Playwright report
