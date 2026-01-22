@@ -410,6 +410,7 @@ Include latest screenshots:
 3. [ ] Screenshots captured and analyzed
 4. [ ] README updated if needed
 5. [ ] Any new open questions documented
+6. [ ] Run [autonomous curator](./docs/CURATOR_AUTONOMOUS_PROMPT.md) to capture learnings
 
 ---
 
@@ -433,6 +434,7 @@ Include latest screenshots:
 - [Documentation Index](./docs/INDEX.md) - Find any documentation in < 60 seconds
 - [Project Learnings](./docs/LEARNINGS.md) - Accumulated wisdom and insights
 - [Documentation Guide](./docs/DOCUMENTATION_GUIDE.md) - Documentation standards and maintenance
+- [Autonomous Curator](./docs/CURATOR_AUTONOMOUS_PROMPT.md) - Automated knowledge management
 - [Architecture Decisions](./docs/decisions/) - ADRs for major architectural choices
 
 ### Project Management

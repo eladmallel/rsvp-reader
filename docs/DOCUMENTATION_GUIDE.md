@@ -1,7 +1,7 @@
 # RSVP Reader Documentation Guide
 
 **Created**: 2026-01-21
-**Last Updated**: 2026-01-21
+**Last Updated**: 2026-01-22
 **Status**: Active
 
 This guide establishes standards for creating and maintaining high-quality documentation in the RSVP Reader project.
@@ -220,12 +220,14 @@ When referencing code, include line numbers:
 
 - ⏰ **End of day**: Add learnings to LEARNINGS.md
 - ⏰ **During work**: Update working-memory files for active tasks
+- 🤖 **Automated option**: Run [autonomous curator](./CURATOR_AUTONOMOUS_PROMPT.md) to analyze and update docs
 
 ### Weekly (15 minutes)
 
 - ⏰ **Friday**: Review INDEX.md for new docs
 - ⏰ **Friday**: Check ADRs for needed updates
 - ⏰ **Friday**: Update "Last Updated" dates on modified docs
+- 🤖 **Automated option**: Run [autonomous curator](./CURATOR_AUTONOMOUS_PROMPT.md) for weekly documentation review
 
 ### Monthly (30 minutes)
 
@@ -233,6 +235,7 @@ When referencing code, include line numbers:
 - ⏰ **Last Friday**: Archive completed working-memory files
 - ⏰ **Last Friday**: Update stale docs or mark as deprecated
 - ⏰ **Last Friday**: Check for TODO sections older than 30 days
+- 🤖 **Automated option**: Run [autonomous curator](./CURATOR_AUTONOMOUS_PROMPT.md) in audit mode for comprehensive cleanup
 
 ### Quarterly (2 hours)
 
@@ -292,6 +295,39 @@ Before considering a document "done", verify:
 
 ---
 
+## Automated Knowledge Management
+
+### Autonomous Curator
+
+For hands-free documentation maintenance, use the [Autonomous Curator Prompt](./CURATOR_AUTONOMOUS_PROMPT.md).
+
+**What it does**:
+
+- Analyzes recent commits for learnings to capture
+- Identifies documentation gaps and staleness
+- Reviews open questions for resolution opportunities
+- Suggests cross-references and organizational improvements
+- Executes the highest-priority knowledge management task
+
+**When to use**:
+
+- Daily after significant work (5 min save)
+- Weekly for comprehensive review (15 min save)
+- Monthly for full audit (30 min save)
+- When documentation feels scattered or behind
+
+**How to run**:
+
+```bash
+# Copy prompt content and paste to curator agent
+# Or use CLI if available:
+claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+```
+
+The curator will analyze, prioritize, execute one task, and report what it did plus what should be done next.
+
+---
+
 ## Templates
 
 Available templates:
@@ -329,5 +365,5 @@ We maintain high-quality documentation when:
 
 ---
 
-**Last Review**: 2026-01-21
-**Next Review**: 2026-02-21 (monthly)
+**Last Review**: 2026-01-22
+**Next Review**: 2026-02-22 (monthly)

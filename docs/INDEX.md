@@ -3,6 +3,8 @@
 **Last Updated**: 2026-01-22
 **Purpose**: Central catalog of all project documentation for quick discovery
 
+> **Automation**: Use the [Autonomous Curator](./CURATOR_AUTONOMOUS_PROMPT.md) to keep documentation current automatically
+
 ---
 
 ## Quick Start
@@ -27,6 +29,8 @@
 
 - [LEARNINGS.md](./LEARNINGS.md) - Project insights and accumulated wisdom
 - [DOCUMENTATION_GUIDE.md](./DOCUMENTATION_GUIDE.md) - Documentation standards and maintenance
+- [CURATOR_AUTONOMOUS_PROMPT.md](./CURATOR_AUTONOMOUS_PROMPT.md) - Autonomous knowledge management prompt
+- [CURATOR_QUICK_START.md](./CURATOR_QUICK_START.md) - Quick guide to automated documentation
 
 ---
 
@@ -114,6 +118,7 @@ _Detailed asset catalog coming soon_
 
 - [devops-optimizer.md](../.claude/agents/devops-optimizer.md) - DevOps agent configuration
 - [project-knowledge-curator.md](../.claude/agents/project-knowledge-curator.md) - Knowledge curator agent
+  - [Autonomous Curation Prompt](./CURATOR_AUTONOMOUS_PROMPT.md) - Run curator autonomously
 
 ---
 
