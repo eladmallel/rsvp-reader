@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { syncUser, WINDOW_MS } from '@/lib/sync/syncUser';
+import { decrypt } from '@/lib/crypto/encryption';
 import type { Database } from '@/lib/supabase/types';
 
 type SyncState = Database['public']['Tables']['readwise_sync_state']['Row'];
-type SyncStateWithUser = SyncState & { users: { reader_access_token: string | null } | null };
+type SyncStateWithUser = SyncState & {
+  users: {
+    reader_access_token: string | null;
+    reader_access_token_encrypted: string | null;
+  } | null;
+};
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.SYNC_API_KEY;
@@ -26,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: states, error } = await supabase
     .from('readwise_sync_state')
     .select(
-      'user_id, library_cursor, inbox_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, users (reader_access_token)'
+      'user_id, library_cursor, inbox_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, users (reader_access_token, reader_access_token_encrypted)'
     )
     .eq('in_progress', false)
     .or(`next_allowed_at.is.null,next_allowed_at.lte.${nowIso}`);
@@ -39,7 +45,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const results: Array<{ userId: string; status: string }> = [];
 
   for (const state of (states ?? []) as SyncStateWithUser[]) {
-    const userToken = state.users?.reader_access_token;
+    // Decrypt encrypted token if available, otherwise use plaintext (during migration)
+    let userToken: string | null = null;
+    if (state.users?.reader_access_token_encrypted) {
+      try {
+        userToken = decrypt(state.users.reader_access_token_encrypted);
+      } catch (error) {
+        console.error('Failed to decrypt reader token:', error);
+        continue;
+      }
+    } else if (state.users?.reader_access_token) {
+      userToken = state.users.reader_access_token;
+    }
 
     if (!userToken) {
       continue;

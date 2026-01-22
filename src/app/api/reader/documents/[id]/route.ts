@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createReaderClient, ReaderApiException } from '@/lib/reader';
+import { decrypt } from '@/lib/crypto/encryption';
 
 interface DocumentResponse {
   document?: {
@@ -58,11 +59,27 @@ export async function GET(
     // Get user's Reader token
     const { data: userData, error: fetchError } = await supabase
       .from('users')
-      .select('reader_access_token')
+      .select('reader_access_token, reader_access_token_encrypted')
       .eq('id', user.id)
       .single();
 
-    if (fetchError || !userData?.reader_access_token) {
+    // Decrypt encrypted token if available, otherwise use plaintext (during migration)
+    let readerToken: string | null = null;
+    if (userData?.reader_access_token_encrypted) {
+      try {
+        readerToken = decrypt(userData.reader_access_token_encrypted);
+      } catch (error) {
+        console.error('Failed to decrypt reader token:', error);
+        return NextResponse.json(
+          { error: 'Failed to decrypt Reader token. Please reconnect your account.' },
+          { status: 500 }
+        );
+      }
+    } else if (userData?.reader_access_token) {
+      readerToken = userData.reader_access_token;
+    }
+
+    if (fetchError || !readerToken) {
       return NextResponse.json(
         { error: 'Readwise Reader not connected. Please connect your account first.' },
         { status: 400 }
@@ -74,7 +91,7 @@ export async function GET(
     const includeContent = searchParams.get('content') === 'true';
 
     // Create Reader client and fetch document
-    const readerClient = createReaderClient(userData.reader_access_token);
+    const readerClient = createReaderClient(readerToken);
 
     try {
       // Check cache first if including content

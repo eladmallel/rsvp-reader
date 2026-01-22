@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { syncUser, WINDOW_MS } from '@/lib/sync/syncUser';
+import { decrypt } from '@/lib/crypto/encryption';
 import type { Database } from '@/lib/supabase/types';
 
 type SyncState = Database['public']['Tables']['readwise_sync_state']['Row'];
@@ -32,7 +33,7 @@ export async function POST() {
   const adminSupabase = createAdminClient();
   const { data: state, error: stateError } = await adminSupabase
     .from('readwise_sync_state')
-    .select('*, users!inner(reader_access_token)')
+    .select('*, users!inner(reader_access_token, reader_access_token_encrypted)')
     .eq('user_id', user.id)
     .single();
 
@@ -44,8 +45,26 @@ export async function POST() {
   }
 
   // Type assertion for the joined users relation
-  const userRecord = state.users as unknown as { reader_access_token: string | null } | null;
-  const userToken = userRecord?.reader_access_token;
+  const userRecord = state.users as unknown as {
+    reader_access_token: string | null;
+    reader_access_token_encrypted: string | null;
+  } | null;
+
+  // Decrypt encrypted token if available, otherwise use plaintext (during migration)
+  let userToken: string | null = null;
+  if (userRecord?.reader_access_token_encrypted) {
+    try {
+      userToken = decrypt(userRecord.reader_access_token_encrypted);
+    } catch (error) {
+      console.error('Failed to decrypt reader token:', error);
+      return NextResponse.json(
+        { error: 'Failed to decrypt Reader token. Please reconnect your account.' },
+        { status: 500 }
+      );
+    }
+  } else if (userRecord?.reader_access_token) {
+    userToken = userRecord.reader_access_token;
+  }
 
   console.log('[SYNC TRIGGER] Has token:', !!userToken);
 

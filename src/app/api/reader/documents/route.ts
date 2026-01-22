@@ -66,11 +66,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
     // Check if user has connected Reader (has a token)
     const { data: userData, error: fetchError } = await supabase
       .from('users')
-      .select('reader_access_token')
+      .select('reader_access_token, reader_access_token_encrypted')
       .eq('id', user.id)
       .single();
 
-    if (fetchError || !userData?.reader_access_token) {
+    const hasToken = !!userData?.reader_access_token_encrypted || !!userData?.reader_access_token;
+
+    if (fetchError || !hasToken) {
       return NextResponse.json(
         { error: 'Readwise Reader not connected. Please connect your account first.' },
         { status: 400 }

@@ -31,7 +31,7 @@ export async function GET(): Promise<NextResponse<ProfileResponse>> {
     // Get user data from database
     const { data: userData, error: queryError } = await supabase
       .from('users')
-      .select('email, reader_access_token')
+      .select('email, reader_access_token, reader_access_token_encrypted')
       .eq('id', user.id)
       .single();
 
@@ -54,8 +54,9 @@ export async function GET(): Promise<NextResponse<ProfileResponse>> {
         ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
         : name.slice(0, 2).toUpperCase();
 
-    // Check if Reader is connected
-    const readerConnected = !!userData?.reader_access_token;
+    // Check if Reader is connected (check both encrypted and plaintext during migration)
+    const readerConnected =
+      !!userData?.reader_access_token_encrypted || !!userData?.reader_access_token;
 
     return NextResponse.json({
       id: user.id,

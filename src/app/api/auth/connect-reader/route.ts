@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createReaderClient, ReaderApiException } from '@/lib/reader';
+import { encrypt } from '@/lib/crypto/encryption';
 import type { Database } from '@/lib/supabase/types';
 
 interface ConnectReaderRequest {
@@ -83,12 +84,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<ConnectRe
       throw error;
     }
 
-    // Store token in user's profile
-    // Note: In production, this should be encrypted before storage
+    // Store token in user's profile (encrypted)
+    const encryptedToken = encrypt(token);
     const { error: updateError } = await supabase
       .from('users')
       .update({
-        reader_access_token: token,
+        reader_access_token_encrypted: encryptedToken,
+        reader_access_token: null, // Clear plaintext column
         updated_at: new Date().toISOString(),
       } as Database['public']['Tables']['users']['Update'])
       .eq('id', user.id);
@@ -165,10 +167,11 @@ export async function DELETE(): Promise<NextResponse<ConnectReaderResponse>> {
       );
     }
 
-    // Remove token from user's profile
+    // Remove token from user's profile (both encrypted and plaintext)
     const { error: updateError } = await supabase
       .from('users')
       .update({
+        reader_access_token_encrypted: null,
         reader_access_token: null,
         updated_at: new Date().toISOString(),
       } as Database['public']['Tables']['users']['Update'])
@@ -226,10 +229,10 @@ export async function GET(): Promise<NextResponse<{ connected: boolean; error?: 
       );
     }
 
-    // Check if user has a Reader token
+    // Check if user has a Reader token (check both encrypted and plaintext during migration)
     const { data: userData, error: fetchError } = await supabase
       .from('users')
-      .select('reader_access_token')
+      .select('reader_access_token, reader_access_token_encrypted')
       .eq('id', user.id)
       .single();
 
@@ -241,7 +244,7 @@ export async function GET(): Promise<NextResponse<{ connected: boolean; error?: 
       );
     }
 
-    const hasToken = !!userData?.reader_access_token;
+    const hasToken = !!userData?.reader_access_token_encrypted || !!userData?.reader_access_token;
 
     return NextResponse.json({ connected: hasToken });
   } catch (error) {
