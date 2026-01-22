@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { RSVPPlayer } from '@/components/rsvp';
 import { ThemeToggle } from '@/components/ui';
 import { htmlToPlainText } from '@/lib/reader/html';
@@ -97,7 +96,7 @@ export default function RsvpPageClient() {
   }, [articleId, fetchArticle]);
 
   const handleExit = useCallback(() => {
-    router.push('/');
+    router.back();
   }, [router]);
 
   // Get text content - use article content, fall back to HTML stripped of tags, or sample
@@ -121,9 +120,9 @@ export default function RsvpPageClient() {
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <Link href="/" className={styles.backLink}>
-              ← Back to Library
-            </Link>
+            <button onClick={handleExit} className={styles.backLink}>
+              ← Back
+            </button>
             <h1 className={styles.title}>Loading...</h1>
           </div>
           <ThemeToggle />
@@ -145,9 +144,9 @@ export default function RsvpPageClient() {
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <Link href="/" className={styles.backLink}>
-              ← Back to Library
-            </Link>
+            <button onClick={handleExit} className={styles.backLink}>
+              ← Back
+            </button>
             <h1 className={styles.title}>Error</h1>
           </div>
           <ThemeToggle />
@@ -159,9 +158,9 @@ export default function RsvpPageClient() {
             <button onClick={() => router.refresh()} className={styles.retryButton}>
               Try Again
             </button>
-            <Link href="/" className={styles.backLinkButton}>
-              Back to Library
-            </Link>
+            <button onClick={handleExit} className={styles.backLinkButton}>
+              Go Back
+            </button>
           </div>
         </main>
       </div>
