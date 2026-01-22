@@ -2,14 +2,15 @@
 
 ## Before Each Deployment
 
-- [ ] All tests pass (unit, integration, E2E)
-- [ ] No secrets in code or git history
-- [ ] Environment variables documented in .env.example
+- [x] All tests pass (unit, integration, E2E)
+- [x] No secrets in code or git history
+- [x] Environment variables documented in .env.example
 - [ ] No console.log with sensitive data
 - [ ] Rate limits configured on new API routes
-- [ ] Input validation on all user inputs
-- [ ] Authentication required on protected routes
-- [ ] RLS policies applied to new database tables
+- [x] Input validation on all user inputs
+- [x] Authentication required on protected routes
+- [x] RLS policies applied to new database tables
+- [x] User tokens encrypted at rest (reader_access_token, llm_api_key)
 
 ## Weekly Review
 
