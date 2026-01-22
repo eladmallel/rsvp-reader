@@ -7,16 +7,35 @@
 
 ---
 
+## Quick Start
+
+**To run the autonomous curator, simply say**:
+
+> "Run curator"
+
+or
+
+> "Run the autonomous curator"
+
+That's it! Claude will read this file and execute the autonomous knowledge management workflow.
+
+---
+
 ## Instructions for Running
 
-Save this prompt to a file and invoke the project-knowledge-curator agent with it:
+**Simple Usage**: Tell Claude to run the curator:
 
-```bash
-# Using Claude CLI or agent runner
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+```
+Run the autonomous curator
 ```
 
-Or copy the prompt section below and paste it into a conversation with the curator agent.
+Or use the shorthand:
+
+```
+Run curator
+```
+
+**Advanced Usage**: Copy the prompt section below and customize it before running.
 
 ---
 
@@ -290,10 +309,17 @@ Run after completing a feature branch:
 ```bash
 # Merge feature
 git merge feature-branch
+```
 
-# Capture knowledge
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+Then tell Claude:
 
+```
+Run the autonomous curator to capture learnings from this feature
+```
+
+After the curator completes:
+
+```bash
 # Commit documentation updates
 git add docs/
 git commit -m "docs: capture learnings from [feature-name]"

@@ -318,13 +318,21 @@ For hands-free documentation maintenance, use the [Autonomous Curator Prompt](./
 
 **How to run**:
 
-```bash
-# Copy prompt content and paste to curator agent
-# Or use CLI if available:
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+Simply tell Claude:
+
+```
+Run the autonomous curator
+```
+
+Or use the shorthand:
+
+```
+Run curator
 ```
 
 The curator will analyze, prioritize, execute one task, and report what it did plus what should be done next.
+
+See [CURATOR_QUICK_START.md](./CURATOR_QUICK_START.md) for detailed usage instructions.
 
 ---
 

@@ -8,10 +8,18 @@
 
 ## One-Minute Usage
 
-1. Copy the prompt from [CURATOR_AUTONOMOUS_PROMPT.md](./CURATOR_AUTONOMOUS_PROMPT.md)
-2. Start a conversation with the project-knowledge-curator agent
-3. Paste the prompt
-4. The agent will analyze, identify priority task, execute it, and report results
+Just tell Claude:
+
+```
+Run curator
+```
+
+That's it! The curator will:
+
+1. Analyze your project's current state
+2. Identify the most important documentation task
+3. Execute it automatically
+4. Report what was done and suggest next steps
 
 ---
 
@@ -64,23 +72,32 @@ Suggested Next Run Priority: Create ADR-004 for local development environment
 
 **Daily** (saves 5 min):
 
-```bash
-# After completing work
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+After completing work, tell Claude:
+
+```
+Run the autonomous curator to capture learnings from today's work
+```
+
+Or use the shorthand:
+
+```
+Run curator
 ```
 
 **Weekly** (saves 15 min):
 
-```bash
-# Friday afternoon
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+Friday afternoon:
+
+```
+Run the autonomous curator for weekly documentation review
 ```
 
 **Monthly** (saves 30 min):
 
-```bash
-# Last Friday of month
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+Last Friday of month:
+
+```
+Run the autonomous curator for monthly documentation audit
 ```
 
 ---
@@ -93,11 +110,17 @@ Capture learnings after feature completion:
 # Complete your feature work
 git add .
 git commit -m "feat: add new feature"
+```
 
-# Capture knowledge
-claude-agent project-knowledge-curator < docs/CURATOR_AUTONOMOUS_PROMPT.md
+Then tell Claude:
 
-# Commit documentation updates based on curator's changes
+```
+Run the autonomous curator to capture learnings from this feature
+```
+
+After the curator completes, commit the documentation updates:
+
+```bash
 git add docs/
 git commit -m "docs: capture learnings from feature work
 
