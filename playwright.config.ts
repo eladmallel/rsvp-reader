@@ -66,7 +66,9 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     env: {
-      // Override Next.js environment to use test Supabase (instead of .env.local)
+      // Set NODE_ENV=test to prevent Next.js from loading .env.development.local
+      // This ensures tests use local Supabase from .env.test instead of production
+      NODE_ENV: 'test',
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',

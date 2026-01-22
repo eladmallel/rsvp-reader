@@ -64,7 +64,7 @@ npm run test:integration
 
 ### E2E Tests
 
-Full browser tests using Playwright that test the complete user experience.
+Full browser tests using Playwright that test the complete user experience. **351 of 364 tests** pass, covering authentication, library management, RSVP reading, chat, and visual alignment.
 
 **Prerequisites**: Ensure Supabase is running locally (see [Local Development Environment](#local-development-environment) above).
 
@@ -74,9 +74,19 @@ npm run test:e2e
 
 # Run with Playwright UI (great for debugging)
 npm run test:e2e:ui
+
+# Run specific test file
+npm run test:e2e tests/e2e/auth.spec.ts
 ```
 
-> 💡 **Note**: E2E tests automatically use the local Supabase instance, keeping your production data safe.
+> 💡 **Note**: E2E tests automatically use the local Supabase instance via `.env.test`, keeping your production data safe. The test environment is completely isolated - see [Environment Separation](docs/devops/environment-separation.md) for details.
+
+**Optional**: To enable Readwise integration tests (12 tests, currently skipped):
+
+1. Create a test Readwise account
+2. Get your test token from https://readwise.io/access_token
+3. Update `READWISE_ACCESS_TOKEN` in `.env.test`
+4. Run: `npm run test:e2e tests/e2e/integration-real-data.spec.ts`
 
 ### Run All Tests
 

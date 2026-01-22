@@ -36,6 +36,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (keep secrets out of git, but allow examples)
+# Note: .env.local was renamed to .env.development.local to prevent
+# production credentials from leaking into test environment
 .env*
 !.env.example
 !.env.test.example

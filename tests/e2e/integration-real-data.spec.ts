@@ -25,9 +25,13 @@ function getScreenshotPath(testInfo: TestInfo, filename: string): string {
   return testInfo.outputPath('screenshots', today, filename);
 }
 
-// Check if Readwise token is available
+// Check if Readwise token is available and valid (not a placeholder)
 const READWISE_TOKEN = process.env.READWISE_ACCESS_TOKEN;
-const shouldRunIntegrationTests = !!READWISE_TOKEN;
+const shouldRunIntegrationTests =
+  !!READWISE_TOKEN &&
+  !READWISE_TOKEN.includes('placeholder') &&
+  !READWISE_TOKEN.includes('test-token') &&
+  READWISE_TOKEN.length > 20;
 
 // Simple in-memory cache for API responses to reduce rate limiting
 const responseCache: Map<string, { data: unknown; timestamp: number }> = new Map();

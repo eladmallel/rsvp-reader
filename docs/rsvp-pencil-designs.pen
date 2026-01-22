@@ -3538,7 +3538,7 @@
                   "type": "ref",
                   "ref": "C3KOZ",
                   "x": 24,
-                  "y": 24.01994370166805,
+                  "y": 24.019943701668048,
                   "width": "fill_container",
                   "descendants": {
                     "NEMHS": {
@@ -5408,21 +5408,6 @@
     },
     {
       "type": "rectangle",
-      "id": "2c61e",
-      "x": 4794,
-      "y": 3247,
-      "name": "readwise-reader-mobile-library",
-      "fill": {
-        "type": "image",
-        "enabled": true,
-        "url": "/Users/elad/Downloads/Screenshot 2026-01-21 at 9.52.07 PM.png",
-        "mode": "fill"
-      },
-      "width": 1206,
-      "height": 2622
-    },
-    {
-      "type": "rectangle",
       "id": "Xse8I",
       "x": 6429,
       "y": 3247,
@@ -7130,6 +7115,173 @@
       "width": 400,
       "height": 219,
       "content": "in \"readwise-reader-mobile-feed-screen\" frame, design the app's feed page. copy first from the Readwise Reader feed page screenshot in the file: ~/Downloads/Screenshot 2026-01-21 at 9.52.27 PM.png, then make sure the design adheres to the nav and style in the \"readwise-reader-mobile-library-screen\" frame."
+    },
+    {
+      "type": "frame",
+      "id": "Sxp9c",
+      "x": 1500,
+      "y": 100,
+      "name": "Component/Spritz RSVP Reader",
+      "reusable": true,
+      "width": 340,
+      "fill": "#FFFFFF",
+      "cornerRadius": 8,
+      "layout": "vertical",
+      "gap": 12,
+      "children": [
+        {
+          "type": "frame",
+          "id": "W4sD3",
+          "name": "Reading Window",
+          "width": "fill_container",
+          "fill": "#F5F5F5",
+          "layout": "vertical",
+          "padding": [
+            20,
+            16
+          ],
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "TY2ed",
+              "name": "Top Guide Line",
+              "fill": "#000000",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "Xj6ga",
+              "name": "Word Container",
+              "width": "fill_container",
+              "padding": [
+                12,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "5uvTr",
+                  "name": "Vertical Guide",
+                  "fill": "#CCCCCC",
+                  "width": 1,
+                  "height": 40
+                },
+                {
+                  "type": "text",
+                  "id": "kkn79",
+                  "name": "Word",
+                  "fill": "#000000",
+                  "content": [
+                    {
+                      "fontSize": 32,
+                      "fontWeight": "600",
+                      "fill": "#000000",
+                      "content": "l"
+                    },
+                    {
+                      "fontSize": 32,
+                      "fontWeight": "600",
+                      "fill": "#FF0000",
+                      "content": "o"
+                    },
+                    {
+                      "fontSize": 32,
+                      "fontWeight": "600",
+                      "fill": "#000000",
+                      "content": "ok"
+                    }
+                  ],
+                  "fontFamily": "Inter",
+                  "fontSize": 32,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "7q7r2",
+              "name": "Bottom Guide Line",
+              "fill": "#000000",
+              "width": "fill_container",
+              "height": 1
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ylvZN",
+          "name": "Controls",
+          "width": "fill_container",
+          "padding": [
+            8,
+            12
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ztNXc",
+              "name": "Branding",
+              "gap": 4,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "yI1Bn",
+                  "name": "poweredBy",
+                  "fill": "#666666",
+                  "content": "powered by",
+                  "fontFamily": "Inter",
+                  "fontSize": 10,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "iydqM",
+                  "name": "spritzLogo",
+                  "fill": "#00A0E3",
+                  "content": "Spritz",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "I8PML",
+              "name": "Right Controls",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "uAW7t",
+                  "name": "Flag Icon",
+                  "width": 24,
+                  "height": 16,
+                  "fill": "#B22234",
+                  "cornerRadius": 2
+                },
+                {
+                  "type": "text",
+                  "id": "Lzwez",
+                  "name": "speed",
+                  "fill": "#000000",
+                  "content": "500wpm",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
