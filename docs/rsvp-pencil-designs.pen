@@ -14653,6 +14653,204 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "L4IXb",
+      "x": 9000,
+      "y": 0,
+      "name": "Favicon",
+      "width": 512,
+      "height": 512,
+      "fill": "$--primary",
+      "cornerRadius": 128,
+      "children": [
+        {
+          "type": "frame",
+          "id": "dG9qQ",
+          "name": "iconContainer",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "ow9PX",
+              "name": "textR",
+              "fill": "$--primary-foreground",
+              "content": "R",
+              "fontFamily": "Inter",
+              "fontSize": 360,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "AHBxh",
+      "x": 9600,
+      "y": 0,
+      "name": "Favicon - Gradient",
+      "width": 512,
+      "height": 512,
+      "fill": {
+        "type": "gradient",
+        "gradientType": "linear",
+        "enabled": true,
+        "rotation": 135,
+        "size": {
+          "height": 1
+        },
+        "colors": [
+          {
+            "color": "$--primary",
+            "position": 0
+          },
+          {
+            "color": "#6366f1",
+            "position": 1
+          }
+        ]
+      },
+      "cornerRadius": 128,
+      "children": [
+        {
+          "type": "frame",
+          "id": "dQUiZ",
+          "name": "gradientContainer",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "UeGCi",
+              "name": "textR2",
+              "fill": "#ffffff",
+              "content": "R",
+              "fontFamily": "Inter",
+              "fontSize": 360,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "aJEFr",
+      "x": 10200,
+      "y": 0,
+      "name": "Favicon - Outline",
+      "width": 512,
+      "height": 512,
+      "fill": "$--background",
+      "cornerRadius": 128,
+      "stroke": {
+        "align": "inside",
+        "thickness": 8,
+        "fill": "$--primary"
+      },
+      "children": [
+        {
+          "type": "frame",
+          "id": "gAM24",
+          "name": "outlineContainer",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "1IQbd",
+              "name": "textR3",
+              "fill": "$--primary",
+              "content": "R",
+              "fontFamily": "Inter",
+              "fontSize": 360,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "v7bH2",
+      "x": 9000,
+      "y": 600,
+      "name": "Favicon - Book Icon",
+      "width": 512,
+      "height": 512,
+      "fill": "$--primary",
+      "cornerRadius": 128,
+      "children": [
+        {
+          "type": "frame",
+          "id": "AamFx",
+          "name": "bookContainer",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon_font",
+              "id": "qFV7d",
+              "name": "bookIcon",
+              "width": 320,
+              "height": 320,
+              "iconFontName": "book-open",
+              "iconFontFamily": "lucide",
+              "fill": "$--primary-foreground"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "gmy6g",
+      "x": 9600,
+      "y": 600,
+      "name": "Favicon - Minimal Circle",
+      "width": 512,
+      "height": 512,
+      "fill": "#6366f1",
+      "cornerRadius": 256,
+      "children": [
+        {
+          "type": "frame",
+          "id": "UD8vB",
+          "name": "circleContainer",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "AgUNU",
+              "name": "textR5",
+              "fill": "#ffffff",
+              "content": "R",
+              "fontFamily": "Inter",
+              "fontSize": 360,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
