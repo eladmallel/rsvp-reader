@@ -2,23 +2,13 @@
 
 > Track uncertainties and decisions that need input. See [AGENTS.md](./AGENTS.md) for format guidelines.
 
+**Last Updated**: 2026-01-22
+
 ---
 
-## [2026-01-16] RSVP Player Integration with Real Content
+## Active Questions
 
-**Context**: The RSVP page now fetches real article content from the API. Need to decide how to handle different content formats.
-
-**Question**: How should we handle articles that only have HTML content vs plain text?
-
-**Options Considered**:
-
-1. Always strip HTML tags client-side - Simple but loses formatting context
-2. Use a library like html-to-text for better conversion - More dependencies
-3. Parse HTML server-side and return plain text - More consistent but requires API changes
-
-**My Recommendation**: Option 1 (client-side stripping) for now as it's the simplest. Can upgrade later if needed.
-
-**Status**: [x] Resolved - Using client-side HTML stripping for simplicity
+_Questions currently open and needing decisions_
 
 ---
 
@@ -53,6 +43,28 @@
 
 **My Recommendation**: Prefer Option 1 if the API supports it; otherwise keep per-document fetches limited to the remaining request budget.
 
-**Status**: [ ] Open
+**Status**: [ ] Open - Needs API exploration when Readwise sync work resumes
+
+---
+
+## Resolved Questions
+
+_Archive of questions that have been answered or are no longer relevant_
+
+---
+
+### [2026-01-16] RSVP Player Integration with Real Content
+
+**Context**: The RSVP page now fetches real article content from the API. Need to decide how to handle different content formats.
+
+**Question**: How should we handle articles that only have HTML content vs plain text?
+
+**Decision**: Using client-side HTML stripping for simplicity (Option 1)
+
+**Rationale**: Simplest approach, can upgrade later if needed. No additional dependencies required.
+
+**Status**: ✅ Resolved - Implemented in RSVP player
+
+**Date Resolved**: 2026-01-16
 
 ---

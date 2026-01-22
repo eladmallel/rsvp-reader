@@ -1,6 +1,6 @@
 # RSVP Reader Documentation Index
 
-**Last Updated**: 2026-01-21
+**Last Updated**: 2026-01-22
 **Purpose**: Central catalog of all project documentation for quick discovery
 
 ---
@@ -25,8 +25,8 @@
 
 ### Knowledge Base
 
-- [LEARNINGS.md](./LEARNINGS.md) - Project insights and accumulated wisdom (Coming soon)
-- [DOCUMENTATION_GUIDE.md](./DOCUMENTATION_GUIDE.md) - Documentation standards and maintenance (Coming soon)
+- [LEARNINGS.md](./LEARNINGS.md) - Project insights and accumulated wisdom
+- [DOCUMENTATION_GUIDE.md](./DOCUMENTATION_GUIDE.md) - Documentation standards and maintenance
 
 ---
 
@@ -40,7 +40,9 @@
 ### Architecture Decisions (ADRs)
 
 - [ADR Template](./decisions/000-template.md) - Template for architecture decision records
-- _Future ADRs will be cataloged here_
+- [ADR-001: Supabase Local Development](./decisions/001-supabase-local-development.md) - Why we use local Supabase for testing
+- [ADR-002: Environment Separation Strategy](./decisions/002-environment-separation-strategy.md) - Strict dev/test/prod isolation
+- [ADR-003: E2E Test Resilience Patterns](./decisions/003-e2e-test-resilience-patterns.md) - Testing across variable backend speeds
 
 ---
 

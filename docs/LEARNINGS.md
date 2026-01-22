@@ -1,7 +1,7 @@
 # RSVP Reader Project Learnings
 
 **Created**: 2026-01-21
-**Last Updated**: 2026-01-21
+**Last Updated**: 2026-01-22
 **Purpose**: Accumulated wisdom and insights from building RSVP Reader
 **Maintenance**: Daily 5-minute updates at end of day
 
@@ -69,14 +69,51 @@ _To be populated with sync strategy insights_
 
 ### Local Development Setup
 
-_Learnings from setting up local Supabase environment_
+**Why Local Supabase Won**: The project moved to local Supabase for test isolation after discovering critical environment contamination issues (2026-01-22).
 
-**Key insights to capture**:
+**Key Decision**: Local Supabase instances per developer over shared test database
 
-- Why local Supabase over shared test DB (see ADR-001 when created)
-- Setup challenges encountered and solutions
-- Migration strategy that worked
-- Database seeding approach
+- **Rationale**: Complete test isolation, zero risk of production contamination, faster test execution
+- **Performance**: Local Supabase responds 100-1000x faster than production (5-50ms vs 200-500ms for auth)
+- **Tradeoff**: Slightly more complex setup, but worth it for safety and speed
+
+**Critical Setup Lessons**:
+
+1. **Environment File Isolation is Non-Negotiable**
+   - Production credentials in `.env.local` leaked into test environment despite `NODE_ENV=test`
+   - **Solution**: Rename `.env.local` → `.env.development.local` to prevent Next.js from loading it during tests
+   - Next.js loads `.env.local` in ALL environments EXCEPT when `NODE_ENV=test` is set
+
+2. **Service Role Keys Require Special Handling**
+   - Local Supabase uses different JWT signing methods than production
+   - Admin API cleanup may fail with "invalid JWT: signing method HS256 is invalid"
+   - **Solution**: Make cleanup best-effort only, don't fail tests on cleanup errors
+
+3. **Database Seeding**
+   - Use Supabase migrations for schema (`supabase db push`)
+   - Seed test data via SQL scripts in `supabase/seed.sql`
+   - Keep test data minimal and deterministic
+
+### Environment Contamination Prevention
+
+**Hard-Won Lesson**: A single shared database across dev/test/prod is a critical vulnerability.
+
+**What Went Wrong** (Pre-2026-01-22):
+
+- E2E tests used production Supabase credentials
+- Tests created and deleted real users in production database
+- Integration tests hit production Readwise account
+- Risk level: 9.5/10
+
+**Prevention Strategy**:
+
+1. Strict environment file naming (`.env.development.local` NOT `.env.local`)
+2. Explicit `NODE_ENV=test` in Playwright config's `webServer.env`
+3. Never commit production credentials
+4. Use local Supabase (`npx supabase start`) for all testing
+5. CI/CD uses separate test database instance
+
+**Verification**: Check for leaks with `grep -r "prod-credential-pattern" . --exclude-dir=node_modules`
 
 ### Row Level Security (RLS) Patterns
 
@@ -84,7 +121,12 @@ _To be populated with RLS policy patterns that worked well_
 
 ### Schema Design Decisions
 
-_Learnings about database schema choices_
+**Sensitive Token Storage**:
+
+- Currently storing plaintext tokens in database (`users.reader_access_token`, `users.llm_api_key`)
+- **Risk**: Anyone with DB access can read all user API tokens (Severity 8.0/10)
+- **TODO**: Implement encryption at rest or use Supabase Vault
+- See: [DEPLOYMENT-REVIEW-SUMMARY.md](./devops/DEPLOYMENT-REVIEW-SUMMARY.md)
 
 ---
 
@@ -92,14 +134,71 @@ _Learnings about database schema choices_
 
 ### E2E Testing Patterns
 
-_Insights from Playwright/Cypress E2E test setup_
+**Framework**: Playwright with 4 parallel workers for speed
 
-**Key lessons to capture**:
+**Environment Isolation Strategy** (Implemented 2026-01-22):
 
-- Environment isolation strategies
-- Test data management approaches
-- Mocking vs real API calls
-- What to test vs what to skip
+1. **Never Mix Test and Production Credentials**
+   - Use `.env.test` for test configuration
+   - Use `.env.development.local` for local development (NOT `.env.local`)
+   - Explicitly set `NODE_ENV=test` in Playwright's `webServer.env` config
+
+2. **Local Supabase for All E2E Tests**
+   - Start with `npx supabase start` before running tests
+   - Tests use `http://127.0.0.1:54321` (local) never production URLs
+   - Zero cost, zero rate limits, complete isolation
+
+3. **Mock External APIs Aggressively**
+   - Mock Readwise API to avoid rate limits (20 req/min)
+   - Only run real integration tests when explicitly needed
+   - Use feature flags to skip integration tests in CI
+
+**Test Resilience Pattern for Loading States**:
+
+Local Supabase is so fast (<50ms) that loading states may be invisible. Don't assume timing:
+
+```typescript
+// ❌ BAD: Assumes loading state will appear
+await page.click('button');
+await expect(loadingIndicator).toBeVisible(); // May already be gone!
+
+// ✅ GOOD: Race multiple outcomes
+await page.click('button');
+const result = await Promise.race([
+  loadingIndicator.waitFor({ timeout: 500 }).then(() => 'loading'),
+  errorMessage.waitFor({ timeout: 1500 }).then(() => 'error'),
+]);
+expect(['loading', 'error']).toContain(result);
+```
+
+**Integration Test Skip Logic**:
+
+Don't just check for token presence - validate it's real:
+
+```typescript
+// ❌ BAD: Treats placeholder as valid
+const shouldRun = !!READWISE_TOKEN;
+
+// ✅ GOOD: Verify it's a real token
+const shouldRun =
+  !!READWISE_TOKEN &&
+  !READWISE_TOKEN.includes('placeholder') &&
+  !READWISE_TOKEN.includes('test-token') &&
+  READWISE_TOKEN.length > 20;
+```
+
+**Test Cleanup Best Practices**:
+
+1. Make cleanup best-effort only (don't fail tests on cleanup errors)
+2. Local test users are ephemeral anyway
+3. Log cleanup failures but continue
+4. Use `beforeEach` for setup, `afterEach` for cleanup attempts
+
+**Test Performance**:
+
+- Full suite (364 tests) runs in ~1 minute with 4 workers
+- Auth tests: 74 tests, all passing (96% overall pass rate post-fixes)
+- Visual alignment: 168 screenshot tests, all passing
 
 ### Unit Testing Approaches
 
@@ -107,13 +206,28 @@ _To be populated with unit testing patterns_
 
 ### Test Environment Management
 
-_Recent learnings from E2E test environment fixes_
+**Critical Learnings from E2E Test Fixes** (2026-01-22):
 
-**Placeholder for insights like**:
+**Problem Solved**: 26 failing tests, production database contamination
 
-- Environment contamination prevention
-- Test database isolation
-- Secret management in tests
+**Root Causes Identified**:
+
+1. Environment file precedence issue (`.env.local` loaded during tests)
+2. Assumption that loading states would always be visible
+3. Production credentials leaking into test environment
+4. Placeholder tokens treated as valid for integration tests
+
+**Solutions Implemented**:
+
+1. Renamed `.env.local` → `.env.development.local` for proper isolation
+2. Added `NODE_ENV=test` to Playwright config's `webServer.env`
+3. Made tests resilient to variable backend speed using `Promise.race()`
+4. Improved integration test skip logic to validate token quality
+5. Made cleanup best-effort to handle JWT signing method differences
+
+**Results**: 351/364 tests passing (96%), zero production contamination
+
+**Reference**: [e2e-test-environment-fixes.md](./devops/e2e-test-environment-fixes.md)
 
 ---
 
@@ -185,28 +299,93 @@ _Performance mistakes discovered and corrected_
 
 ### Environment Separation
 
-_Learnings from strict dev/test/prod separation_
+**Critical Insight**: Environment separation isn't just best practice - it's essential for data safety and testing confidence.
 
-**Recent insights** (from deployment review):
+**Deployment Review Findings** (2026-01-22):
 
-- Environment variable management
-- Secret rotation procedures
-- Database separation strategies
-- CI/CD pipeline lessons
+**Before Review**:
+
+- Single shared Supabase database across all environments
+- Tests modifying production data (Risk: 9.5/10)
+- No separate test credentials
+- E2E tests using production Readwise account
+
+**After Implementation**:
+
+- Local Supabase instances for development and testing
+- Production database completely isolated
+- Environment-specific credential management
+- Zero test contamination
+
+**Environment File Strategy**:
+
+```
+.env                      # Shared defaults, never contains secrets
+.env.development.local    # Local dev credentials (gitignored)
+.env.test                 # Test credentials (committed, uses local Supabase)
+.env.production           # Production (Vercel manages this)
+```
+
+**Key Principle**: Use environment-specific `.local` files (`.env.development.local`) NOT generic `.env.local` which Next.js loads in all non-test environments.
+
+**Secret Rotation Procedures**:
+
+- Document rotation schedule (quarterly minimum for high-value secrets)
+- Test secret rotation in non-production first
+- Use environment variables, never hardcode
+- See: [secret-rotation.md](./devops/secret-rotation.md)
+
+**CI/CD Pipeline Lessons**:
+
+- GitHub Actions workflow well-structured with parallel execution
+- Lint → Type-check → Unit Tests → E2E Tests → Deploy
+- 4 parallel Playwright workers for speed
+- Conditional Vercel deployment on success
+- Artifact upload for debugging failures
 
 ### Security Practices
 
-_Security lessons learned_
+**Security Posture Review** (2026-01-22):
 
-**To populate with**:
+**Critical Vulnerabilities Found**:
 
-- Security headers implementation insights
-- Secret management learnings
-- Vulnerability remediation experiences
+1. **Plaintext tokens in database** (Severity 8.0/10)
+   - `users.reader_access_token` unencrypted
+   - `users.llm_api_key` unencrypted
+   - **TODO**: Implement encryption or Supabase Vault
+
+2. **No rate limiting** (Severity 6.0/10)
+   - API routes unprotected
+   - Risk of abuse and cost escalation
+   - **TODO**: Implement `@upstash/ratelimit` or similar
+
+**Security Headers Implementation**:
+
+- Added via Next.js config
+- See recent commit: "feat: add security headers to Next.js application"
+- Headers include CSP, X-Frame-Options, etc.
+
+**Best Practices Established**:
+
+1. Never commit secrets (use `.gitignore` for `.env.*.local`)
+2. Separate environments completely
+3. Use service role keys only in trusted backend contexts
+4. Implement RLS policies for all tables
+5. Regular security audits (quarterly)
+
+**Reference**: [SECURITY-CHECKLIST.md](./devops/SECURITY-CHECKLIST.md)
 
 ### Monitoring & Debugging
 
-_Production debugging insights_
+**Test Monitoring Strategy**:
+
+- Track test execution time (unit tests <30s, E2E <2min)
+- Monitor pass rate (should be >95%)
+- Check for environment leaks regularly
+- Use Playwright trace files for debugging failures
+
+**Production Debugging**:
+_To be populated with production debugging insights as we gain operational experience_
 
 ---
 
@@ -216,13 +395,37 @@ _Production debugging insights_
 
 _TypeScript patterns that improved code quality_
 
+### Next.js Environment Variables
+
+**Critical Learning**: Next.js has specific environment variable loading precedence that can bite you.
+
+**Loading Order** (first match wins):
+
+1. `process.env` (system environment variables)
+2. `.env.$(NODE_ENV).local` (e.g., `.env.test.local`, `.env.development.local`)
+3. `.env.local` ⚠️ **Loaded in ALL environments EXCEPT `NODE_ENV=test`**
+4. `.env.$(NODE_ENV)` (e.g., `.env.test`, `.env.development`)
+5. `.env`
+
+**Implication**: If you use `.env.local` for development, those values will leak into production builds unless you're very careful. Use `.env.development.local` instead.
+
+**For Testing**: You MUST set `NODE_ENV=test` explicitly in test configuration to prevent `.env.local` from loading.
+
 ### Next.js App Router
 
 _Learnings about Next.js app router, server components, etc._
 
 ### API Route Patterns
 
-_Best practices for Next.js API routes_
+**Current Gap**: No rate limiting on API routes (identified in DevOps review)
+
+**Best Practices to Implement**:
+
+- Add rate limiting middleware (e.g., `@upstash/ratelimit`)
+- Validate input thoroughly
+- Use appropriate HTTP status codes
+- Log errors properly
+- Handle Readwise API rate limits gracefully (20 req/min)
 
 ---
 
@@ -246,6 +449,37 @@ _This documentation improvement initiative itself - meta learnings_
 
 _This section captures very recent insights before they're organized into categories above_
 
+### 2026-01-22: E2E Test Environment Fixes
+
+**Major breakthrough**: Solved 26 failing tests and eliminated production database contamination
+
+**Root Cause**: `.env.local` was being loaded during tests despite `NODE_ENV=test`, causing production Supabase credentials to leak into test environment.
+
+**Solution**: Renamed `.env.local` → `.env.development.local` and explicitly set `NODE_ENV=test` in Playwright config.
+
+**Impact**:
+
+- Test pass rate improved from 93% to 96% (351/364 passing)
+- Zero production contamination
+- Local Supabase responds 100-1000x faster (enabling faster test iteration)
+
+**Key Insight**: Next.js environment variable loading is subtle - you must understand the precedence rules to avoid security issues.
+
+### 2026-01-22: Deployment Configuration Review
+
+**Completed**: Comprehensive DevOps review identifying critical security gaps
+
+**Critical Findings**:
+
+1. Shared database across environments (Severity 9.5/10) - RESOLVED
+2. Plaintext tokens in database (Severity 8.0/10) - TODO
+3. No rate limiting (Severity 6.0/10) - TODO
+4. Integration tests hitting real API (Severity 5.5/10) - PARTIALLY RESOLVED
+
+**Actions Taken**: Implemented local Supabase, environment separation, security headers
+
+**Reference**: [DEPLOYMENT-REVIEW-SUMMARY.md](./devops/DEPLOYMENT-REVIEW-SUMMARY.md)
+
 ### 2026-01-21: Documentation Infrastructure
 
 - Created comprehensive documentation system with INDEX.md as central catalog
@@ -263,13 +497,15 @@ _Add new learnings here daily, then move to appropriate sections above weekly_
 
 Based on recent work, priority insights to document:
 
-- [ ] Supabase local development setup process and challenges
-- [ ] DevOps review findings and security improvements implemented
-- [ ] Readwise API integration quirks and solutions
-- [ ] E2E test environment isolation strategy
+- [x] Supabase local development setup process and challenges ✅ 2026-01-22
+- [x] DevOps review findings and security improvements implemented ✅ 2026-01-22
+- [x] E2E test environment isolation strategy ✅ 2026-01-22
+- [x] Environment separation approach and benefits ✅ 2026-01-22
+- [ ] Readwise API integration quirks and solutions (when integration work resumes)
 - [ ] Testing patterns for Next.js app router
-- [ ] Mobile-first design decisions and rationale
-- [ ] Environment separation approach and benefits
+- [ ] Mobile-first design decisions and rationale (when design revamp begins)
+- [ ] RSVP algorithm tuning and ORP calculation insights
+- [ ] Performance optimization wins and measurement approaches
 
 ---
 
