@@ -49,6 +49,9 @@ describe('POST /api/auth/connect-reader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Set up encryption key for tests
+    process.env.ENCRYPTION_KEY = Buffer.from('test-key-32-bytes-long-exactly!').toString('base64');
+
     // Default mock implementations
     mockGetUser.mockResolvedValue({
       data: { user: mockSupabaseUser },
@@ -164,7 +167,8 @@ describe('POST /api/auth/connect-reader', () => {
     expect(data.success).toBe(true);
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        reader_access_token: 'valid-reader-token-12345678',
+        reader_access_token_encrypted: expect.any(String),
+        reader_access_token: null, // Plaintext column should be cleared
       })
     );
     expect(mockUpsert).toHaveBeenCalledWith(
@@ -207,7 +211,8 @@ describe('POST /api/auth/connect-reader', () => {
     expect(response.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        reader_access_token: 'valid-reader-token-12345678',
+        reader_access_token_encrypted: expect.any(String),
+        reader_access_token: null, // Plaintext column should be cleared
       })
     );
   });
