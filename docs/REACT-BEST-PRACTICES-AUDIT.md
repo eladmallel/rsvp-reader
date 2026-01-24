@@ -14,9 +14,9 @@
 | 1.1  | Parallelize auth checks                          | ✅ Done    | 2026-01-23 |
 | 1.2  | Add AbortController (library sync polling)       | ✅ Done    | 2026-01-23 |
 | 1.2  | Add AbortController (RSVP article fetch)         | ✅ Done    | 2026-01-23 |
+| 1.2  | Add AbortController (feed page)                  | ✅ Done    | 2026-01-23 |
 | 5.1  | Memoize time calculations in RSVPPlayer          | ✅ Done    | 2026-01-23 |
 | 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done    | 2026-01-23 |
-| 1.2  | Add AbortController (feed page)                  | 🔲 Pending | -          |
 | 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
 | 2.2  | Dynamic imports for heavy components             | 🔲 Pending | -          |
 | 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
@@ -49,24 +49,31 @@ This audit identifies opportunities to improve code maintainability, reduce bugs
 
 ---
 
-### 1.2 Missing AbortController for Fetch Cleanup (Partially Done)
+### 1.2 Missing AbortController for Fetch Cleanup ✅ DONE
 
 **Files:**
 
 - `src/app/(main)/library/page.tsx` - ✅ DONE (sync polling)
-- `src/app/(main)/feed/page.tsx` - 🔲 PENDING (similar pattern exists)
+- `src/app/(main)/feed/page.tsx` - ✅ DONE (document fetch)
 - `src/app/rsvp/RsvpPageClient.tsx` - ✅ DONE (article fetch)
 
-**Status:** Partially implemented 2026-01-23
+**Status:** ✅ Fully implemented 2026-01-23
 
 **What was done:**
 
-- Library page sync polling now uses `AbortController` with proper `AbortError` handling
-- RSVP page article fetch now uses `AbortController` with cleanup on unmount
+- Library page sync polling uses `AbortController` with proper `AbortError` handling
+- RSVP page article fetch uses `AbortController` with cleanup on unmount
+- Feed page document fetch now uses `AbortController` with cleanup when tab changes or component unmounts
 
-**Remaining:** Feed page has similar patterns that could benefit from AbortController.
+**Implementation details (Feed page):**
 
-**Impact:** Properly cancels in-flight requests, saving bandwidth and preventing potential memory leaks.
+- Added optional `signal` parameter to `fetchDocuments` function
+- Created `AbortController` inside the `loadDocuments` effect
+- Passed signal to fetch call
+- Added cleanup function to abort in-flight requests
+- Properly handles `AbortError` by checking `err.name === 'AbortError'`
+
+**Impact:** Properly cancels in-flight requests, saving bandwidth and preventing potential memory leaks and race conditions when users rapidly switch tabs.
 
 ---
 

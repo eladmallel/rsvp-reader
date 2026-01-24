@@ -86,11 +86,13 @@ export default function FeedPage() {
   }, []);
 
   // Fetch documents from API
-  const fetchDocuments = useCallback(async (seen: boolean) => {
+  const fetchDocuments = useCallback(async (seen: boolean, signal?: AbortSignal) => {
     try {
       // Feed items use location=feed, and we filter by reading progress
       const params = new URLSearchParams({ location: 'feed', pageSize: '50' });
-      const response = await fetch(`/api/reader/documents?${params}`);
+      const response = await fetch(`/api/reader/documents?${params}`, {
+        signal,
+      });
       const data: DocumentsResponse = await response.json();
 
       if (!response.ok || data.error) {
@@ -106,6 +108,10 @@ export default function FeedPage() {
         return allArticles.filter((a) => a.isUnread);
       }
     } catch (err) {
+      // Ignore AbortError - expected on cleanup
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw err;
+      }
       console.error('Error fetching feed documents:', err);
       return [];
     }
@@ -125,19 +131,25 @@ export default function FeedPage() {
 
   // Load documents when connected or tab changes
   useEffect(() => {
-    async function loadDocuments() {
-      if (!isConnected) {
-        return;
-      }
+    if (!isConnected) {
+      return;
+    }
 
+    const controller = new AbortController();
+
+    async function loadDocuments() {
       setIsLoading(true);
       setError(null);
 
       try {
         const seen = activeSubTab === 'seen';
-        const docs = await fetchDocuments(seen);
+        const docs = await fetchDocuments(seen, controller.signal);
         setArticles(docs);
       } catch (err) {
+        // Ignore AbortError - expected on cleanup
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
         setIsLoading(false);
@@ -145,6 +157,10 @@ export default function FeedPage() {
     }
 
     loadDocuments();
+
+    return () => {
+      controller.abort();
+    };
   }, [fetchDocuments, isConnected, activeSubTab]);
 
   const handleArticleClick = (article: ArticleListItemData) => {
