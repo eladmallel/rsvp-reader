@@ -16,14 +16,20 @@
  */
 
 import { useCallback, useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { WordDisplay } from './WordDisplay';
 import { Cockpit } from './Cockpit';
-import { PlayerSettingsPanel } from './PlayerSettingsPanel';
 import { useRSVPPlayer, RSVPPlayerConfig } from './useRSVPPlayer';
 import { useReadingPosition } from '@/hooks/useReadingPosition';
 import { Icon } from '@/components/ui/Icon';
 import { IconButton } from '@/components/ui/IconButton';
 import styles from './RSVPPlayer.module.css';
+
+// Dynamically import PlayerSettingsPanel - only loaded when settings are opened
+const PlayerSettingsPanel = dynamic(
+  () => import('./PlayerSettingsPanel').then((mod) => ({ default: mod.PlayerSettingsPanel })),
+  { ssr: false }
+);
 
 export interface RSVPPlayerProps extends RSVPPlayerConfig {
   /** Text content to read */

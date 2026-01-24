@@ -2,14 +2,37 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { createClient } from '@/lib/supabase/client';
-import { WpmSettingModal } from '@/components/settings/WpmSettingModal';
-import { SkipAmountModal } from '@/components/settings/SkipAmountModal';
-import { FontSelectorModal } from '@/components/settings/FontSelectorModal';
 import styles from './page.module.css';
+
+// Dynamically import modals - only loaded when opened
+const WpmSettingModal = dynamic(
+  () =>
+    import('@/components/settings/WpmSettingModal').then((mod) => ({
+      default: mod.WpmSettingModal,
+    })),
+  { ssr: false }
+);
+
+const SkipAmountModal = dynamic(
+  () =>
+    import('@/components/settings/SkipAmountModal').then((mod) => ({
+      default: mod.SkipAmountModal,
+    })),
+  { ssr: false }
+);
+
+const FontSelectorModal = dynamic(
+  () =>
+    import('@/components/settings/FontSelectorModal').then((mod) => ({
+      default: mod.FontSelectorModal,
+    })),
+  { ssr: false }
+);
 
 interface UserProfile {
   id: string;

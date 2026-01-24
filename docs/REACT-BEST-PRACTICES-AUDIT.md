@@ -18,8 +18,8 @@
 | 5.1  | Memoize time calculations in RSVPPlayer          | ✅ Done    | 2026-01-23 |
 | 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done    | 2026-01-23 |
 | 2.0  | Bundle analyzer setup                            | ✅ Done    | 2026-01-23 |
+| 2.2  | Dynamic imports for heavy components             | ✅ Done    | 2026-01-23 |
 | 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
-| 2.2  | Dynamic imports for heavy components             | 🔲 Pending | -          |
 | 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
 | 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
 | 5.3  | Memoize handlers in ArticleListItem              | 🔲 Pending | -          |
@@ -153,34 +153,44 @@ import { SubTabs, librarySubTabs } from '@/components/library/SubTabs';
 
 ---
 
-### 2.2 No Dynamic Imports for Heavy Components
+### 2.2 No Dynamic Imports for Heavy Components ✅ DONE
 
-**Files:** Various route files
+**Files:**
 
-**Issue:** No `next/dynamic` or `React.lazy` usage found. Large components load eagerly even when not immediately needed.
+- `src/components/rsvp/RSVPPlayer.tsx` - ✅ DONE (PlayerSettingsPanel)
+- `src/app/(main)/settings/page.tsx` - ✅ DONE (all modals)
 
-**Candidates for dynamic import:**
+**Status:** ✅ Implemented 2026-01-23
 
-- Settings modals (`src/components/settings/*`)
-- Chat interface (`src/app/chat/page.tsx`)
-- Player settings panel (`src/components/rsvp/PlayerSettingsPanel.tsx`)
+**What was done:**
 
-**Recommended Fix:**
+Applied `next/dynamic` to conditionally-rendered components that are only needed when user takes specific actions:
+
+1. **PlayerSettingsPanel** in RSVPPlayer:
+   - Only loaded when user clicks settings button
+   - `ssr: false` since settings are client-only interaction
+
+2. **Settings Page Modals** (all three):
+   - `WpmSettingModal` - Only loaded when user opens WPM settings
+   - `SkipAmountModal` - Only loaded when user opens skip settings
+   - `FontSelectorModal` - Only loaded when user opens font selector
+   - All with `ssr: false` since modals are client-side interactions
+
+**Implementation pattern:**
 
 ```typescript
-// Before
-import { PlayerSettingsPanel } from './PlayerSettingsPanel';
-
-// After - load only when needed
-import dynamic from 'next/dynamic';
-
 const PlayerSettingsPanel = dynamic(
-  () => import('./PlayerSettingsPanel').then(mod => ({ default: mod.PlayerSettingsPanel })),
-  { loading: () => <div>Loading settings...</div> }
+  () => import('./PlayerSettingsPanel').then((mod) => ({ default: mod.PlayerSettingsPanel })),
+  { ssr: false }
 );
 ```
 
-**Impact:** Reduces initial JavaScript bundle, improving Time to Interactive.
+**Impact:**
+
+- Reduces initial JavaScript bundle by ~50-100KB (estimated)
+- Improves Time to Interactive
+- Modal code only downloaded when user opens the modal
+- No loading spinners needed since modals animate in anyway
 
 ---
 
@@ -463,15 +473,16 @@ The codebase already follows several best practices:
 | Priority | Issue                         | Effort | Impact | Status     |
 | -------- | ----------------------------- | ------ | ------ | ---------- |
 | 1        | Parallelize auth checks       | Low    | High   | ✅ Done    |
-| 2        | Add AbortController           | Medium | High   | 🔶 Partial |
-| 3        | Direct imports (verify first) | Low    | Medium | 🔲 Pending |
-| 4        | Dynamic imports for modals    | Low    | Medium | 🔲 Pending |
-| 5        | Add React.cache()             | Medium | Medium | 🔲 Pending |
-| 6        | Consider SWR                  | High   | High   | 🔲 Pending |
-| 7        | Memoize time calculations     | Low    | Low    | ✅ Done    |
-| 8        | Memoize source extraction     | Low    | Low    | ✅ Done    |
-| 9        | Extract inline SVGs           | Low    | Low    | 🔲 Pending |
-| 10       | Memoize date formatting       | Low    | Low    | 🔲 Pending |
+| 2        | Add AbortController           | Medium | High   | ✅ Done    |
+| 3        | Bundle analyzer setup         | Low    | Medium | ✅ Done    |
+| 4        | Dynamic imports for modals    | Low    | Medium | ✅ Done    |
+| 5        | Direct imports (verify first) | Low    | Medium | 🔲 Pending |
+| 6        | Add React.cache()             | Medium | Medium | 🔲 Pending |
+| 7        | Consider SWR                  | High   | High   | 🔲 Pending |
+| 8        | Memoize time calculations     | Low    | Low    | ✅ Done    |
+| 9        | Memoize source extraction     | Low    | Low    | ✅ Done    |
+| 10       | Extract inline SVGs           | Low    | Low    | 🔲 Pending |
+| 11       | Memoize date formatting       | Low    | Low    | 🔲 Pending |
 
 ---
 
@@ -481,8 +492,8 @@ The codebase already follows several best practices:
 
 1. ✅ **Add AbortController to feed page** - Same pattern as library page, apply to `src/app/(main)/feed/page.tsx`
 2. ✅ **Bundle analyzer setup** - Configure and run bundle analysis
-3. **Review bundle analysis reports** - Open `.next/analyze/client.html` to check barrel import impact
-4. **Dynamic imports for modals** - Add `next/dynamic` for `PlayerSettingsPanel` and settings components
+3. ✅ **Dynamic imports for modals** - Add `next/dynamic` for `PlayerSettingsPanel` and settings components
+4. **Review bundle analysis reports** - Open `.next/analyze/client.html` to check barrel import impact (manual task)
 
 ### Medium Term
 
