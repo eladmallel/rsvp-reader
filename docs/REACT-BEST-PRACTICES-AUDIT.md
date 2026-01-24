@@ -24,7 +24,7 @@
 | 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
 | 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
 | 5.3  | Memoize handlers in ArticleListItem              | 🔲 Pending | -          |
-| 7.1  | Memoize date formatting in ArticleListItem       | 🔲 Pending | -          |
+| 7.1  | Memoize date formatting in ArticleListItem       | ✅ Done    | 2026-01-23 |
 
 ---
 
@@ -421,11 +421,15 @@ import { MenuIcon } from '@/components/ui/icons';
 
 ## Priority 7: LOW - JavaScript Performance
 
-### 7.1 Date Calculations in List Items
+### 7.1 Date Calculations in List Items ✅ DONE
 
-**File:** `src/components/library/ArticleListItem.tsx` (lines 58-78)
+**File:** `src/components/library/ArticleListItem.tsx`
 
-**Issue:** Date calculations and comparisons happen for each item in a list on every render.
+**Status:** ✅ Implemented 2026-01-23
+
+**What was done:** Wrapped date formatting logic in `useMemo` with `[article.createdAt]` dependency to avoid recreating Date objects on every render.
+
+**Previous Issue:** Date calculations and comparisons happened for each item in a list on every render.
 
 **Current Code:**
 
@@ -492,7 +496,7 @@ The codebase already follows several best practices:
 | 8        | Memoize time calculations     | Low    | Low    | ✅ Done    |
 | 9        | Memoize source extraction     | Low    | Low    | ✅ Done    |
 | 10       | Extract inline SVGs           | Low    | Low    | ✅ Done    |
-| 11       | Memoize date formatting       | Low    | Low    | 🔲 Pending |
+| 11       | Memoize date formatting       | Low    | Low    | ✅ Done    |
 
 ---
 

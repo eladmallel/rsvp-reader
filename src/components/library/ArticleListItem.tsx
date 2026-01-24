@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import Image from 'next/image';
 
 import { MoreOptionsHorizontalIcon } from '@/components/ui/icons';
@@ -55,28 +56,29 @@ export function ArticleListItem({ article, onClick, onMenuClick }: ArticleListIt
   const sourceIcon = getSourceIcon(article.sourceName);
   const displaySource = article.sourceName.toUpperCase();
 
-  // Format time display
-  const createdDate = new Date(article.createdAt);
-  const now = new Date();
-  const isToday = createdDate.toDateString() === now.toDateString();
-  const isYesterday =
-    new Date(now.getTime() - 86400000).toDateString() === createdDate.toDateString();
+  // Format time display - memoized to avoid recreating Date objects on every render
+  const timeDisplay = useMemo(() => {
+    const createdDate = new Date(article.createdAt);
+    const now = new Date();
+    const isToday = createdDate.toDateString() === now.toDateString();
+    const isYesterday =
+      new Date(now.getTime() - 86400000).toDateString() === createdDate.toDateString();
 
-  let timeDisplay: string;
-  if (isToday) {
-    timeDisplay = createdDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  } else if (isYesterday) {
-    timeDisplay = 'Yesterday';
-  } else {
-    timeDisplay = createdDate.toLocaleDateString('en-US', {
+    if (isToday) {
+      return createdDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    }
+    if (isYesterday) {
+      return 'Yesterday';
+    }
+    return createdDate.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     });
-  }
+  }, [article.createdAt]);
 
   return (
     <article
