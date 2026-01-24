@@ -182,10 +182,15 @@ export function RSVPPlayer({
     onExit?.();
   }, [player, onExit]);
 
-  // Calculate times
-  const totalSeconds = player.totalWords > 0 ? (player.totalWords / player.wpm) * 60 : 0;
-  const elapsedSeconds = player.totalWords > 0 ? (player.currentIndex / player.wpm) * 60 : 0;
-  const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+  // Memoize time calculations to avoid recalculation on every render
+  const { elapsedSeconds, remainingSeconds } = useMemo(() => {
+    const total = player.totalWords > 0 ? (player.totalWords / player.wpm) * 60 : 0;
+    const elapsed = player.totalWords > 0 ? (player.currentIndex / player.wpm) * 60 : 0;
+    return {
+      elapsedSeconds: elapsed,
+      remainingSeconds: Math.max(0, total - elapsed),
+    };
+  }, [player.totalWords, player.wpm, player.currentIndex]);
 
   // Show loading state during SSR and initial hydration
   if (!mounted) {

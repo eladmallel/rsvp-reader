@@ -1,8 +1,29 @@
 # React & Next.js Best Practices Audit
 
 **Generated:** 2026-01-23
+**Last Updated:** 2026-01-23
 **Based on:** Vercel React Best Practices Guidelines
 **Codebase:** RSVP Reader (Next.js 16 + React 19)
+
+---
+
+## Progress Tracking
+
+| Item | Description                                      | Status     | Date       |
+| ---- | ------------------------------------------------ | ---------- | ---------- |
+| 1.1  | Parallelize auth checks                          | ✅ Done    | 2026-01-23 |
+| 1.2  | Add AbortController (library sync polling)       | ✅ Done    | 2026-01-23 |
+| 1.2  | Add AbortController (RSVP article fetch)         | ✅ Done    | 2026-01-23 |
+| 5.1  | Memoize time calculations in RSVPPlayer          | ✅ Done    | 2026-01-23 |
+| 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done    | 2026-01-23 |
+| 1.2  | Add AbortController (feed page)                  | 🔲 Pending | -          |
+| 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
+| 2.2  | Dynamic imports for heavy components             | 🔲 Pending | -          |
+| 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
+| 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
+| 5.3  | Memoize handlers in ArticleListItem              | 🔲 Pending | -          |
+| 6.1  | Extract inline SVGs                              | 🔲 Pending | -          |
+| 7.1  | Memoize date formatting in ArticleListItem       | 🔲 Pending | -          |
 
 ---
 
@@ -16,115 +37,34 @@ This audit identifies opportunities to improve code maintainability, reduce bugs
 
 ## Priority 1: CRITICAL - Eliminating Waterfalls
 
-### 1.1 Sequential Auth Checks Should Be Parallel
+### 1.1 Sequential Auth Checks Should Be Parallel ✅ DONE
 
-**Files:** `src/app/(main)/page.tsx` (lines 40-51)
+**Files:** `src/app/(main)/page.tsx`
 
-**Issue:** Two independent async operations run sequentially when they could run in parallel. This adds unnecessary latency on every page load.
+**Status:** ✅ Implemented 2026-01-23
 
-**Current Code:**
-
-```typescript
-useEffect(() => {
-  async function loadAuthAndConnection() {
-    const authenticated = await checkAuth(); // Wait for auth
-    if (!authenticated) {
-      router.push('/auth/login');
-      return;
-    }
-    await checkConnection(); // Then wait for connection
-  }
-  loadAuthAndConnection();
-}, [checkAuth, checkConnection, router]);
-```
-
-**Recommended Fix:**
-
-```typescript
-useEffect(() => {
-  async function loadAuthAndConnection() {
-    // Run both checks in parallel
-    const [authenticated, connected] = await Promise.all([checkAuth(), checkConnection()]);
-
-    if (!authenticated) {
-      router.push('/auth/login');
-      return;
-    }
-    // connected is already available, no extra wait
-  }
-  loadAuthAndConnection();
-}, [checkAuth, checkConnection, router]);
-```
+**What was done:** Changed sequential `checkAuth()` → `checkConnection()` to run in parallel with `Promise.all()`.
 
 **Impact:** Reduces initial page load time by running checks concurrently.
 
 ---
 
-### 1.2 Missing AbortController for Fetch Cleanup
+### 1.2 Missing AbortController for Fetch Cleanup (Partially Done)
 
 **Files:**
 
-- `src/app/(main)/library/page.tsx` (lines 146-182)
-- `src/app/(main)/feed/page.tsx` (similar pattern)
-- `src/app/rsvp/RsvpPageClient.tsx` (lines 66-89)
+- `src/app/(main)/library/page.tsx` - ✅ DONE (sync polling)
+- `src/app/(main)/feed/page.tsx` - 🔲 PENDING (similar pattern exists)
+- `src/app/rsvp/RsvpPageClient.tsx` - ✅ DONE (article fetch)
 
-**Issue:** The `cancelled` flag prevents state updates after unmount, but doesn't actually cancel in-flight requests. This wastes bandwidth and can cause memory leaks.
+**Status:** Partially implemented 2026-01-23
 
-**Current Code:**
+**What was done:**
 
-```typescript
-useEffect(() => {
-  if (!isSyncing) return;
-  let cancelled = false;
+- Library page sync polling now uses `AbortController` with proper `AbortError` handling
+- RSVP page article fetch now uses `AbortController` with cleanup on unmount
 
-  const poll = async () => {
-    try {
-      const res = await fetch('/api/sync/readwise/status');
-      // fetch continues even if component unmounts
-      if (!cancelled) {
-        // ...
-      }
-    }
-  };
-  // ...
-  return () => {
-    cancelled = true;
-    clearInterval(intervalId);
-  };
-}, [isSyncing, activeSubTab, fetchDocuments]);
-```
-
-**Recommended Fix:**
-
-```typescript
-useEffect(() => {
-  if (!isSyncing) return;
-  const controller = new AbortController();
-
-  const poll = async () => {
-    try {
-      const res = await fetch('/api/sync/readwise/status', {
-        signal: controller.signal,
-      });
-      const data: SyncStatus = await res.json();
-      // ...
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return; // Expected on cleanup
-      }
-      // Handle real errors
-    }
-  };
-
-  poll();
-  const intervalId = setInterval(poll, 3000);
-
-  return () => {
-    controller.abort();
-    clearInterval(intervalId);
-  };
-}, [isSyncing, activeSubTab, fetchDocuments]);
-```
+**Remaining:** Feed page has similar patterns that could benefit from AbortController.
 
 **Impact:** Properly cancels in-flight requests, saving bandwidth and preventing potential memory leaks.
 
@@ -303,64 +243,28 @@ function LibraryPage() {
 
 ## Priority 5: MEDIUM - Re-render Optimization
 
-### 5.1 Time Calculations Should Be Memoized
+### 5.1 Time Calculations Should Be Memoized ✅ DONE
 
-**File:** `src/components/rsvp/RSVPPlayer.tsx` (lines 185-188)
+**File:** `src/components/rsvp/RSVPPlayer.tsx`
 
-**Issue:** Time calculations run on every render despite depending on stable values.
+**Status:** ✅ Implemented 2026-01-23
 
-**Current Code:**
-
-```typescript
-// Calculate times - runs every render
-const totalSeconds = player.totalWords > 0 ? (player.totalWords / player.wpm) * 60 : 0;
-const elapsedSeconds = player.totalWords > 0 ? (player.currentIndex / player.wpm) * 60 : 0;
-const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
-```
-
-**Recommended Fix:**
-
-```typescript
-const { totalSeconds, elapsedSeconds, remainingSeconds } = useMemo(() => {
-  const total = player.totalWords > 0 ? (player.totalWords / player.wpm) * 60 : 0;
-  const elapsed = player.totalWords > 0 ? (player.currentIndex / player.wpm) * 60 : 0;
-  return {
-    totalSeconds: total,
-    elapsedSeconds: elapsed,
-    remainingSeconds: Math.max(0, total - elapsed),
-  };
-}, [player.totalWords, player.wpm, player.currentIndex]);
-```
+**What was done:** Time calculations (`elapsedSeconds`, `remainingSeconds`) wrapped in `useMemo` with dependencies on `player.totalWords`, `player.wpm`, `player.currentIndex`.
 
 **Impact:** Reduces unnecessary recalculations during high-frequency updates (RSVP playback).
 
 ---
 
-### 5.2 Source Extraction Should Be Memoized
+### 5.2 Source Extraction Should Be Memoized ✅ DONE
 
-**File:** `src/app/rsvp/RsvpPageClient.tsx` (lines 33-54, 173)
+**File:** `src/app/rsvp/RsvpPageClient.tsx`
 
-**Issue:** `extractSource()` and `getTextContent()` run on every render.
+**Status:** ✅ Implemented 2026-01-23
 
-**Current Code:**
+**What was done:**
 
-```typescript
-const source = extractSource(article);
-const text = getTextContent();
-```
-
-**Recommended Fix:**
-
-```typescript
-const source = useMemo(() => extractSource(article), [article]);
-const text = useMemo(() => {
-  if (article) {
-    if (article.content?.trim()) return article.content;
-    if (article.htmlContent) return htmlToPlainText(article.htmlContent);
-  }
-  return sampleText;
-}, [article]);
-```
+- `extractSource()` wrapped in `useMemo` with `[article]` dependency
+- `getTextContent()` replaced with memoized `text` value using `useMemo`
 
 **Impact:** Avoids re-parsing HTML content on every render.
 
@@ -517,24 +421,43 @@ The codebase already follows several best practices:
 
 ## Implementation Priority
 
-| Priority | Issue                         | Effort | Impact |
-| -------- | ----------------------------- | ------ | ------ |
-| 1        | Parallelize auth checks       | Low    | High   |
-| 2        | Add AbortController           | Medium | High   |
-| 3        | Direct imports (verify first) | Low    | Medium |
-| 4        | Dynamic imports for modals    | Low    | Medium |
-| 5        | Add React.cache()             | Medium | Medium |
-| 6        | Consider SWR                  | High   | High   |
-| 7        | Memoize time calculations     | Low    | Low    |
-| 8        | Memoize source extraction     | Low    | Low    |
-| 9        | Extract inline SVGs           | Low    | Low    |
-| 10       | Memoize date formatting       | Low    | Low    |
+| Priority | Issue                         | Effort | Impact | Status     |
+| -------- | ----------------------------- | ------ | ------ | ---------- |
+| 1        | Parallelize auth checks       | Low    | High   | ✅ Done    |
+| 2        | Add AbortController           | Medium | High   | 🔶 Partial |
+| 3        | Direct imports (verify first) | Low    | Medium | 🔲 Pending |
+| 4        | Dynamic imports for modals    | Low    | Medium | 🔲 Pending |
+| 5        | Add React.cache()             | Medium | Medium | 🔲 Pending |
+| 6        | Consider SWR                  | High   | High   | 🔲 Pending |
+| 7        | Memoize time calculations     | Low    | Low    | ✅ Done    |
+| 8        | Memoize source extraction     | Low    | Low    | ✅ Done    |
+| 9        | Extract inline SVGs           | Low    | Low    | 🔲 Pending |
+| 10       | Memoize date formatting       | Low    | Low    | 🔲 Pending |
 
 ---
 
-## Next Steps
+## Next Steps (For Next Session)
 
-1. **Start with quick wins:** Items 1, 3, 4, 7, 8 can be done quickly with minimal risk
-2. **Profile before optimizing:** Use React DevTools Profiler to verify re-render issues before adding `useMemo`/`useCallback`
-3. **Bundle analysis:** Run `next build --analyze` to verify barrel import impact
-4. **Consider SWR incrementally:** Start with one page (e.g., Library) and expand if beneficial
+### Immediate (Quick Wins)
+
+1. **Add AbortController to feed page** - Same pattern as library page, apply to `src/app/(main)/feed/page.tsx`
+2. **Run bundle analysis** - Execute `next build --analyze` to verify if barrel imports are actually affecting bundle size
+3. **Dynamic imports for modals** - Add `next/dynamic` for `PlayerSettingsPanel` and settings components
+
+### Medium Term
+
+4. **Direct imports** - If bundle analysis shows issues, switch from barrel imports to direct imports
+5. **Extract inline SVGs** - Move repeated SVG icons to module-level constants
+6. **Memoize handlers in ArticleListItem** - Add `useCallback` to handler functions (verify with React Profiler first)
+
+### Consider Later
+
+7. **Add React.cache()** - Create `src/lib/supabase/cached.ts` for server-side request deduplication
+8. **Evaluate SWR** - Consider starting with Library page to test benefits of SWR
+
+### How to Continue
+
+1. Read this file for context
+2. Start with "Immediate" items above
+3. Update the Progress Tracking table as items are completed
+4. Run `npm run test && npm run lint && npm run type-check` before committing

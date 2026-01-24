@@ -146,28 +146,30 @@ export default function LibraryPage() {
   useEffect(() => {
     if (!isSyncing) return;
 
-    let cancelled = false;
+    const controller = new AbortController();
 
     const poll = async () => {
       try {
-        const res = await fetch('/api/sync/readwise/status');
+        const res = await fetch('/api/sync/readwise/status', {
+          signal: controller.signal,
+        });
         const data: SyncStatus = await res.json();
 
-        if (!cancelled) {
-          if (!data.inProgress) {
-            setIsSyncing(false);
-            // Refresh articles after sync completes
-            const location = subTabToLocation[activeSubTab] || 'new';
-            const docs = await fetchDocuments(location);
-            setArticles(docs);
-          }
+        if (!data.inProgress) {
+          setIsSyncing(false);
+          // Refresh articles after sync completes
+          const location = subTabToLocation[activeSubTab] || 'new';
+          const docs = await fetchDocuments(location);
+          setArticles(docs);
         }
       } catch (err) {
-        if (!cancelled) {
-          console.error('Status check failed:', err);
-          setSyncError('Status check failed');
-          setIsSyncing(false);
+        // Ignore AbortError - expected on cleanup
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
         }
+        console.error('Status check failed:', err);
+        setSyncError('Status check failed');
+        setIsSyncing(false);
       }
     };
 
@@ -176,7 +178,7 @@ export default function LibraryPage() {
     const intervalId = setInterval(poll, 3000);
 
     return () => {
-      cancelled = true;
+      controller.abort();
       clearInterval(intervalId);
     };
   }, [isSyncing, activeSubTab, fetchDocuments]);

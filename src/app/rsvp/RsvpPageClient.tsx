@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RSVPPlayer } from '@/components/rsvp';
 import { ThemeToggle } from '@/components/ui';
@@ -62,45 +62,59 @@ export default function RsvpPageClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch article content
-  const fetchArticle = useCallback(async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/reader/documents/${id}?content=true`);
-      const data: ArticleResponse = await response.json();
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to fetch article');
-      }
-
-      if (!data.document) {
-        throw new Error('Article not found');
-      }
-
-      setArticle(data.document);
-    } catch (err) {
-      console.error('Error fetching article:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load article');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   // Fetch article when ID changes
   useEffect(() => {
-    if (articleId) {
-      fetchArticle(articleId);
+    if (!articleId) return;
+
+    const controller = new AbortController();
+
+    async function fetchArticle() {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/reader/documents/${articleId}?content=true`, {
+          signal: controller.signal,
+        });
+        const data: ArticleResponse = await response.json();
+
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Failed to fetch article');
+        }
+
+        if (!data.document) {
+          throw new Error('Article not found');
+        }
+
+        setArticle(data.document);
+      } catch (err) {
+        // Ignore AbortError - expected on cleanup
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
+        console.error('Error fetching article:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load article');
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [articleId, fetchArticle]);
+
+    fetchArticle();
+
+    return () => {
+      controller.abort();
+    };
+  }, [articleId]);
 
   const handleExit = useCallback(() => {
     router.back();
   }, [router]);
 
-  // Get text content - use article content, fall back to HTML stripped of tags, or sample
-  const getTextContent = (): string => {
+  // Memoize source extraction - only recalculate when article changes
+  const source = useMemo(() => extractSource(article), [article]);
+
+  // Memoize text content - only recalculate when article changes
+  const text = useMemo(() => {
     if (article) {
       // Prefer plain text content if available
       if (article.content && article.content.trim()) {
@@ -112,7 +126,7 @@ export default function RsvpPageClient() {
       }
     }
     return sampleText;
-  };
+  }, [article]);
 
   // Loading state - uses RSVPPlayer's built-in header structure for consistency
   if (isLoading) {
@@ -170,8 +184,6 @@ export default function RsvpPageClient() {
   // Demo mode when no article ID provided
   const isDemo = !articleId;
   const title = article?.title || (isDemo ? 'RSVP Demo' : 'Sample Article');
-  const source = extractSource(article);
-  const text = getTextContent();
 
   // RSVPPlayer is a full-screen component with its own header
   // No need for additional page-level header when player is shown

@@ -39,12 +39,14 @@ export default function HomePage() {
 
   useEffect(() => {
     async function loadAuthAndConnection() {
-      const authenticated = await checkAuth();
+      // Run both checks in parallel to reduce page load time
+      const [authenticated] = await Promise.all([checkAuth(), checkConnection()]);
+
       if (!authenticated) {
         router.push('/auth/login');
         return;
       }
-      await checkConnection();
+      // Connection check already completed in parallel
     }
 
     loadAuthAndConnection();
