@@ -21,7 +21,7 @@
 | 2.2  | Dynamic imports for heavy components             | ✅ Done    | 2026-01-23 |
 | 6.1  | Extract inline SVGs                              | ✅ Done    | 2026-01-23 |
 | 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
-| 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
+| 3.1  | Add React.cache() for server deduplication       | ⚠️ N/A     | 2026-01-23 |
 | 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
 | 5.3  | Memoize handlers in ArticleListItem              | ✅ Done    | 2026-01-23 |
 | 7.1  | Memoize date formatting in ArticleListItem       | ✅ Done    | 2026-01-23 |
@@ -196,33 +196,23 @@ const PlayerSettingsPanel = dynamic(
 
 ## Priority 3: HIGH - Server-Side Performance
 
-### 3.1 Missing React.cache() for Request Deduplication
+### 3.1 React.cache() for Request Deduplication ⚠️ NOT APPLICABLE
 
-**Files:** API routes in `src/app/api/`
+**Status:** ⚠️ Not applicable to current architecture (2026-01-23)
 
-**Issue:** No `React.cache()` usage found. Duplicate database calls within the same request aren't deduplicated.
+**Finding:** This app uses a client-component + API route architecture rather than Server Components. All pages use `'use client'` and fetch data through API routes.
 
-**Current Pattern:** Direct Supabase calls without caching wrapper.
+React.cache() is specifically designed for Server Components where multiple components might call the same data-fetching function during a single server render. Since this app doesn't use Server Components, React.cache() won't provide deduplication benefits.
 
-**Recommended Fix:**
+**What was done:** Created `src/lib/supabase/cached.ts` with cached wrappers for common operations (`getCachedUser`, `getCachedDocument`, `getAuthenticatedUser`). This file is ready to use if the app migrates to Server Components in the future.
 
-```typescript
-// src/lib/supabase/cached.ts
-import { cache } from 'react';
-import { createClient } from './server';
+**Current Architecture:**
 
-export const getCachedUser = cache(async () => {
-  const supabase = await createClient();
-  return supabase.auth.getUser();
-});
+- All pages are Client Components (`'use client'`)
+- Data fetching happens via API routes (`/api/*`)
+- API routes are already isolated per request
 
-export const getCachedDocument = cache(async (id: string) => {
-  const supabase = await createClient();
-  return supabase.from('cached_documents').select('*').eq('id', id).single();
-});
-```
-
-**Impact:** Eliminates duplicate database queries within the same request cycle.
+**If migrating to Server Components:** The cached utilities are ready to use and will deduplicate database calls within a single server render.
 
 ---
 
@@ -484,7 +474,7 @@ The codebase already follows several best practices:
 | 3        | Bundle analyzer setup         | Low    | Medium | ✅ Done    |
 | 4        | Dynamic imports for modals    | Low    | Medium | ✅ Done    |
 | 5        | Direct imports (verify first) | Low    | Medium | 🔲 Pending |
-| 6        | Add React.cache()             | Medium | Medium | 🔲 Pending |
+| 6        | Add React.cache()             | Medium | Medium | ⚠️ N/A     |
 | 7        | Consider SWR                  | High   | High   | 🔲 Pending |
 | 8        | Memoize time calculations     | Low    | Low    | ✅ Done    |
 | 9        | Memoize source extraction     | Low    | Low    | ✅ Done    |
