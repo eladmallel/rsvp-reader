@@ -19,11 +19,11 @@
 | 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done    | 2026-01-23 |
 | 2.0  | Bundle analyzer setup                            | ✅ Done    | 2026-01-23 |
 | 2.2  | Dynamic imports for heavy components             | ✅ Done    | 2026-01-23 |
+| 6.1  | Extract inline SVGs                              | ✅ Done    | 2026-01-23 |
 | 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
 | 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
 | 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
 | 5.3  | Memoize handlers in ArticleListItem              | 🔲 Pending | -          |
-| 6.1  | Extract inline SVGs                              | 🔲 Pending | -          |
 | 7.1  | Memoize date formatting in ArticleListItem       | 🔲 Pending | -          |
 
 ---
@@ -366,32 +366,35 @@ const handleKeyDown = useCallback(
 
 ## Priority 6: MEDIUM - Rendering Performance
 
-### 6.1 Inline SVGs Could Be Extracted
+### 6.1 Inline SVGs Could Be Extracted ✅ DONE
 
 **Files:**
 
-- `src/app/(main)/library/page.tsx` (multiple inline SVGs)
-- `src/components/library/ArticleListItem.tsx` (line 103-107)
+- `src/components/ui/icons.tsx` - ✅ CREATED (centralized icon exports)
+- `src/app/(main)/library/page.tsx` - ✅ UPDATED (uses extracted icons)
+- `src/app/(main)/feed/page.tsx` - ✅ UPDATED (uses extracted icons)
+- `src/components/library/ArticleListItem.tsx` - ✅ UPDATED (uses extracted icon)
 
-**Issue:** Inline SVG definitions recreate JSX objects on every render.
+**Status:** ✅ Implemented 2026-01-23
 
-**Current Code:**
+**What was done:**
+
+Created a centralized icons module (`src/components/ui/icons.tsx`) exporting common SVG icons as module-level constants:
+
+- `MenuIcon` - Hamburger menu (3 horizontal lines)
+- `MoreOptionsIcon` - Vertical 3-dot menu
+- `MoreOptionsHorizontalIcon` - Horizontal 3-dot menu
+- `AddIcon` - Plus icon in circle
+- `BookIcon` - Book icon for library empty state
+- `RSSIcon` - RSS feed icon for feed empty state
+
+All pages and components now import and use these extracted icons instead of inline SVG definitions.
+
+**Implementation:**
 
 ```typescript
-<button className={styles.iconButton} type="button" aria-label="Menu">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <line x1="3" y1="6" x2="21" y2="6" />
-    <line x1="3" y1="12" x2="21" y2="12" />
-    <line x1="3" y1="18" x2="21" y2="18" />
-  </svg>
-</button>
-```
-
-**Recommended Fix:**
-
-```typescript
-// Extract to module level or separate component
-const MenuIcon = (
+// src/components/ui/icons.tsx
+export const MenuIcon = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <line x1="3" y1="6" x2="21" y2="6" />
     <line x1="3" y1="12" x2="21" y2="12" />
@@ -399,13 +402,20 @@ const MenuIcon = (
   </svg>
 );
 
-// In component
+// Usage in components
+import { MenuIcon } from '@/components/ui/icons';
+
 <button className={styles.iconButton} type="button" aria-label="Menu">
   {MenuIcon}
 </button>
 ```
 
-**Impact:** Avoids recreating SVG element references on re-renders.
+**Impact:**
+
+- Avoids recreating SVG JSX objects on every render
+- Reduces memory allocations
+- Centralizes icon definitions for consistency
+- Makes it easier to update icons globally
 
 ---
 
@@ -481,7 +491,7 @@ The codebase already follows several best practices:
 | 7        | Consider SWR                  | High   | High   | 🔲 Pending |
 | 8        | Memoize time calculations     | Low    | Low    | ✅ Done    |
 | 9        | Memoize source extraction     | Low    | Low    | ✅ Done    |
-| 10       | Extract inline SVGs           | Low    | Low    | 🔲 Pending |
+| 10       | Extract inline SVGs           | Low    | Low    | ✅ Done    |
 | 11       | Memoize date formatting       | Low    | Low    | 🔲 Pending |
 
 ---
@@ -497,8 +507,8 @@ The codebase already follows several best practices:
 
 ### Medium Term
 
-4. **Direct imports** - If bundle analysis shows issues, switch from barrel imports to direct imports
-5. **Extract inline SVGs** - Move repeated SVG icons to module-level constants
+4. ✅ **Extract inline SVGs** - Move repeated SVG icons to module-level constants
+5. **Direct imports** - If bundle analysis shows issues, switch from barrel imports to direct imports
 6. **Memoize handlers in ArticleListItem** - Add `useCallback` to handler functions (verify with React Profiler first)
 
 ### Consider Later

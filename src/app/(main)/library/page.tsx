@@ -10,6 +10,7 @@ import {
   type ArticleListItemData,
 } from '@/components/library';
 import { DropdownMenu } from '@/components/ui';
+import { MenuIcon, AddIcon, MoreOptionsIcon, BookIcon } from '@/components/ui/icons';
 import type { SyncStatus, SyncTriggerResponse, SyncErrorResponse } from '@/types/sync';
 import styles from './page.module.css';
 
@@ -248,17 +249,7 @@ export default function LibraryPage() {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <button className={styles.iconButton} type="button" aria-label="Menu">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              {MenuIcon}
             </button>
           </div>
           <div className={styles.pageTitle}>
@@ -287,17 +278,7 @@ export default function LibraryPage() {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <button className={styles.iconButton} type="button" aria-label="Menu">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              {MenuIcon}
             </button>
           </div>
           <div className={styles.pageTitle}>
@@ -322,17 +303,7 @@ export default function LibraryPage() {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <button className={styles.iconButton} type="button" aria-label="Menu">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              {MenuIcon}
             </button>
           </div>
           <div className={styles.pageTitle}>
@@ -371,17 +342,7 @@ export default function LibraryPage() {
           </button>
           <div className={styles.actionRight}>
             <button className={styles.iconButton} type="button" aria-label="Add article">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="16" />
-                <line x1="8" y1="12" x2="16" y2="12" />
-              </svg>
+              {AddIcon}
             </button>
             <div style={{ position: 'relative' }}>
               <button
@@ -391,11 +352,7 @@ export default function LibraryPage() {
                 aria-label="More options"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="12" cy="6" r="1.5" />
-                  <circle cx="12" cy="12" r="1.5" />
-                  <circle cx="12" cy="18" r="1.5" />
-                </svg>
+                {MoreOptionsIcon}
               </button>
               <DropdownMenu
                 isOpen={isMenuOpen}
@@ -431,16 +388,7 @@ export default function LibraryPage() {
       <main className={styles.main}>
         {articles.length === 0 ? (
           <div className={styles.emptyState}>
-            <svg
-              className={styles.emptyIcon}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
+            <div className={styles.emptyIcon}>{BookIcon}</div>
             <p className={styles.emptyTitle}>No articles here</p>
             <p className={styles.emptyDescription}>
               {activeSubTab === 'new'

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 
+import { MoreOptionsHorizontalIcon } from '@/components/ui/icons';
 import styles from './ArticleListItem.module.css';
 
 export interface ArticleListItemData {
@@ -100,11 +101,7 @@ export function ArticleListItem({ article, onClick, onMenuClick }: ArticleListIt
             onClick={handleMenuClick}
             aria-label="More options"
           >
-            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-              <circle cx="6" cy="12" r="1.5" />
-              <circle cx="12" cy="12" r="1.5" />
-              <circle cx="18" cy="12" r="1.5" />
-            </svg>
+            {MoreOptionsHorizontalIcon}
           </button>
         </div>
 

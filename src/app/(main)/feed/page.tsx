@@ -9,6 +9,7 @@ import {
   feedSubTabs,
   type ArticleListItemData,
 } from '@/components/library';
+import { MenuIcon, AddIcon, MoreOptionsIcon, RSSIcon } from '@/components/ui/icons';
 import styles from './page.module.css';
 
 interface DocumentFromApi {
@@ -191,17 +192,7 @@ export default function FeedPage() {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <button className={styles.iconButton} type="button" aria-label="Menu">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              {MenuIcon}
             </button>
           </div>
           <div className={styles.pageTitle}>
@@ -230,17 +221,7 @@ export default function FeedPage() {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <button className={styles.iconButton} type="button" aria-label="Menu">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              {MenuIcon}
             </button>
           </div>
           <div className={styles.pageTitle}>
@@ -265,17 +246,7 @@ export default function FeedPage() {
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <button className={styles.iconButton} type="button" aria-label="Menu">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              {MenuIcon}
             </button>
           </div>
           <div className={styles.pageTitle}>
@@ -314,24 +285,10 @@ export default function FeedPage() {
           </button>
           <div className={styles.actionRight}>
             <button className={styles.iconButton} type="button" aria-label="Add feed">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="16" />
-                <line x1="8" y1="12" x2="16" y2="12" />
-              </svg>
+              {AddIcon}
             </button>
             <button className={styles.iconButton} type="button" aria-label="More options">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="6" r="1.5" />
-                <circle cx="12" cy="12" r="1.5" />
-                <circle cx="12" cy="18" r="1.5" />
-              </svg>
+              {MoreOptionsIcon}
             </button>
           </div>
         </div>
@@ -348,19 +305,7 @@ export default function FeedPage() {
       <main className={styles.main}>
         {articles.length === 0 ? (
           <div className={styles.emptyState}>
-            <svg
-              className={styles.emptyIcon}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 11a9 9 0 0 1 9 9" />
-              <path d="M4 4a16 16 0 0 1 16 16" />
-              <circle cx="5" cy="19" r="1" />
-            </svg>
+            <div className={styles.emptyIcon}>{RSSIcon}</div>
             <p className={styles.emptyTitle}>
               {activeSubTab === 'unseen' ? 'All caught up!' : 'No seen articles'}
             </p>
