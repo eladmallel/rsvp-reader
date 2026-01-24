@@ -17,6 +17,7 @@
 | 1.2  | Add AbortController (feed page)                  | ✅ Done    | 2026-01-23 |
 | 5.1  | Memoize time calculations in RSVPPlayer          | ✅ Done    | 2026-01-23 |
 | 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done    | 2026-01-23 |
+| 2.0  | Bundle analyzer setup                            | ✅ Done    | 2026-01-23 |
 | 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
 | 2.2  | Dynamic imports for heavy components             | 🔲 Pending | -          |
 | 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
@@ -78,6 +79,37 @@ This audit identifies opportunities to improve code maintainability, reduce bugs
 ---
 
 ## Priority 2: CRITICAL - Bundle Size Optimization
+
+### 2.0 Bundle Analyzer Setup ✅ DONE
+
+**Status:** ✅ Configured 2026-01-23
+
+**What was done:**
+
+- Installed `@next/bundle-analyzer` package
+- Configured bundle analyzer in `next.config.ts` with `ANALYZE` environment variable
+- Added `npm run build:analyze` script that builds with webpack and opens client bundle report
+- Generated reports saved to `.next/analyze/` directory:
+  - `client.html` - Client-side bundle (most important for users)
+  - `nodejs.html` - Node.js server bundle
+  - `edge.html` - Edge runtime bundle
+
+**How to use:**
+
+```bash
+npm run build:analyze
+```
+
+This will build the app with webpack (instead of Turbopack) and automatically open the client bundle visualization in your browser.
+
+**Next steps:** Review the generated reports to identify:
+
+- Largest dependencies
+- Impact of barrel imports on tree-shaking
+- Opportunities for code splitting
+- Duplicate dependencies
+
+---
 
 ### 2.1 Barrel File Imports May Affect Tree-Shaking
 
@@ -447,9 +479,10 @@ The codebase already follows several best practices:
 
 ### Immediate (Quick Wins)
 
-1. **Add AbortController to feed page** - Same pattern as library page, apply to `src/app/(main)/feed/page.tsx`
-2. **Run bundle analysis** - Execute `next build --analyze` to verify if barrel imports are actually affecting bundle size
-3. **Dynamic imports for modals** - Add `next/dynamic` for `PlayerSettingsPanel` and settings components
+1. ✅ **Add AbortController to feed page** - Same pattern as library page, apply to `src/app/(main)/feed/page.tsx`
+2. ✅ **Bundle analyzer setup** - Configure and run bundle analysis
+3. **Review bundle analysis reports** - Open `.next/analyze/client.html` to check barrel import impact
+4. **Dynamic imports for modals** - Add `next/dynamic` for `PlayerSettingsPanel` and settings components
 
 ### Medium Term
 
