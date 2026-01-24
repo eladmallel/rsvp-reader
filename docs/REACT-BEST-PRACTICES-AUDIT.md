@@ -23,7 +23,7 @@
 | 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
 | 3.1  | Add React.cache() for server deduplication       | 🔲 Pending | -          |
 | 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
-| 5.3  | Memoize handlers in ArticleListItem              | 🔲 Pending | -          |
+| 5.3  | Memoize handlers in ArticleListItem              | ✅ Done    | 2026-01-23 |
 | 7.1  | Memoize date formatting in ArticleListItem       | ✅ Done    | 2026-01-23 |
 
 ---
@@ -319,28 +319,15 @@ function LibraryPage() {
 
 ---
 
-### 5.3 Handler Functions Recreated Unnecessarily
+### 5.3 Handler Functions Recreated Unnecessarily ✅ DONE
 
-**File:** `src/components/library/ArticleListItem.tsx` (lines 38-52)
+**File:** `src/components/library/ArticleListItem.tsx`
 
-**Issue:** `handleClick`, `handleKeyDown`, and `handleMenuClick` are recreated on every render.
+**Status:** ✅ Implemented 2026-01-23
 
-**Current Code:**
+**What was done:** Wrapped all three handler functions (`handleClick`, `handleKeyDown`, `handleMenuClick`) in `useCallback` with appropriate dependencies.
 
-```typescript
-const handleClick = () => {
-  onClick?.(article);
-};
-
-const handleKeyDown = (e: React.KeyboardEvent) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    onClick?.(article);
-  }
-};
-```
-
-**Recommended Fix:**
+**Implementation:**
 
 ```typescript
 const handleClick = useCallback(() => {
@@ -356,11 +343,17 @@ const handleKeyDown = useCallback(
   },
   [onClick, article]
 );
+
+const handleMenuClick = useCallback(
+  (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onMenuClick?.(article, e);
+  },
+  [onMenuClick, article]
+);
 ```
 
-**Note:** React Compiler may auto-optimize this. Verify with profiler before changing.
-
-**Impact:** Stable function references when passed to child components.
+**Impact:** Ensures stable function references, preventing unnecessary re-renders in child components that depend on these handlers.
 
 ---
 

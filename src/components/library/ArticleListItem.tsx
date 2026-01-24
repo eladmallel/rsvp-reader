@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import Image from 'next/image';
 
 import { MoreOptionsHorizontalIcon } from '@/components/ui/icons';
@@ -37,21 +37,27 @@ function getSourceIcon(sourceName: string): string {
 }
 
 export function ArticleListItem({ article, onClick, onMenuClick }: ArticleListItemProps) {
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     onClick?.(article);
-  };
+  }, [onClick, article]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onClick?.(article);
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onClick?.(article);
+      }
+    },
+    [onClick, article]
+  );
 
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onMenuClick?.(article, e);
-  };
+  const handleMenuClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onMenuClick?.(article, e);
+    },
+    [onMenuClick, article]
+  );
 
   const sourceIcon = getSourceIcon(article.sourceName);
   const displaySource = article.sourceName.toUpperCase();
