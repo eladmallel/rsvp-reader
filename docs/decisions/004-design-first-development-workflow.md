@@ -188,7 +188,7 @@ The anti-pattern of "build first, design later" emerged from:
 ## References
 
 - [LEARNINGS.md](../LEARNINGS.md) - Section 6: Things That Didn't Work
-- [ROADMAP.md](../ROADMAP.md) - Priority 2: RSVP Player UI Redesign
+- [PROJECT_PLAN.md](../PROJECT_PLAN.md) - Current priorities
 - [DESIGN_REVAMP_PLAN.md](../redesign/DESIGN_REVAMP_PLAN.md) - Comprehensive redesign strategy
 
 ---

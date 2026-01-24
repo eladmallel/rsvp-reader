@@ -126,7 +126,7 @@ _To be populated with RLS policy patterns that worked well_
 - Currently storing plaintext tokens in database (`users.reader_access_token`, `users.llm_api_key`)
 - **Risk**: Anyone with DB access can read all user API tokens (Severity 8.0/10)
 - **TODO**: Implement encryption at rest or use Supabase Vault
-- See: [DEPLOYMENT-REVIEW-SUMMARY.md](./devops/DEPLOYMENT-REVIEW-SUMMARY.md)
+- See: [devops/SECURITY.md](./devops/SECURITY.md)
 
 ---
 
@@ -227,7 +227,7 @@ _To be populated with unit testing patterns_
 
 **Results**: 351/364 tests passing (96%), zero production contamination
 
-**Reference**: [e2e-test-environment-fixes.md](./devops/e2e-test-environment-fixes.md)
+**Reference**: [e2e-test-environment-fixes.md](./archive/2026-01/devops/e2e-test-environment-fixes.md)
 
 ---
 
@@ -538,7 +538,7 @@ _This section captures very recent insights before they're organized into catego
 
 **Actions Taken**: Implemented local Supabase, environment separation, security headers
 
-**Reference**: [DEPLOYMENT-REVIEW-SUMMARY.md](./devops/DEPLOYMENT-REVIEW-SUMMARY.md)
+**Reference**: [devops/SECURITY.md](./devops/SECURITY.md)
 
 ### 2026-01-22: Design Prototyping Breakthrough
 
@@ -613,7 +613,7 @@ Based on recent work, priority insights to document:
 **Related Documentation**:
 
 - [AGENTS.md](../AGENTS.md) - Procedural working guidelines
-- [Documentation Guide](./DOCUMENTATION_GUIDE.md) - How to maintain docs
+- [Documentation Index](./INDEX.md) - Find any doc quickly
 - [Architecture Decisions](./decisions/) - ADRs for major decisions
 - [Project Plan](./PROJECT_PLAN.md) - Current work and roadmap
 

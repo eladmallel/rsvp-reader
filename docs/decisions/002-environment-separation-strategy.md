@@ -272,7 +272,7 @@ See: [secret-rotation.md](../devops/secret-rotation.md)
 
 - [ADR-001: Supabase Local Development](./001-supabase-local-development.md)
 - [ADR-003: E2E Test Environment Isolation](./003-e2e-test-environment-isolation.md)
-- [Deployment Review Summary](../devops/DEPLOYMENT-REVIEW-SUMMARY.md)
+- [Deployment Review Summary](../archive/2026-01/devops/DEPLOYMENT-REVIEW-SUMMARY.md)
 - [Security Checklist](../devops/SECURITY-CHECKLIST.md)
 - [LEARNINGS.md - Deployment & DevOps](../LEARNINGS.md#8-deployment--devops-lessons)
 

@@ -313,7 +313,7 @@ test('back button returns to library', async ({ page }) => {
 
 ## Related
 
-- [E2E Test Environment Fixes](../devops/e2e-test-environment-fixes.md)
+- [E2E Test Environment Fixes](../archive/2026-01/devops/e2e-test-environment-fixes.md)
 - [ADR-001: Supabase Local Development](./001-supabase-local-development.md)
 - [AGENTS.md - Test Performance](../../AGENTS.md#3-test-performance)
 - [LEARNINGS.md - Testing Strategies](../LEARNINGS.md#4-testing-strategies-that-worked)

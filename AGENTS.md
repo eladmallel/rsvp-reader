@@ -429,28 +429,10 @@ Include latest screenshots:
 
 ## See Also
 
-### Documentation Resources
-
-- [Documentation Index](./docs/INDEX.md) - Find any documentation in < 60 seconds
-- [Project Learnings](./docs/LEARNINGS.md) - Accumulated wisdom and insights
-- [Documentation Guide](./docs/DOCUMENTATION_GUIDE.md) - Documentation standards and maintenance
-- [Autonomous Curator](./docs/CURATOR_AUTONOMOUS_PROMPT.md) - Automated knowledge management
-- [Architecture Decisions](./docs/decisions/) - ADRs for major architectural choices
-
-### Project Management
-
-- [Project Plan](./docs/PROJECT_PLAN.md) - Current roadmap and task breakdown
-- [Open Questions](./OPEN_QUESTIONS.md) - Active questions and decisions needed
-- [Documentation Improvement Plan](./docs/DOCUMENTATION_IMPROVEMENT_PLAN.md) - Documentation initiative
-
-### Technical Documentation
-
-- [Design Revamp Plan](./docs/redesign/DESIGN_REVAMP_PLAN.md) - UI/UX design strategy
-- [Deployment Review](./docs/devops/DEPLOYMENT-REVIEW-SUMMARY.md) - DevOps and security findings
-- [DevOps Next Steps](./docs/devops/NEXT-STEPS-ANALYSIS.md) - Current priority implementation plans
-- [DevOps Status Dashboard](./docs/devops/STATUS-SUMMARY.md) - Current state and progress tracking
-- [Security Checklist](./docs/devops/SECURITY-CHECKLIST.md) - Security requirements
-- [Sync Troubleshooting](./docs/SYNC_TROUBLESHOOTING.md) - Debugging sync issues
+- [Documentation Index](./docs/INDEX.md) - Find any doc quickly
+- [Project Plan](./docs/PROJECT_PLAN.md) - Spec, design, tasks
+- [Learnings](./docs/LEARNINGS.md) - Patterns and insights
+- [Open Questions](./OPEN_QUESTIONS.md) - Decisions needed
 
 ---
 

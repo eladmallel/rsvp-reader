@@ -12,54 +12,50 @@ A Spritz-style Rapid Serial Visual Presentation (RSVP) reading app with Readwise
 
 ---
 
-## Related Documentation
-
-**Working Guidelines & Knowledge**:
-
-- [AGENTS.md](../AGENTS.md) - Development workflow and working guidelines
-- [LEARNINGS.md](./LEARNINGS.md) - Project insights and accumulated wisdom
-- [Documentation Index](./INDEX.md) - Find any documentation quickly
-- [Working Memory](./working-memory/) - Active context and ongoing work tracking
-
-**Design & UX**:
-
-- [Design Revamp Plan](./redesign/DESIGN_REVAMP_PLAN.md) - Comprehensive design strategy
-- [Implementation Plan](./redesign/IMPLEMENTATION_PLAN.md) - Design implementation roadmap
-
-**DevOps & Security**:
-
-- [Deployment Review](./devops/DEPLOYMENT-REVIEW-SUMMARY.md) - Infrastructure and security findings
-- [Security Checklist](./devops/SECURITY-CHECKLIST.md) - Security requirements and status
-
-**Feature Planning**:
-
-- [Readwise Sync Plan](./readwise-sync-plan.md) - Automated sync architecture
-- [Sync Troubleshooting](./SYNC_TROUBLESHOOTING.md) - Debugging sync issues
-
-**Architecture Decisions**:
-
-- [ADRs](./decisions/) - Architecture decision records
-
----
-
-## Current Progress Summary
+## Current Focus & Priorities
 
 **Last Updated**: 2026-01-23
 
-| Phase | Description          | Status                             |
-| ----- | -------------------- | ---------------------------------- |
-| 0     | Project Setup        | ✅ Complete                        |
-| 1     | Design Phase         | ✅ Complete                        |
-| 2     | RSVP Engine          | ✅ Complete                        |
-| 3     | Readwise Integration | 🔄 ~80% (17/22 tasks)              |
-| 4     | Reading Sessions     | ⏳ Not Started                     |
-| 5     | LLM Chat             | 🔄 ~30% (UI built, backend mocked) |
-| 6     | Settings & Polish    | ⏳ Not Started                     |
-| 7     | Final Testing        | ⏳ Not Started                     |
+### Priority 1: React Best Practices (Immediate)
+
+Key items from [REACT-BEST-PRACTICES-AUDIT.md](./REACT-BEST-PRACTICES-AUDIT.md):
+
+1. Parallelize auth checks with `Promise.all()`
+2. Add AbortController for fetch cancellation
+3. Consider direct imports over barrel files
+4. Add `next/dynamic` for heavy components
+
+### Priority 2: DevOps Stability (~80% complete)
+
+Remaining work in [devops/SECURITY.md](./devops/SECURITY.md):
+
+- [ ] Database secret encryption (Severity 8.0/10)
+- [ ] API rate limiting (Severity 6.0/10)
+
+### Priority 3: RSVP Player UI Redesign
+
+See [redesign/DESIGN_REVAMP_PLAN.md](./redesign/DESIGN_REVAMP_PLAN.md).
+
+### Priority 4: Readwise API Integration
+
+Complete archive sync and reading progress sync.
+
+---
+
+## Progress Summary
+
+| Phase | Description          | Status                          |
+| ----- | -------------------- | ------------------------------- |
+| 0     | Project Setup        | Complete                        |
+| 1     | Design Phase         | Complete                        |
+| 2     | RSVP Engine          | Complete                        |
+| 3     | Readwise Integration | ~80% (17/22 tasks)              |
+| 4     | Reading Sessions     | Not Started                     |
+| 5     | LLM Chat             | ~30% (UI built, backend mocked) |
+| 6     | Settings & Polish    | Not Started                     |
+| 7     | Final Testing        | Not Started                     |
 
 **Test Suite**: 465+ unit tests, 9 E2E test suites
-
-**Current Focus**: See [ROADMAP.md](./ROADMAP.md) for active priorities.
 
 ---
 
@@ -781,46 +777,6 @@ tests/
 
 ---
 
-## Appendix B: CI Performance Baseline
+## Appendix B: CI Performance
 
-**Baseline Date:** 2026-01-16 (Phase 0 complete)
-
-**Total CI Time:** ~2m (varies based on Supabase startup)
-
-### Step Breakdown
-
-| Step                    | Duration |
-| ----------------------- | -------- |
-| Checkout                | 1s       |
-| Setup Node.js           | 3s       |
-| npm ci                  | 12s      |
-| Lint                    | 3s       |
-| Type check              | 2s       |
-| Set up test environment | <1s      |
-| Start Supabase local    | ~30s     |
-| Unit tests              | 3s       |
-| Install Playwright      | ~20s     |
-| E2E tests               | ~30s     |
-| Upload artifacts        | 2s       |
-
-### Configuration
-
-- **Runner:** `ubuntu-latest`
-- **Node.js:** v20 with npm caching
-- **Database:** Supabase local development (`npx supabase start`)
-- **Playwright:** Installed via `npx playwright install --with-deps chromium`
-- **E2E browsers:** Chromium only (for CI speed)
-
-### Key CI Steps
-
-```yaml
-- name: Start Supabase local development
-  run: npx supabase start
-
-- name: Install Playwright browsers
-  run: npx playwright install --with-deps chromium
-```
-
-### Threshold
-
-**Alert if CI exceeds:** 2m30s (25% increase from ~2m baseline)
+See [devops/ci-baseline.md](./devops/ci-baseline.md) for CI performance baseline and targets.

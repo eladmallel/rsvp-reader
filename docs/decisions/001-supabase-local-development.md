@@ -199,8 +199,8 @@ grep -r "production-credential-pattern" . --exclude-dir=node_modules
 
 - [ADR-002: Environment Separation Strategy](./002-environment-separation-strategy.md)
 - [ADR-003: E2E Test Environment Isolation](./003-e2e-test-environment-isolation.md)
-- [E2E Test Environment Fixes](../devops/e2e-test-environment-fixes.md)
-- [Deployment Review Summary](../devops/DEPLOYMENT-REVIEW-SUMMARY.md)
+- [E2E Test Environment Fixes](../archive/2026-01/devops/e2e-test-environment-fixes.md)
+- [Deployment Review Summary](../archive/2026-01/devops/DEPLOYMENT-REVIEW-SUMMARY.md)
 - [LEARNINGS.md - Supabase & Database Patterns](../LEARNINGS.md#3-supabase--database-patterns)
 
 ---
