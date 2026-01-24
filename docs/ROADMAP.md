@@ -7,7 +7,28 @@
 
 ## Current Focus & Priorities
 
-### Priority 1: Stable DevOps Foundation (In Progress)
+### Priority 1: React Best Practices Implementation (Immediate)
+
+**Goal**: Improve code maintainability, reduce bugs, and boost performance
+
+**Status**: Audit complete, implementation pending
+
+**Key Items** (sorted by priority):
+
+1. **CRITICAL**: Parallelize auth checks with `Promise.all()`
+2. **CRITICAL**: Add AbortController for proper fetch cancellation
+3. **HIGH**: Consider direct imports over barrel files
+4. **HIGH**: Add `next/dynamic` for heavy components (settings modals)
+5. **MEDIUM**: Add React.cache() for server-side request deduplication
+6. **MEDIUM**: Evaluate SWR for data fetching patterns
+
+**Reference**: [REACT-BEST-PRACTICES-AUDIT.md](./REACT-BEST-PRACTICES-AUDIT.md)
+
+**Timeline**: Complete quick wins (items 1-4) this week
+
+---
+
+### Priority 2: Stable DevOps Foundation (In Progress)
 
 **Goal**: Ensure production-ready infrastructure and deployment setup
 
@@ -26,7 +47,7 @@
 
 ---
 
-### Priority 2: RSVP Player UI Redesign (Next Up)
+### Priority 3: RSVP Player UI Redesign
 
 **Goal**: Improve reading experience - make it genuinely enjoyable to use
 
@@ -58,7 +79,7 @@
 
 ---
 
-### Priority 3: Complete Readwise API Integration (Future)
+### Priority 4: Complete Readwise API Integration (Future)
 
 **Goal**: Full bidirectional sync with Readwise Reader
 

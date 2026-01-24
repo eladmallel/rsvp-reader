@@ -12,7 +12,6 @@
 **New to the project?** Start here:
 
 - [README.md](../README.md) - Project overview and setup instructions
-- [NEXT_STEPS_AFTER_RESTART.md](../NEXT_STEPS_AFTER_RESTART.md) - Continue development setup
 - [AGENTS.md](../AGENTS.md) - Development workflow and working guidelines
 
 ---
@@ -136,7 +135,7 @@ Completed or superseded documentation:
 
 ### By Purpose
 
-- **Getting Started**: README.md, NEXT_STEPS_AFTER_RESTART.md
+- **Getting Started**: README.md
 - **Working on Tasks**: AGENTS.md, PROJECT_PLAN.md, working-memory/
 - **Understanding Decisions**: decisions/ (ADRs), LEARNINGS.md
 - **Design & UX**: redesign/
