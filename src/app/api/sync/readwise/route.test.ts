@@ -128,6 +128,87 @@ describe('GET /api/sync/readwise', () => {
     expect(finalUpdate.initial_backfill_done).toBe(true);
   });
 
+  it('limits sync locations when override is set', async () => {
+    process.env.READWISE_SYNC_LOCATION_OVERRIDE = 'later';
+
+    const state = {
+      user_id: 'user-override',
+      inbox_cursor: null,
+      library_cursor: null,
+      feed_cursor: null,
+      archive_cursor: null,
+      shortlist_cursor: null,
+      next_allowed_at: null,
+      last_sync_at: null,
+      in_progress: false,
+      initial_backfill_done: false,
+      window_started_at: null,
+      window_request_count: 0,
+      last_429_at: null,
+      users: { reader_access_token: 'token-override' },
+    };
+
+    const lockedState = { ...state, in_progress: true };
+
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
+      }),
+    });
+
+    const lockChain = {
+      eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: lockedState, error: null }),
+      }),
+    };
+
+    const updateSpy = vi.fn();
+    const finalChain = {
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    };
+
+    const mockUpdate = vi.fn().mockImplementation((payload: Record<string, unknown>) => {
+      updateSpy(payload);
+      if (payload.in_progress === true) {
+        return lockChain;
+      }
+      return finalChain;
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'readwise_sync_state') {
+        return {
+          select: mockSelect,
+          update: mockUpdate,
+        };
+      }
+      return {
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+      };
+    });
+
+    mockCreateAdminClient.mockReturnValue({ from: mockFrom });
+
+    mockListDocuments.mockResolvedValue({
+      results: [],
+      nextPageCursor: null,
+    });
+
+    const response = await GET(createRequest());
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.ok).toBe(true);
+
+    const locations = mockListDocuments.mock.calls.map((call) => call[0].location);
+    expect(locations).toEqual(['later']);
+
+    const finalUpdate = updateSpy.mock.calls.at(-1)?.[0] ?? {};
+    expect(finalUpdate.initial_backfill_done).toBe(true);
+  });
+
   it('uses updatedAfter cursor for incremental sync', async () => {
     const cursor = '2026-01-18T00:00:00.000Z';
     const state = {

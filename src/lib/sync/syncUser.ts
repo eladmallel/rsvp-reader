@@ -12,6 +12,9 @@ export const WINDOW_MS = 60 * 1000;
 const PAGE_SIZE = 100;
 const PAGE_CURSOR_PREFIX = 'page:';
 const UPDATED_AFTER_PREFIX = 'updated:';
+const SYNC_LOCATIONS = ['new', 'later', 'feed', 'archive', 'shortlist'] as const;
+
+type SyncLocation = (typeof SYNC_LOCATIONS)[number];
 
 type SyncState = Database['public']['Tables']['readwise_sync_state']['Row'];
 
@@ -66,6 +69,28 @@ interface SyncLocationResult {
   completed: boolean;
 }
 
+function getAllowedSyncLocations(): { locations: SyncLocation[]; overridden: boolean } {
+  const raw = process.env.READWISE_SYNC_LOCATION_OVERRIDE;
+
+  if (!raw) {
+    return { locations: [...SYNC_LOCATIONS], overridden: false };
+  }
+
+  const allowed = raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  const filtered = allowed.filter((value): value is SyncLocation =>
+    SYNC_LOCATIONS.includes(value as SyncLocation)
+  );
+
+  return {
+    locations: filtered.length > 0 ? filtered : [...SYNC_LOCATIONS],
+    overridden: true,
+  };
+}
+
 export async function syncUser({
   supabase,
   state,
@@ -95,6 +120,12 @@ export async function syncUser({
   const readerClient = createReaderClient(userToken);
   const window = normalizeWindow(state.window_started_at, state.window_request_count, now);
   const budget = new RequestBudget(window.windowRequestCount, MAX_REQUESTS_PER_MINUTE);
+  const { locations: allowedLocations, overridden } = getAllowedSyncLocations();
+  const isLocationAllowed = (location: SyncLocation) => allowedLocations.includes(location);
+
+  if (overridden) {
+    console.log('[syncUser] Limiting sync locations to:', allowedLocations.join(', '));
+  }
 
   console.log('[syncUser] Budget - used:', budget.used(), 'remaining:', budget.remaining());
 
@@ -130,13 +161,19 @@ export async function syncUser({
 
   try {
     if (!state.initial_backfill_done) {
-      let inboxComplete = inboxDone;
-      let libraryComplete = libraryDone;
-      let feedComplete = feedDone;
-      let archiveComplete = archiveDone;
-      let shortlistComplete = shortlistDone;
+      const inboxEnabled = isLocationAllowed('new');
+      const libraryEnabled = isLocationAllowed('later');
+      const feedEnabled = isLocationAllowed('feed');
+      const archiveEnabled = isLocationAllowed('archive');
+      const shortlistEnabled = isLocationAllowed('shortlist');
 
-      if (!inboxComplete) {
+      let inboxComplete = inboxDone || !inboxEnabled;
+      let libraryComplete = libraryDone || !libraryEnabled;
+      let feedComplete = feedDone || !feedEnabled;
+      let archiveComplete = archiveDone || !archiveEnabled;
+      let shortlistComplete = shortlistDone || !shortlistEnabled;
+
+      if (!inboxComplete && inboxEnabled) {
         const inboxResult = await syncLocation({
           supabase,
           readerClient,
@@ -151,7 +188,7 @@ export async function syncUser({
         inboxComplete = inboxResult.completed;
       }
 
-      if (inboxComplete && budget.remaining() > 0 && !libraryComplete) {
+      if (inboxComplete && budget.remaining() > 0 && !libraryComplete && libraryEnabled) {
         const libraryResult = await syncLocation({
           supabase,
           readerClient,
@@ -166,7 +203,13 @@ export async function syncUser({
         libraryComplete = libraryResult.completed;
       }
 
-      if (inboxComplete && libraryComplete && budget.remaining() > 0 && !archiveComplete) {
+      if (
+        inboxComplete &&
+        libraryComplete &&
+        budget.remaining() > 0 &&
+        !archiveComplete &&
+        archiveEnabled
+      ) {
         const archiveResult = await syncLocation({
           supabase,
           readerClient,
@@ -186,7 +229,8 @@ export async function syncUser({
         libraryComplete &&
         archiveComplete &&
         budget.remaining() > 0 &&
-        !shortlistComplete
+        !shortlistComplete &&
+        shortlistEnabled
       ) {
         const shortlistResult = await syncLocation({
           supabase,
@@ -208,7 +252,8 @@ export async function syncUser({
         archiveComplete &&
         shortlistComplete &&
         budget.remaining() > 0 &&
-        !feedComplete
+        !feedComplete &&
+        feedEnabled
       ) {
         const feedResult = await syncLocation({
           supabase,
@@ -234,47 +279,49 @@ export async function syncUser({
         updates.initial_backfill_done = true;
       }
     } else {
-      const locations: Array<{
-        location: 'new' | 'later' | 'feed' | 'archive' | 'shortlist';
+      const allLocations: Array<{
+        location: SyncLocation;
         cursorValue: string | null;
         setCursor: (value: string | null) => void;
       }> = [
         {
           location: 'new',
           cursorValue: state.inbox_cursor,
-          setCursor: (value) => {
+          setCursor: (value: string | null) => {
             updates.inbox_cursor = value;
           },
         },
         {
           location: 'later',
           cursorValue: state.library_cursor,
-          setCursor: (value) => {
+          setCursor: (value: string | null) => {
             updates.library_cursor = value;
           },
         },
         {
           location: 'archive',
           cursorValue: state.archive_cursor,
-          setCursor: (value) => {
+          setCursor: (value: string | null) => {
             updates.archive_cursor = value;
           },
         },
         {
           location: 'shortlist',
           cursorValue: state.shortlist_cursor,
-          setCursor: (value) => {
+          setCursor: (value: string | null) => {
             updates.shortlist_cursor = value;
           },
         },
         {
           location: 'feed',
           cursorValue: state.feed_cursor,
-          setCursor: (value) => {
+          setCursor: (value: string | null) => {
             updates.feed_cursor = value;
           },
         },
       ];
+
+      const locations = allLocations.filter((entry) => isLocationAllowed(entry.location));
 
       for (const entry of locations) {
         if (!budget.canRequest()) {
@@ -368,7 +415,7 @@ async function syncLocation({
   readerClient: ReturnType<typeof createReaderClient>;
   budget: RequestBudget;
   userId: string;
-  location: 'new' | 'later' | 'feed' | 'archive' | 'shortlist';
+  location: SyncLocation;
   mode: 'initial' | 'incremental';
   cursorValue: string | null;
 }): Promise<SyncLocationResult> {
