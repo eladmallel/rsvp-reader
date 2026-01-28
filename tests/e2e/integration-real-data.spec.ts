@@ -15,7 +15,8 @@
  * To run locally:
  *   set -a && source .env.local && set +a && npm run test:e2e -- integration-real-data
  *
- * In CI, set READWISE_ACCESS_TOKEN as a GitHub Actions secret.
+ * In CI, set READWISE_ACCESS_TOKEN and READWISE_INTEGRATION_TESTS=true
+ * as GitHub Actions secrets/variables to enable.
  */
 
 import { test, expect, type TestInfo } from '@playwright/test';
@@ -26,8 +27,11 @@ function getScreenshotPath(testInfo: TestInfo, filename: string): string {
 }
 
 // Check if Readwise token is available and valid (not a placeholder)
+// Only run when explicitly enabled to avoid flaky CI runs.
 const READWISE_TOKEN = process.env.READWISE_ACCESS_TOKEN;
+const READWISE_INTEGRATION_ENABLED = process.env.READWISE_INTEGRATION_TESTS === 'true';
 const shouldRunIntegrationTests =
+  READWISE_INTEGRATION_ENABLED &&
   !!READWISE_TOKEN &&
   !READWISE_TOKEN.includes('placeholder') &&
   !READWISE_TOKEN.includes('test-token') &&
@@ -35,7 +39,20 @@ const shouldRunIntegrationTests =
 
 // Simple in-memory cache for API responses to reduce rate limiting
 const responseCache: Map<string, { data: unknown; timestamp: number }> = new Map();
-const CACHE_TTL_MS = 60000; // 1 minute cache
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minute cache
+
+type CachedListResponse = {
+  documents: Record<string, unknown>[];
+  nextCursor?: string | null;
+  count: number;
+};
+
+type CachedDocumentResponse = {
+  document: Record<string, unknown>;
+};
+
+const listResponseCache = new Map<string, CachedListResponse>();
+const documentResponseCache = new Map<string, CachedDocumentResponse>();
 
 /**
  * Fetch with caching and retry logic for rate limiting
@@ -83,10 +100,18 @@ async function fetchWithCache(
 // Run only on Mobile Chrome to reduce API calls (screenshots still named by viewport)
 test.describe('Real Readwise Data Integration', () => {
   // Skip all tests if token is not available
-  test.skip(!shouldRunIntegrationTests, 'Skipping: READWISE_ACCESS_TOKEN not set');
+  test.skip(
+    !shouldRunIntegrationTests,
+    'Skipping: READWISE_INTEGRATION_TESTS not enabled or READWISE_ACCESS_TOKEN missing'
+  );
 
   // Run tests serially to avoid rate limiting
   test.describe.configure({ mode: 'serial' });
+
+  test.beforeEach(async ({}, testInfo) => {
+    const isMobileProject = testInfo.project.name.toLowerCase().includes('mobile');
+    test.skip(!isMobileProject, 'Runs only on Mobile Chrome to limit Readwise API calls');
+  });
 
   /**
    * Helper to mock auth as connected and proxy real Readwise API calls
@@ -122,8 +147,19 @@ test.describe('Real Readwise Data Integration', () => {
         if (tag) readwiseUrl.searchParams.set('tag', tag);
         readwiseUrl.searchParams.set('page_size', '20');
 
+        const cacheKey = readwiseUrl.toString();
+        const cachedResponse = listResponseCache.get(cacheKey);
+        if (cachedResponse) {
+          route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(cachedResponse),
+          });
+          return;
+        }
+
         // Fetch from real Readwise API with caching
-        const result = await fetchWithCache(readwiseUrl.toString(), {
+        const result = await fetchWithCache(cacheKey, {
           method: 'GET',
           headers: {
             Authorization: `Token ${READWISE_TOKEN}`,
@@ -161,14 +197,18 @@ test.describe('Real Readwise Data Integration', () => {
           createdAt: doc.created_at,
         }));
 
+        const responseBody: CachedListResponse = {
+          documents,
+          nextCursor: data.nextPageCursor,
+          count: data.count || documents.length,
+        };
+
+        listResponseCache.set(cacheKey, responseBody);
+
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({
-            documents,
-            nextCursor: data.nextPageCursor,
-            count: data.count || documents.length,
-          }),
+          body: JSON.stringify(responseBody),
         });
       } catch (error) {
         console.error('Error fetching from Readwise:', error);
@@ -252,6 +292,16 @@ test.describe('Real Readwise Data Integration', () => {
       }
 
       try {
+        const cachedResponse = documentResponseCache.get(documentId);
+        if (cachedResponse) {
+          route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(cachedResponse),
+          });
+          return;
+        }
+
         // Fetch document from Readwise API with content
         const readwiseUrl = new URL('https://readwise.io/api/v3/list/');
         readwiseUrl.searchParams.set('id', documentId);
@@ -292,10 +342,13 @@ test.describe('Real Readwise Data Integration', () => {
           wordCount: doc.word_count,
         };
 
+        const responseBody: CachedDocumentResponse = { document };
+        documentResponseCache.set(documentId, responseBody);
+
         route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ document }),
+          body: JSON.stringify(responseBody),
         });
       } catch (error) {
         console.error('Error fetching document from Readwise:', error);
