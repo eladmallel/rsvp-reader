@@ -58,7 +58,10 @@ describe('RsvpPageClient', () => {
     render(<RsvpPageClient />);
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith('/api/reader/documents/doc-123?content=true');
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/reader/documents/doc-123?content=true',
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
     });
   });
 

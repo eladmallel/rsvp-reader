@@ -50,6 +50,16 @@ const mockSingle = vi.fn();
 const mockGetDocument = vi.fn();
 const mockUpsert = vi.fn();
 
+const createCachedSelect = () => ({
+  select: vi.fn(() => ({
+    eq: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })),
+    })),
+  })),
+});
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(() =>
     Promise.resolve({
@@ -59,15 +69,12 @@ vi.mock('@/lib/supabase/server', () => ({
       from: vi.fn((table: string) => {
         if (table === 'cached_articles') {
           return {
-            select: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  single: vi.fn().mockResolvedValue({ data: null, error: null }),
-                })),
-              })),
-            })),
+            ...createCachedSelect(),
             upsert: mockUpsert.mockResolvedValue({ error: null }),
           };
+        }
+        if (table === 'cached_documents') {
+          return createCachedSelect();
         }
         return {
           select: mockSelect,

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RSVPPlayer } from './RSVPPlayer';
 
@@ -227,26 +227,32 @@ describe('RSVPPlayer', () => {
   });
 
   describe('settings panel', () => {
-    it('opens settings panel when settings button is clicked', () => {
+    beforeEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('opens settings panel when settings button is clicked', async () => {
       render(<RSVPPlayer text="Hello" />);
 
       fireEvent.click(screen.getByLabelText('Player settings'));
 
-      expect(screen.getByText('Player Settings')).toBeInTheDocument();
+      expect(await screen.findByText('Player Settings')).toBeInTheDocument();
     });
 
-    it('closes settings panel with Escape key', () => {
+    it('closes settings panel with Escape key', async () => {
       render(<RSVPPlayer text="Hello" />);
 
       // Open settings
       fireEvent.click(screen.getByLabelText('Player settings'));
-      expect(screen.getByText('Player Settings')).toBeInTheDocument();
+      expect(await screen.findByText('Player Settings')).toBeInTheDocument();
 
       // Press Escape
       fireEvent.keyDown(window, { key: 'Escape' });
 
       // Settings should be closed
-      expect(screen.queryByText('Player Settings')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText('Player Settings')).not.toBeInTheDocument();
+      });
     });
   });
 
