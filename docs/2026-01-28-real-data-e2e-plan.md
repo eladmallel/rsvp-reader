@@ -2,15 +2,15 @@
 
 ## Status Table (TODOs)
 
-| ID  | Task                                                                           | Status          |
-| --- | ------------------------------------------------------------------------------ | --------------- |
-| 1   | Constrain Readwise sync to a single location/page for tests                    | [x] Complete    |
-| 2   | Add test-only override for sync page size (`READWISE_SYNC_PAGE_SIZE_OVERRIDE`) | [x] Complete    |
-| 3   | Seed `readwise_sync_state` to skip non-library locations and limit budget      | [x] Complete    |
-| 4   | Trigger sync once and wait for cached DB rows                                  | [x] Complete    |
-| 5   | Update Library + RSVP E2E tests to use cached DB data only                     | [ ] Not started |
-| 6   | Implement stable, fast auth (UI login once + storageState reuse)               | [ ] Not started |
-| 7   | Add cleanup for test user and cached rows                                      | [ ] Not started |
+| ID  | Task                                                                           | Status       |
+| --- | ------------------------------------------------------------------------------ | ------------ |
+| 1   | Constrain Readwise sync to a single location/page for tests                    | [x] Complete |
+| 2   | Add test-only override for sync page size (`READWISE_SYNC_PAGE_SIZE_OVERRIDE`) | [x] Complete |
+| 3   | Seed `readwise_sync_state` to skip non-library locations and limit budget      | [x] Complete |
+| 4   | Trigger sync once and wait for cached DB rows                                  | [x] Complete |
+| 5   | Update Library + RSVP E2E tests to use cached DB data only                     | [x] Complete |
+| 6   | Implement stable, fast auth (UI login once + storageState reuse)               | [x] Complete |
+| 7   | Add cleanup for test user and cached rows                                      | [x] Complete |
 
 ---
 
