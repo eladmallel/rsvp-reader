@@ -5,7 +5,7 @@
 | ID  | Task                                                                           | Status          |
 | --- | ------------------------------------------------------------------------------ | --------------- |
 | 1   | Constrain Readwise sync to a single location/page for tests                    | [x] Complete    |
-| 2   | Add test-only override for sync page size (e.g., `READWISE_SYNC_PAGE_SIZE=10`) | [x] Complete    |
+| 2   | Add test-only override for sync page size (`READWISE_SYNC_PAGE_SIZE_OVERRIDE`) | [x] Complete    |
 | 3   | Seed `readwise_sync_state` to skip non-library locations and limit budget      | [ ] Not started |
 | 4   | Trigger sync once and wait for cached DB rows                                  | [ ] Not started |
 | 5   | Update Library + RSVP E2E tests to use cached DB data only                     | [ ] Not started |
@@ -49,10 +49,10 @@ Result:
 
 ### 2) Test-Only Sync Page Size Override
 
-Add optional env: `READWISE_SYNC_PAGE_SIZE=10`.
+Add optional env: `READWISE_SYNC_PAGE_SIZE_OVERRIDE=10`.
 
-- If set, `syncUser` uses this value instead of `PAGE_SIZE`.
-- Default remains unchanged for production.
+- If set, `syncUser` uses this value instead of `DEFAULT_PAGE_SIZE`.
+- Default remains unchanged for production (100 docs per page).
 
 ### 3) Minimal Sync Trigger
 

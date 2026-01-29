@@ -11,8 +11,8 @@ export const MAX_REQUESTS_PER_MINUTE = 20;
 export const WINDOW_MS = 60 * 1000;
 const DEFAULT_PAGE_SIZE = 100;
 
-function getPageSize(): number {
-  const override = process.env.READWISE_SYNC_PAGE_SIZE;
+export function getPageSize(): number {
+  const override = process.env.READWISE_SYNC_PAGE_SIZE_OVERRIDE;
   if (override) {
     const parsed = parseInt(override, 10);
     if (!isNaN(parsed) && parsed > 0) {

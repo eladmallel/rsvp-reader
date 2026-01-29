@@ -409,8 +409,9 @@ Include latest screenshots:
 2. [ ] Tests written and passing
 3. [ ] Screenshots captured and analyzed
 4. [ ] README updated if needed
-5. [ ] Any new open questions documented
-6. [ ] Run [autonomous curator](./docs/CURATOR_AUTONOMOUS_PROMPT.md) to capture learnings
+5. [ ] **If new env vars added**: Document in README.md (Environment Configuration section)
+6. [ ] Any new open questions documented
+7. [ ] Run [autonomous curator](./docs/CURATOR_AUTONOMOUS_PROMPT.md) to capture learnings
 
 ---
 

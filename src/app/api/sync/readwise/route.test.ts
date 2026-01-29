@@ -281,8 +281,8 @@ describe('GET /api/sync/readwise', () => {
     }
   });
 
-  it('uses default page size of 100 when READWISE_SYNC_PAGE_SIZE is not set', async () => {
-    delete process.env.READWISE_SYNC_PAGE_SIZE;
+  it('uses default page size of 100 when READWISE_SYNC_PAGE_SIZE_OVERRIDE is not set', async () => {
+    delete process.env.READWISE_SYNC_PAGE_SIZE_OVERRIDE;
 
     const state = {
       user_id: 'user-default-page',
@@ -352,8 +352,8 @@ describe('GET /api/sync/readwise', () => {
     }
   });
 
-  it('uses custom page size when READWISE_SYNC_PAGE_SIZE is set', async () => {
-    process.env.READWISE_SYNC_PAGE_SIZE = '10';
+  it('uses custom page size when READWISE_SYNC_PAGE_SIZE_OVERRIDE is set', async () => {
+    process.env.READWISE_SYNC_PAGE_SIZE_OVERRIDE = '10';
 
     const state = {
       user_id: 'user-custom-page',
