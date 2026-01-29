@@ -1,7 +1,7 @@
 # E2E Authentication Test Fixes Plan
 
 **Date**: 2026-01-28
-**Status**: Planning
+**Status**: In Progress (Phase 2)
 **Related**: Real data E2E redesign (docs/2026-01-28-real-data-e2e-plan.md)
 
 ---
@@ -434,12 +434,12 @@ Create `.env.test` from CI secrets (never commit secrets to git):
 
 ## Implementation Order
 
-### Immediate (Fix Failing Tests)
+### Immediate (Fix Failing Tests) ✅ COMPLETE
 
-1. [ ] Create `.env.test` from example
-2. [ ] Start Supabase local (`npx supabase start`)
-3. [ ] Update `.env.test` with actual credentials
-4. [ ] Run tests to verify fixes
+1. [x] Create `.env.test` from example
+2. [x] Start Supabase local (`npx supabase start`)
+3. [x] Update `.env.test` with actual credentials
+4. [x] Run tests to verify fixes (351 passed, 13 skipped)
 
 ### Short-term (Prevent Recurrence)
 
@@ -459,7 +459,7 @@ Create `.env.test` from CI secrets (never commit secrets to git):
 
 ## Success Metrics
 
-- [ ] All 12 failing tests pass
+- [x] All 12 failing tests pass (now 351 pass, 13 skipped)
 - [ ] Tests run consistently without flakiness
 - [ ] Clear error messages when Supabase is misconfigured
 - [ ] New developers can set up tests in < 5 minutes

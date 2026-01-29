@@ -49,8 +49,13 @@ export default function LoginPage() {
       }
 
       router.push('/');
-    } catch {
-      setError('Login failed. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      if (message.includes('configuration')) {
+        setError('Service configuration error. Please contact support.');
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
