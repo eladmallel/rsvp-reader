@@ -9,7 +9,18 @@ import type { Database, Json } from '@/lib/supabase/types';
 
 export const MAX_REQUESTS_PER_MINUTE = 20;
 export const WINDOW_MS = 60 * 1000;
-const PAGE_SIZE = 100;
+const DEFAULT_PAGE_SIZE = 100;
+
+export function getPageSize(): number {
+  const override = process.env.READWISE_SYNC_PAGE_SIZE_OVERRIDE;
+  if (override) {
+    const parsed = parseInt(override, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return DEFAULT_PAGE_SIZE;
+}
 const PAGE_CURSOR_PREFIX = 'page:';
 const UPDATED_AFTER_PREFIX = 'updated:';
 const SYNC_LOCATIONS = ['new', 'later', 'feed', 'archive', 'shortlist'] as const;
@@ -433,6 +444,7 @@ async function syncLocation({
   let latestUpdatedAt: string | null = null;
   let completed = false;
   let totalDocs = 0;
+  const pageSize = getPageSize();
 
   while (true) {
     if (!budget.canRequest()) {
@@ -447,7 +459,7 @@ async function syncLocation({
       readerClient.listDocuments({
         location,
         pageCursor: pageCursor ?? undefined,
-        pageSize: PAGE_SIZE,
+        pageSize,
         updatedAfter,
         withHtmlContent: true,
       })

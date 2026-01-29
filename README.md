@@ -128,6 +128,23 @@ The `.env.test` file comes pre-configured with local Supabase credentials. You o
 READWISE_ACCESS_TOKEN=your-test-readwise-token
 ```
 
+**Test-only sync overrides:**
+
+These environment variables are useful for E2E tests to reduce API calls and test runtime:
+
+| Variable                           | Description                                              | Example |
+| ---------------------------------- | -------------------------------------------------------- | ------- |
+| `READWISE_SYNC_LOCATION_OVERRIDE`  | Comma-separated list of locations to sync (skips others) | `later` |
+| `READWISE_SYNC_PAGE_SIZE_OVERRIDE` | Number of documents per API request (default: 100)       | `10`    |
+
+```bash
+# Example: Only sync library location with 10 docs per page
+READWISE_SYNC_LOCATION_OVERRIDE=later
+READWISE_SYNC_PAGE_SIZE_OVERRIDE=10
+```
+
+Valid sync locations: `new`, `later`, `feed`, `archive`, `shortlist`
+
 ### 3. Database Setup
 
 #### Start Local Supabase
