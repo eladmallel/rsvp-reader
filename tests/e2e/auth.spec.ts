@@ -1,55 +1,23 @@
 import { test, expect, type TestInfo } from '@playwright/test';
-import { createClient } from '@supabase/supabase-js';
+import {
+  ensureSupabaseConfigured,
+  hasServiceRoleKey,
+  deleteTestUserByEmail,
+  generateTestEmail,
+  generateTestPassword,
+} from './utils/supabase';
 
 function getScreenshotPath(testInfo: TestInfo, filename: string): string {
   const today = new Date().toISOString().split('T')[0];
   return testInfo.outputPath('screenshots', today, filename);
 }
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const shouldRunSupabaseSignupTest = Boolean(
-  SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_SERVICE_ROLE_KEY
-);
+// Verify Supabase is configured before running any auth tests
+test.beforeAll(async () => {
+  ensureSupabaseConfigured();
+});
 
-async function deleteSupabaseUserByEmail(email: string) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return;
-  }
-
-  // Note: User cleanup is best-effort only. Local Supabase with newer GoTrue versions
-  // may use different JWT signing methods that aren't compatible with the standard demo keys.
-  // In production environments, this cleanup will work correctly.
-  try {
-    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false },
-    });
-    const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
-
-    if (error) {
-      // Silently skip cleanup if admin API is unavailable (e.g., local dev with JWT mismatch)
-      console.warn('Could not clean up test user:', error.message);
-      return;
-    }
-
-    const user = data.users.find(
-      (candidate) => candidate.email?.toLowerCase() === email.toLowerCase()
-    );
-
-    if (!user) {
-      return;
-    }
-
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id);
-    if (deleteError) {
-      console.warn('Could not delete test user:', deleteError.message);
-    }
-  } catch (err) {
-    // Cleanup failure is not critical - test users in local dev are ephemeral anyway
-    console.warn('Test user cleanup failed:', err);
-  }
-}
+const shouldRunSupabaseSignupTest = hasServiceRoleKey();
 
 test.describe('Signup Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -178,7 +146,7 @@ test.describe('Signup Supabase Integration', () => {
     if (!createdEmail) {
       return;
     }
-    await deleteSupabaseUserByEmail(createdEmail);
+    await deleteTestUserByEmail(createdEmail);
     createdEmail = null;
   });
 
@@ -187,9 +155,8 @@ test.describe('Signup Supabase Integration', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'Mobile Chrome', 'Run once to avoid duplicate users');
 
-    const uniqueId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    const email = `e2e+${uniqueId}@example.com`;
-    const password = `Test${uniqueId}!`;
+    const email = generateTestEmail();
+    const password = generateTestPassword();
     createdEmail = email;
 
     await page.getByLabel('Email address').fill(email);
