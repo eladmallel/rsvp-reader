@@ -5,7 +5,7 @@
 | ID  | Task                                                                           | Status          |
 | --- | ------------------------------------------------------------------------------ | --------------- |
 | 1   | Constrain Readwise sync to a single location/page for tests                    | [x] Complete    |
-| 2   | Add test-only override for sync page size (e.g., `READWISE_SYNC_PAGE_SIZE=10`) | [ ] Not started |
+| 2   | Add test-only override for sync page size (e.g., `READWISE_SYNC_PAGE_SIZE=10`) | [x] Complete    |
 | 3   | Seed `readwise_sync_state` to skip non-library locations and limit budget      | [ ] Not started |
 | 4   | Trigger sync once and wait for cached DB rows                                  | [ ] Not started |
 | 5   | Update Library + RSVP E2E tests to use cached DB data only                     | [ ] Not started |

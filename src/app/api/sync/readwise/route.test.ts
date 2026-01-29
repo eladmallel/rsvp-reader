@@ -280,4 +280,146 @@ describe('GET /api/sync/readwise', () => {
       expect(call[0].updatedAfter).toBe(cursor);
     }
   });
+
+  it('uses default page size of 100 when READWISE_SYNC_PAGE_SIZE is not set', async () => {
+    delete process.env.READWISE_SYNC_PAGE_SIZE;
+
+    const state = {
+      user_id: 'user-default-page',
+      inbox_cursor: null,
+      library_cursor: null,
+      feed_cursor: null,
+      archive_cursor: null,
+      shortlist_cursor: null,
+      next_allowed_at: null,
+      last_sync_at: null,
+      in_progress: false,
+      initial_backfill_done: false,
+      window_started_at: null,
+      window_request_count: 0,
+      last_429_at: null,
+      users: { reader_access_token: 'token-default' },
+    };
+
+    const lockedState = { ...state, in_progress: true };
+
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
+      }),
+    });
+
+    const lockChain = {
+      eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: lockedState, error: null }),
+      }),
+    };
+
+    const mockUpdate = vi.fn().mockImplementation((payload: Record<string, unknown>) => {
+      if (payload.in_progress === true) {
+        return lockChain;
+      }
+      return { eq: vi.fn().mockResolvedValue({ error: null }) };
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'readwise_sync_state') {
+        return {
+          select: mockSelect,
+          update: mockUpdate,
+        };
+      }
+      return {
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+      };
+    });
+
+    mockCreateAdminClient.mockReturnValue({ from: mockFrom });
+
+    mockListDocuments.mockResolvedValue({
+      results: [],
+      nextPageCursor: null,
+    });
+
+    const response = await GET(createRequest());
+
+    expect(response.status).toBe(200);
+
+    for (const call of mockListDocuments.mock.calls) {
+      expect(call[0].pageSize).toBe(100);
+    }
+  });
+
+  it('uses custom page size when READWISE_SYNC_PAGE_SIZE is set', async () => {
+    process.env.READWISE_SYNC_PAGE_SIZE = '10';
+
+    const state = {
+      user_id: 'user-custom-page',
+      inbox_cursor: null,
+      library_cursor: null,
+      feed_cursor: null,
+      archive_cursor: null,
+      shortlist_cursor: null,
+      next_allowed_at: null,
+      last_sync_at: null,
+      in_progress: false,
+      initial_backfill_done: false,
+      window_started_at: null,
+      window_request_count: 0,
+      last_429_at: null,
+      users: { reader_access_token: 'token-custom' },
+    };
+
+    const lockedState = { ...state, in_progress: true };
+
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
+      }),
+    });
+
+    const lockChain = {
+      eq: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: lockedState, error: null }),
+      }),
+    };
+
+    const mockUpdate = vi.fn().mockImplementation((payload: Record<string, unknown>) => {
+      if (payload.in_progress === true) {
+        return lockChain;
+      }
+      return { eq: vi.fn().mockResolvedValue({ error: null }) };
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'readwise_sync_state') {
+        return {
+          select: mockSelect,
+          update: mockUpdate,
+        };
+      }
+      return {
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+      };
+    });
+
+    mockCreateAdminClient.mockReturnValue({ from: mockFrom });
+
+    mockListDocuments.mockResolvedValue({
+      results: [],
+      nextPageCursor: null,
+    });
+
+    const response = await GET(createRequest());
+
+    expect(response.status).toBe(200);
+
+    for (const call of mockListDocuments.mock.calls) {
+      expect(call[0].pageSize).toBe(10);
+    }
+  });
 });
