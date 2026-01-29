@@ -463,7 +463,7 @@ Create `.env.test` from CI secrets (never commit secrets to git):
 - [x] Tests run consistently without flakiness
 - [x] Clear error messages when Supabase is misconfigured
 - [x] New developers can set up tests in < 5 minutes
-- [ ] CI catches configuration issues before tests run
+- [x] CI catches configuration issues before tests run
 
 ---
 
