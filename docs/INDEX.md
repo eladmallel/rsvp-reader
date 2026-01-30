@@ -21,6 +21,11 @@
 - [devops/secret-rotation.md](./devops/secret-rotation.md)
 - [devops/ci-baseline.md](./devops/ci-baseline.md)
 
+## Testing
+
+- [2026-01-28-e2e-auth-test-fixes.md](./2026-01-28-e2e-auth-test-fixes.md) - E2E auth test fixes and Supabase config validation
+- [2026-01-28-real-data-e2e-plan.md](./2026-01-28-real-data-e2e-plan.md) - Real data E2E test redesign
+
 ## Readwise
 
 - [readwise-sync-plan.md](./readwise-sync-plan.md)

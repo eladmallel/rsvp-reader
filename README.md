@@ -448,6 +448,7 @@ rsvp-reader/
 │   └── types/                 # TypeScript types
 ├── tests/
 │   └── e2e/                   # Playwright E2E tests
+│       └── utils/            # Test utilities (Supabase helpers, etc.)
 ├── supabase/
 │   ├── migrations/            # Database migrations
 │   └── config.toml           # Supabase configuration
@@ -595,6 +596,25 @@ cat .env.development.local | grep SUPABASE
 
 ### Test Issues
 
+**Problem: E2E tests fail with "Supabase configuration error"**
+
+This error means the app can't find required Supabase environment variables.
+
+```bash
+# 1. Verify .env.test exists
+ls -la .env.test
+
+# 2. If missing, create it from template
+cp .env.test.example .env.test
+
+# 3. Verify it has the required variables
+grep "NEXT_PUBLIC_SUPABASE" .env.test
+# Should show URL and ANON_KEY
+
+# 4. Ensure Supabase is running
+npx supabase start
+```
+
 **Problem: E2E tests hang or fail to start**
 
 ```bash
@@ -730,6 +750,7 @@ npm run dev -- --port 3001
 
 - **[Environment Separation](./docs/devops/environment-separation.md)** - How test/prod environments are isolated
 - **[E2E Test Fixes](./docs/devops/e2e-test-environment-fixes.md)** - Test infrastructure improvements
+- **[E2E Auth Test Fixes](./docs/2026-01-28-e2e-auth-test-fixes.md)** - Authentication test fixes and Supabase config validation
 - **[Security Checklist](./docs/devops/SECURITY-CHECKLIST.md)** - Security requirements and status
 - **[Deployment Review](./docs/devops/DEPLOYMENT-REVIEW-SUMMARY.md)** - Deployment infrastructure analysis
 

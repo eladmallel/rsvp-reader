@@ -100,8 +100,13 @@ export default function SignupPage() {
       }
 
       router.push('/auth/connect-reader');
-    } catch {
-      setError('Signup failed. Please try again.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      if (message.includes('configuration')) {
+        setError('Service configuration error. Please contact support.');
+      } else {
+        setError('Signup failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
