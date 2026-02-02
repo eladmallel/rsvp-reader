@@ -162,7 +162,7 @@ test.describe('Visual Alignment: Navigation Shell', () => {
       await page.goto(route);
 
       // Wait for page to load
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Bottom nav should be visible
       const bottomNav = page.locator('nav[aria-label="Main navigation"]');
@@ -183,7 +183,7 @@ test.describe('Visual Alignment: Navigation Shell', () => {
 
   test('bottom nav is hidden on RSVP player', async ({ page }) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const bottomNav = page.locator('nav[aria-label="Main navigation"]');
     await expect(bottomNav).not.toBeVisible();
@@ -194,7 +194,7 @@ test.describe('Visual Alignment: Navigation Shell', () => {
 
     for (const route of authRoutes) {
       await page.goto(route);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       const bottomNav = page.locator('nav[aria-label="Main navigation"]');
       await expect(bottomNav).not.toBeVisible();
@@ -288,7 +288,7 @@ test.describe('Visual Alignment: RSVP Player', () => {
 
   test('RSVP player is full-screen', async ({ page }) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Player should fill viewport - using the correct class name
     const player = page.locator('[class*="container"]').first();
@@ -330,7 +330,7 @@ test.describe('Visual Alignment: RSVP Player', () => {
 
   test('RSVP player cockpit has correct height', async ({ page }) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     const cockpit = page.locator('[class*="cockpit"]').first();
     if ((await cockpit.count()) > 0) {
@@ -410,7 +410,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: home - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -422,7 +422,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: home - mobile light', async ({ page }, testInfo) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -458,7 +458,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: feed - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/feed');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -470,7 +470,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: feed - mobile light', async ({ page }, testInfo) => {
     await page.goto('/feed');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -482,7 +482,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: search - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/search');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -494,7 +494,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: search - mobile light', async ({ page }, testInfo) => {
     await page.goto('/search');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -530,7 +530,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: rsvp-player - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -542,7 +542,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: rsvp-player - mobile light', async ({ page }, testInfo) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -554,7 +554,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: auth-login - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/auth/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -566,7 +566,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: auth-login - mobile light', async ({ page }, testInfo) => {
     await page.goto('/auth/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -578,7 +578,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: auth-signup - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/auth/signup');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -590,7 +590,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: auth-signup - mobile light', async ({ page }, testInfo) => {
     await page.goto('/auth/signup');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -602,7 +602,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: auth-connect-reader - mobile dark', async ({ page }, testInfo) => {
     await page.goto('/auth/connect-reader');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -614,7 +614,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
 
   test('screenshot: auth-connect-reader - mobile light', async ({ page }, testInfo) => {
     await page.goto('/auth/connect-reader');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -636,7 +636,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: home - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -648,7 +648,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: home - desktop light', async ({ page }, testInfo) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -684,7 +684,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: feed - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/feed');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -696,7 +696,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: feed - desktop light', async ({ page }, testInfo) => {
     await page.goto('/feed');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -708,7 +708,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: search - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/search');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -720,7 +720,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: search - desktop light', async ({ page }, testInfo) => {
     await page.goto('/search');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -756,7 +756,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: rsvp-player - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -768,7 +768,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: rsvp-player - desktop light', async ({ page }, testInfo) => {
     await page.goto('/rsvp?demo=true');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -780,7 +780,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: auth-login - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/auth/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -792,7 +792,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: auth-login - desktop light', async ({ page }, testInfo) => {
     await page.goto('/auth/login');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -804,7 +804,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: auth-signup - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/auth/signup');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -816,7 +816,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: auth-signup - desktop light', async ({ page }, testInfo) => {
     await page.goto('/auth/signup');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
@@ -828,7 +828,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: auth-connect-reader - desktop dark', async ({ page }, testInfo) => {
     await page.goto('/auth/connect-reader');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'dark');
 
@@ -840,7 +840,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
 
   test('screenshot: auth-connect-reader - desktop light', async ({ page }, testInfo) => {
     await page.goto('/auth/connect-reader');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await setTheme(page, 'light');
 
