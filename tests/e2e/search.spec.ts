@@ -1,3 +1,4 @@
+import { setTheme, waitForDebounce } from './helpers/theme';
 import { test, expect, type TestInfo } from '@playwright/test';
 
 function getScreenshotPath(testInfo: TestInfo, filename: string): string {
@@ -157,7 +158,7 @@ test.describe('Search Page', () => {
     await searchInput.fill('agents');
 
     // Wait for results to load (debounced)
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
     // Should show results count
@@ -173,7 +174,7 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
     // Check that mark tags exist in the results (highlighted text)
@@ -185,7 +186,7 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('xyz123nonexistent');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
 
     await expect(page.getByText('No results found')).toBeVisible();
     await expect(page.getByText('Try different keywords or check your filters')).toBeVisible();
@@ -209,7 +210,7 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
     // Click clear button
@@ -226,7 +227,7 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
     // Click on Feed filter
@@ -235,7 +236,7 @@ test.describe('Search Page', () => {
     // Feed chip should be active
     await expect(page.getByRole('button', { name: 'Feed' })).toHaveClass(/active/);
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
 
     // Should show fewer results (only feed items)
     const results = page.locator('article');
@@ -246,7 +247,7 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
     // Click on first result
@@ -260,7 +261,7 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
     const firstResult = page.locator('article').first();
@@ -282,10 +283,7 @@ test.describe('Search Page', () => {
     await page.reload();
     await page.waitForSelector('h1:has-text("Search")');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -299,13 +297,10 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -319,13 +314,10 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('xyz123nonexistent');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('text=No results found', { timeout: 5000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -339,13 +331,10 @@ test.describe('Search Page', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('agents');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
     await page.waitForSelector('article', { timeout: 5000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -413,10 +402,7 @@ test.describe('Search Page - Recent Searches', () => {
   });
 
   test('screenshot: search page - with recent searches', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -436,7 +422,7 @@ test.describe('Search Page - Error Handling', () => {
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('test');
 
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
 
     await expect(page.getByText('Authentication required')).toBeVisible();
   });

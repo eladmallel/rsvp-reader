@@ -26,6 +26,7 @@
  * - Result: Minimal Readwise API calls for the entire test suite
  */
 
+import { setTheme } from './helpers/theme';
 import { test, expect, type TestInfo } from '@playwright/test';
 import {
   setupTestUserForSync,
@@ -188,10 +189,7 @@ test.describe('Real Readwise Data Integration', () => {
     test('screenshot: library with cached data - dark mode', async ({ page }, testInfo) => {
       await page.waitForSelector('article', { timeout: 30000 });
 
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      });
-      await page.waitForTimeout(300);
+      await setTheme(page, 'dark');
 
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
@@ -205,10 +203,7 @@ test.describe('Real Readwise Data Integration', () => {
     test('screenshot: library with cached data - light mode', async ({ page }, testInfo) => {
       await page.waitForSelector('article', { timeout: 30000 });
 
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-theme', 'light');
-      });
-      await page.waitForTimeout(300);
+      await setTheme(page, 'light');
 
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
@@ -291,10 +286,7 @@ test.describe('Real Readwise Data Integration', () => {
         { timeout: 30000 }
       );
 
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      });
-      await page.waitForTimeout(300);
+      await setTheme(page, 'dark');
 
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'
@@ -321,10 +313,7 @@ test.describe('Real Readwise Data Integration', () => {
         { timeout: 30000 }
       );
 
-      await page.evaluate(() => {
-        document.documentElement.setAttribute('data-theme', 'light');
-      });
-      await page.waitForTimeout(300);
+      await setTheme(page, 'light');
 
       const viewport = testInfo.project.name.toLowerCase().includes('mobile')
         ? 'mobile'

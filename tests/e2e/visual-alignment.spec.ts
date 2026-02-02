@@ -1,4 +1,5 @@
 import { test, expect, type TestInfo, type Page } from '@playwright/test';
+import { setTheme } from './helpers/theme';
 
 /**
  * Visual Alignment E2E Tests
@@ -411,10 +412,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'home-mobile-dark.png'),
@@ -426,10 +424,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'home-mobile-light.png'),
@@ -441,10 +436,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/library');
     await page.waitForSelector('article', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'library-mobile-dark.png'),
@@ -456,10 +448,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/library');
     await page.waitForSelector('article', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'library-mobile-light.png'),
@@ -471,10 +460,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/feed');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'feed-mobile-dark.png'),
@@ -486,10 +472,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/feed');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'feed-mobile-light.png'),
@@ -501,10 +484,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/search');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'search-mobile-dark.png'),
@@ -516,10 +496,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/search');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'search-mobile-light.png'),
@@ -531,10 +508,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/settings');
     await page.waitForSelector('text=Settings', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'settings-mobile-dark.png'),
@@ -546,10 +520,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/settings');
     await page.waitForSelector('text=Settings', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'settings-mobile-light.png'),
@@ -561,10 +532,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/rsvp?demo=true');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'rsvp-player-mobile-dark.png'),
@@ -576,10 +544,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/rsvp?demo=true');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'rsvp-player-mobile-light.png'),
@@ -591,10 +556,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/auth/login');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-login-mobile-dark.png'),
@@ -606,10 +568,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/auth/login');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-login-mobile-light.png'),
@@ -621,10 +580,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/auth/signup');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-signup-mobile-dark.png'),
@@ -636,10 +592,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/auth/signup');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-signup-mobile-light.png'),
@@ -651,10 +604,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/auth/connect-reader');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-connect-reader-mobile-dark.png'),
@@ -666,10 +616,7 @@ test.describe('Visual Alignment: Screenshots - Mobile', () => {
     await page.goto('/auth/connect-reader');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-connect-reader-mobile-light.png'),
@@ -691,10 +638,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'home-desktop-dark.png'),
@@ -706,10 +650,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'home-desktop-light.png'),
@@ -721,10 +662,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/library');
     await page.waitForSelector('article', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'library-desktop-dark.png'),
@@ -736,10 +674,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/library');
     await page.waitForSelector('article', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'library-desktop-light.png'),
@@ -751,10 +686,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/feed');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'feed-desktop-dark.png'),
@@ -766,10 +698,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/feed');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'feed-desktop-light.png'),
@@ -781,10 +710,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/search');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'search-desktop-dark.png'),
@@ -796,10 +722,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/search');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'search-desktop-light.png'),
@@ -811,10 +734,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/settings');
     await page.waitForSelector('text=Settings', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'settings-desktop-dark.png'),
@@ -826,10 +746,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/settings');
     await page.waitForSelector('text=Settings', { timeout: 10000 });
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'settings-desktop-light.png'),
@@ -841,10 +758,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/rsvp?demo=true');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'rsvp-player-desktop-dark.png'),
@@ -856,10 +770,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/rsvp?demo=true');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'rsvp-player-desktop-light.png'),
@@ -871,10 +782,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/auth/login');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-login-desktop-dark.png'),
@@ -886,10 +794,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/auth/login');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-login-desktop-light.png'),
@@ -901,10 +806,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/auth/signup');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-signup-desktop-dark.png'),
@@ -916,10 +818,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/auth/signup');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-signup-desktop-light.png'),
@@ -931,10 +830,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/auth/connect-reader');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-connect-reader-desktop-dark.png'),
@@ -946,10 +842,7 @@ test.describe('Visual Alignment: Screenshots - Desktop', () => {
     await page.goto('/auth/connect-reader');
     await page.waitForLoadState('networkidle');
 
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'auth-connect-reader-desktop-light.png'),

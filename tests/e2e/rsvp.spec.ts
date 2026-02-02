@@ -1,3 +1,4 @@
+import { setTheme } from './helpers/theme';
 import { test, expect, type TestInfo } from '@playwright/test';
 
 function getScreenshotPath(testInfo: TestInfo, filename: string): string {
@@ -153,10 +154,7 @@ test.describe('RSVP Page', () => {
 
   test('screenshot: rsvp page - mobile dark', async ({ page }, testInfo) => {
     // Force dark mode
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -168,10 +166,7 @@ test.describe('RSVP Page', () => {
 
   test('screenshot: rsvp page - mobile light', async ({ page }, testInfo) => {
     // Switch to light mode
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 

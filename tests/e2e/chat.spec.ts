@@ -44,12 +44,8 @@ test.describe('Chat Page', () => {
     // User message should appear
     await expect(page.getByText('Tell me about this article')).toBeVisible();
 
-    // Should see typing indicator or response
-    // Wait for response (mock delay is 1-2 seconds)
-    await page.waitForTimeout(2500);
-
-    // Suggested prompts should be hidden after first message
-    await expect(page.getByText('Suggested questions:')).not.toBeVisible();
+    // Wait for AI response (mock delay is 1-2 seconds) - suggested prompts hide after response
+    await expect(page.getByText('Suggested questions:')).not.toBeVisible({ timeout: 5000 });
   });
 
   test('suggested prompts send messages when clicked', async ({ page }) => {
@@ -104,8 +100,8 @@ test.describe('Chat Page Screenshots', () => {
     // Send a message using suggested prompt
     await page.getByRole('button', { name: 'What are the key takeaways?' }).click();
 
-    // Wait for response
-    await page.waitForTimeout(2500);
+    // Wait for AI response - look for response text (mock has 1-2s delay)
+    await expect(page.getByText(/reduce.*bundle size/i)).toBeVisible({ timeout: 5000 });
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'chat-mobile-dark-conversation.png'),

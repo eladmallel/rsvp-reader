@@ -24,8 +24,8 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
 
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry on CI only - reduced to 1 for faster CI */
+  retries: process.env.CI ? 1 : 0,
 
   /* Run with 4 workers in CI for faster execution */
   workers: process.env.CI ? 4 : undefined,
@@ -64,7 +64,7 @@ export default defineConfig({
     command: `npm run dev -- --port ${TEST_PORT} --webpack`,
     url: `http://localhost:${TEST_PORT}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: process.env.CI ? 60 * 1000 : 120 * 1000,
     env: {
       // Set NODE_ENV=test to prevent Next.js from loading .env.development.local
       // This ensures tests use local Supabase from .env.test instead of production
