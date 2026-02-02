@@ -84,7 +84,7 @@ However, this file **does not exist**. Only `.env.test.example` exists, which is
 
 - `NEXT_PUBLIC_SUPABASE_URL` = undefined
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = undefined
-- `SUPABASE_SERVICE_ROLE_KEY` = undefined
+- `SUPABASE_SECRET_KEY` = undefined (or `SUPABASE_SERVICE_ROLE_KEY` for legacy)
 
 ### Secondary Issues
 
@@ -164,7 +164,7 @@ if (!authenticated) {
 3. Extract actual local credentials and update `.env.test`:
    - `NEXT_PUBLIC_SUPABASE_URL` from `supabase status`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` from `supabase status`
-   - `SUPABASE_SERVICE_ROLE_KEY` from `supabase status`
+   - `SUPABASE_SECRET_KEY` from `supabase status` (or `SUPABASE_SERVICE_ROLE_KEY` for legacy)
 4. Add other required vars (ENCRYPTION_KEY, SYNC_API_KEY)
 5. Re-run tests to verify environment issue is resolved
 
@@ -414,7 +414,7 @@ Create `.env.test` from CI secrets (never commit secrets to git):
     cat > .env.test << EOF
     NEXT_PUBLIC_SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}
     NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.TEST_SUPABASE_ANON_KEY }}
-    SUPABASE_SERVICE_ROLE_KEY=${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+    SUPABASE_SECRET_KEY=${{ secrets.TEST_SUPABASE_SECRET_KEY }}
     ENCRYPTION_KEY=${{ secrets.TEST_ENCRYPTION_KEY }}
     SYNC_API_KEY=${{ secrets.TEST_SYNC_API_KEY }}
     EOF

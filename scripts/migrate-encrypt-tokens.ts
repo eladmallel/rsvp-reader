@@ -44,12 +44,15 @@ const isDryRun = args.includes('--dry-run');
 
 // Validate environment
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Prefer new secret key format, fall back to legacy service_role key
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const encryptionKey = process.env.ENCRYPTION_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
+if (!supabaseUrl || !supabaseSecretKey) {
   console.error('❌ Missing Supabase credentials in environment');
-  console.error('   Required: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY');
+  console.error(
+    '   Required: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY)'
+  );
   process.exit(1);
 }
 
@@ -60,7 +63,7 @@ if (!encryptionKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseSecretKey);
 
 interface UserTokens {
   id: string;

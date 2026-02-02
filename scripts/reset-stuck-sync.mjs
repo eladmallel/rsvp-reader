@@ -9,7 +9,7 @@
  *
  * Requires environment variables:
  *   - NEXT_PUBLIC_SUPABASE_URL
- *   - SUPABASE_SERVICE_ROLE_KEY
+ *   - SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY for legacy)
  */
 import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
@@ -19,12 +19,13 @@ config({ path: '.env.local' });
 config({ path: '.env' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Prefer new secret key format, fall back to legacy service_role key
+const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing required environment variables:');
   console.error('  NEXT_PUBLIC_SUPABASE_URL');
-  console.error('  SUPABASE_SERVICE_ROLE_KEY');
+  console.error('  SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY)');
   process.exit(1);
 }
 

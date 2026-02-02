@@ -207,10 +207,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 **Private** (server-only):
 
 ```
-SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SECRET_KEY    # Preferred (sb_secret_..., supports rotation)
+SUPABASE_SERVICE_ROLE_KEY  # Legacy (still supported for backward compat)
 READWISE_ACCESS_TOKEN  # For testing only
 DATABASE_URL           # Future use
 ```
+
+> **Note**: We prefer `SUPABASE_SECRET_KEY` (new `sb_secret_...` format) over the legacy `SUPABASE_SERVICE_ROLE_KEY` because it supports rotation without downtime. See [Supabase API Keys Migration](https://github.com/orgs/supabase/discussions/29260).
 
 ### Verification Commands
 

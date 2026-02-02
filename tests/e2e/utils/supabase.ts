@@ -11,8 +11,12 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 // Environment variables (loaded by Playwright config from .env.test)
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Prefer new publishable key format, fall back to legacy anon key
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Prefer new secret key format, fall back to legacy service_role key
+const SUPABASE_SECRET_KEY =
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 /**
  * Validates that required Supabase environment variables are configured.
@@ -24,8 +28,10 @@ export function ensureSupabaseConfigured(): void {
   if (!SUPABASE_URL) {
     errors.push('NEXT_PUBLIC_SUPABASE_URL is not set');
   }
-  if (!SUPABASE_ANON_KEY) {
-    errors.push('NEXT_PUBLIC_SUPABASE_ANON_KEY is not set');
+  if (!SUPABASE_PUBLISHABLE_KEY) {
+    errors.push(
+      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) is not set'
+    );
   }
 
   if (errors.length > 0) {
@@ -36,33 +42,44 @@ export function ensureSupabaseConfigured(): void {
         `1. Copy .env.test.example to .env.test\n` +
         `2. Start Supabase: npx supabase start\n` +
         `3. Run: npx supabase status\n` +
-        `4. Copy the API URL and anon key to .env.test`
+        `4. Copy the API URL and publishable key to .env.test`
     );
   }
 }
 
 /**
- * Checks if service role key is available for admin operations
+ * Checks if a secret key is available for admin operations.
+ * Supports both new (SUPABASE_SECRET_KEY) and legacy (SUPABASE_SERVICE_ROLE_KEY) formats.
  */
-export function hasServiceRoleKey(): boolean {
-  return Boolean(SUPABASE_SERVICE_ROLE_KEY);
+export function hasSecretKey(): boolean {
+  return Boolean(SUPABASE_SECRET_KEY);
 }
 
 /**
- * Creates an admin Supabase client using the service role key.
+ * @deprecated Use hasSecretKey() instead
+ */
+export function hasServiceRoleKey(): boolean {
+  return hasSecretKey();
+}
+
+/**
+ * Creates an admin Supabase client using the secret key.
  * Used for user management (create/delete test users).
  *
- * @throws Error if service role key is not configured
+ * Supports both new SUPABASE_SECRET_KEY (sb_secret_...) format and
+ * legacy SUPABASE_SERVICE_ROLE_KEY for backward compatibility.
+ *
+ * @throws Error if no secret key is configured
  */
 export function createAdminClient(): SupabaseClient {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     throw new Error(
-      'SUPABASE_SERVICE_ROLE_KEY is required for admin operations.\n' +
+      'SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) is required for admin operations.\n' +
         'Add it to .env.test from: npx supabase status'
     );
   }
 
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
     auth: { persistSession: false },
   });
 }
@@ -107,7 +124,7 @@ export async function createTestUser(
  * @param email - Email address of the user to delete
  */
 export async function deleteTestUserByEmail(email: string): Promise<void> {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     // Silently skip if admin operations aren't available
     return;
   }
@@ -150,7 +167,7 @@ export async function deleteTestUserByEmail(email: string): Promise<void> {
  * @param userId - ID of the user to delete
  */
 export async function deleteTestUserById(userId: string): Promise<void> {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     return;
   }
 

@@ -35,13 +35,14 @@ loadEnvFile('.env.local');
 loadEnvFile('.env');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Prefer new secret key format, fall back to legacy service_role key
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 async function testDatabase() {
   console.log('🔌 Connecting to Supabase...');
   console.log(`   URL: ${supabaseUrl}`);
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabase = createClient(supabaseUrl, supabaseSecretKey);
 
   // Test 1: List all tables
   console.log('\n📋 Checking tables...');
