@@ -1,5 +1,5 @@
 name: CI/CD
-# Verified: 2026-01-16
+# Optimized: 2026-02-02 - Split into parallel jobs, cache Playwright, shard E2E
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  lint-typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +26,49 @@ jobs:
 
       - name: Run type check
         run: npm run type-check
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up test environment
+        run: |
+          cp .env.test.example .env.test
+          echo "✅ Created .env.test from template"
+
+      # Note: Unit tests mock Supabase client, so no need to start Supabase here.
+      # This saves ~2-3 minutes per CI run.
+
+      - name: Run unit tests
+        env:
+          READWISE_ACCESS_TOKEN: ${{ secrets.READWISE_ACCESS_TOKEN }}
+        run: npm run test
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ['Mobile Chrome', 'Desktop Chrome']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Set up test environment
         run: |
@@ -48,22 +91,29 @@ jobs:
           fi
           echo "✅ Test environment validated"
 
-      - name: Run unit tests
-        env:
-          READWISE_ACCESS_TOKEN: ${{ secrets.READWISE_ACCESS_TOKEN }}
-        run: npm run test
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
+      - name: Install Playwright system deps (if cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npm run test:e2e -- --project="${{ matrix.project }}"
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 30
 
@@ -71,12 +121,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-screenshots
+          name: playwright-screenshots-${{ matrix.project }}
           path: test-results/screenshots/
           retention-days: 30
 
   deploy:
-    needs: test
+    needs: [lint-typecheck, unit-tests, e2e-tests]
     if: github.ref == 'refs/heads/main' && vars.VERCEL_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
