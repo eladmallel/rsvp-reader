@@ -12,7 +12,8 @@ env:
   CI_FAST_THEME_SWITCH: 'true'
 
 jobs:
-  lint-typecheck:
+  # Combined lint, typecheck, and unit tests - all fast, no Supabase needed
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,26 +32,8 @@ jobs:
       - name: Run type check
         run: npm run type-check
 
-  unit-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Set up test environment
-        run: |
-          cp .env.test.example .env.test
-          echo "✅ Created .env.test from template"
-
-      # Note: Unit tests mock Supabase client, so no need to start Supabase here.
-      # This saves ~2-3 minutes per CI run.
+        run: cp .env.test.example .env.test
 
       - name: Run unit tests
         env:
@@ -194,7 +177,7 @@ jobs:
           retention-days: 30
 
   deploy:
-    needs: [lint-typecheck, unit-tests, e2e-functional, e2e-visual]
+    needs: [checks, e2e-functional, e2e-visual]
     if: github.ref == 'refs/heads/main' && vars.VERCEL_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:

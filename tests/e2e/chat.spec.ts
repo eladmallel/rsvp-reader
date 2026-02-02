@@ -72,7 +72,7 @@ test.describe('Chat Page Screenshots', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/chat');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'chat-mobile-dark.png'),
@@ -84,7 +84,7 @@ test.describe('Chat Page Screenshots', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/chat');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'chat-mobile-light.png'),
@@ -113,7 +113,7 @@ test.describe('Chat Page Screenshots', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/chat');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'chat-desktop-dark.png'),
@@ -125,7 +125,7 @@ test.describe('Chat Page Screenshots', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/chat');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     await page.screenshot({
       path: getScreenshotPath(testInfo, 'chat-desktop-light.png'),
