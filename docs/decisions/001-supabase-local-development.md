@@ -179,10 +179,13 @@ webServer: {
     NODE_ENV: 'test', // Critical: prevents .env.local from loading
     NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321',
     NEXT_PUBLIC_SUPABASE_ANON_KEY: '<local-anon-key>',
-    SUPABASE_SERVICE_ROLE_KEY: '<local-service-role-key>',
+    SUPABASE_SECRET_KEY: '<local-secret-key>',  // Preferred (supports rotation)
+    SUPABASE_SERVICE_ROLE_KEY: '<local-service-role-key>',  // Legacy fallback
   },
 }
 ```
+
+> **Note**: We prefer `SUPABASE_SECRET_KEY` (new `sb_secret_...` format) over the legacy `SUPABASE_SERVICE_ROLE_KEY`. See [Supabase API Keys Migration](https://github.com/orgs/supabase/discussions/29260).
 
 ### Verification
 

@@ -95,12 +95,14 @@ cp .env.example .env.development.local
 
 **Required variables for `.env.development.local`:**
 
-| Variable                        | Description                         | Where to Get It                                                       |
-| ------------------------------- | ----------------------------------- | --------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Your Supabase project URL           | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key              | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service role key (secret!) | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API |
-| `SYNC_API_KEY`                  | Secret key for sync endpoint        | Generate with: `openssl rand -hex 32`                                 |
+| Variable                        | Description                         | Where to Get It                                                                  |
+| ------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Your Supabase project URL           | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API            |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key              | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API            |
+| `SUPABASE_SECRET_KEY`           | Supabase secret key (sb*secret*...) | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API Keys → New |
+| `SYNC_API_KEY`                  | Secret key for sync endpoint        | Generate with: `openssl rand -hex 32`                                            |
+
+> **Note:** We use the new `SUPABASE_SECRET_KEY` format (`sb_secret_...`) which supports rotation without downtime. The legacy `SUPABASE_SERVICE_ROLE_KEY` is still supported for backward compatibility. See [Supabase API Keys Migration](https://github.com/orgs/supabase/discussions/29260) for details.
 
 **Optional variables:**
 
@@ -378,13 +380,13 @@ npx vercel --prod
 
 Set these in your Vercel project settings:
 
-| Variable                        | Value                                | Notes                                |
-| ------------------------------- | ------------------------------------ | ------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Your production Supabase URL         | From Supabase dashboard              |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your production anon key             | From Supabase dashboard              |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Your service role key                | **Secret** - from Supabase dashboard |
-| `SYNC_API_KEY`                  | Generate with `openssl rand -hex 32` | **Secret** - protects sync endpoint  |
-| `READWISE_ACCESS_TOKEN`         | Your production Readwise token       | Optional - for sync functionality    |
+| Variable                        | Value                                | Notes                                        |
+| ------------------------------- | ------------------------------------ | -------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Your production Supabase URL         | From Supabase dashboard                      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your production anon key             | From Supabase dashboard                      |
+| `SUPABASE_SECRET_KEY`           | Your secret key (sb*secret*...)      | **Secret** - from Dashboard → API Keys → New |
+| `SYNC_API_KEY`                  | Generate with `openssl rand -hex 32` | **Secret** - protects sync endpoint          |
+| `READWISE_ACCESS_TOKEN`         | Your production Readwise token       | Optional - for sync functionality            |
 
 **Automated Sync:**
 
@@ -590,7 +592,7 @@ cat .env.development.local | grep SUPABASE
 
 # Common issues:
 # - Wrong project URL (should be https://YOUR-PROJECT.supabase.co)
-# - Anon key vs service role key swapped
+# - Anon key vs secret key swapped
 # - Extra quotes or whitespace in values
 ```
 
@@ -677,7 +679,7 @@ npm run dev
 # Common causes:
 # - Invalid READWISE_ACCESS_TOKEN
 # - Readwise API rate limit exceeded (wait 60 seconds)
-# - Supabase service role key missing
+# - Supabase secret key missing (SUPABASE_SECRET_KEY)
 ```
 
 **Problem: Sync completes but no documents appear**

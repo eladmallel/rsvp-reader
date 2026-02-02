@@ -9,7 +9,9 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Prefer new secret key format, fall back to legacy service_role key
+const SUPABASE_SECRET_KEY =
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SYNC_API_KEY = process.env.SYNC_API_KEY;
 
 // Constants matching src/lib/sync/syncUser.ts
@@ -77,11 +79,11 @@ export interface SyncStateSeedOptions {
  * Returns null if required env vars are not set.
  */
 export function createTestAdminClient(): SupabaseClient | null {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     return null;
   }
 
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
     auth: { persistSession: false },
   });
 }

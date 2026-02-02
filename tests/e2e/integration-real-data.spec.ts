@@ -14,7 +14,7 @@
  * - SYNC_API_KEY: Secret for triggering the sync endpoint
  * - ENCRYPTION_KEY: For encrypting the Readwise token in the database
  * - NEXT_PUBLIC_SUPABASE_URL: Supabase URL
- * - SUPABASE_SERVICE_ROLE_KEY: Admin access to create test users
+ * - SUPABASE_SECRET_KEY: Admin access to create test users (or SUPABASE_SERVICE_ROLE_KEY for legacy)
  *
  * To run locally:
  *   set -a && source .env.local && set +a && READWISE_INTEGRATION_TESTS=true npm run test:e2e -- integration-real-data
