@@ -8,14 +8,14 @@
 
 ## Progress Tracking
 
-| #   | Task                                | Status          | Time Saved | Notes                                                       |
-| --- | ----------------------------------- | --------------- | ---------- | ----------------------------------------------------------- |
-| 1   | Cache Playwright browsers           | [x] Done        | ~1-2 min   | Quick win                                                   |
-| 2   | Split into parallel jobs            | [x] Done        | ~1 min     | Lint/typecheck/unit in parallel                             |
-| 3   | Shard E2E tests by viewport         | [x] Done        | ~1.5-2 min | Mobile + Desktop parallel                                   |
-| 4   | Move Supabase start to E2E job only | [x] Done        | ~30s       | Unit tests don't need it                                    |
-| 5   | Verify and test changes             | [x] Done        | -          | Local tests pass (unit: 10s, E2E: ~2.5-2.8min per viewport) |
-| 6   | Update AGENTS.md if needed          | [ ] Not Started | -          | Document new CI structure                                   |
+| #   | Task                                | Status   | Time Saved | Notes                                                       |
+| --- | ----------------------------------- | -------- | ---------- | ----------------------------------------------------------- |
+| 1   | Cache Playwright browsers           | [x] Done | ~1-2 min   | Quick win                                                   |
+| 2   | Split into parallel jobs            | [x] Done | ~1 min     | Lint/typecheck/unit in parallel                             |
+| 3   | Shard E2E tests by viewport         | [x] Done | ~1.5-2 min | Mobile + Desktop parallel                                   |
+| 4   | Move Supabase start to E2E job only | [x] Done | ~30s       | Unit tests don't need it                                    |
+| 5   | Verify and test changes             | [x] Done | -          | Local tests pass (unit: 10s, E2E: ~2.5-2.8min per viewport) |
+| 6   | Update AGENTS.md if needed          | [x] Done | -          | Not needed - existing guidance still valid                  |
 
 **Total Expected Savings:** ~4-5 minutes (50% reduction)
 
