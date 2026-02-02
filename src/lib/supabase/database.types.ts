@@ -74,8 +74,10 @@ export type Database = {
           author: string | null;
           cached_at: string | null;
           category: string;
+          first_opened_at: string | null;
           id: string;
           image_url: string | null;
+          last_opened_at: string | null;
           location: string | null;
           published_date: string | null;
           reader_created_at: string | null;
@@ -98,8 +100,10 @@ export type Database = {
           author?: string | null;
           cached_at?: string | null;
           category: string;
+          first_opened_at?: string | null;
           id?: string;
           image_url?: string | null;
+          last_opened_at?: string | null;
           location?: string | null;
           published_date?: string | null;
           reader_created_at?: string | null;
@@ -122,8 +126,10 @@ export type Database = {
           author?: string | null;
           cached_at?: string | null;
           category?: string;
+          first_opened_at?: string | null;
           id?: string;
           image_url?: string | null;
+          last_opened_at?: string | null;
           location?: string | null;
           published_date?: string | null;
           reader_created_at?: string | null;

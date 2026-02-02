@@ -63,6 +63,10 @@ export interface ReaderDocument {
   last_moved_at: string | null;
   /** When the document was saved to Reader */
   saved_at: string | null;
+  /** When the document was first opened by the user (null = unseen) */
+  first_opened_at: string | null;
+  /** When the document was last opened by the user */
+  last_opened_at: string | null;
   /** Notes added by user */
   notes: string | null;
   /** Parent document ID (for highlights) */

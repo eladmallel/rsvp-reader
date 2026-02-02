@@ -19,6 +19,8 @@ interface DocumentFromCache {
   imageUrl: string | null;
   publishedDate: string | null;
   createdAt: string;
+  firstOpenedAt: string | null;
+  lastOpenedAt: string | null;
 }
 
 interface DocumentsResponse {
@@ -95,7 +97,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
     let query = supabase
       .from('cached_documents')
       .select('*', { count: 'exact' })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      // Filter out highlights - we don't support them yet
+      .neq('category', 'highlight');
 
     // Apply filters
     if (location) {
@@ -150,6 +154,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<DocumentsR
         doc.reader_created_at ||
         doc.cached_at ||
         new Date().toISOString(),
+      firstOpenedAt: doc.first_opened_at ?? null,
+      lastOpenedAt: doc.last_opened_at ?? null,
     }));
 
     // Calculate next cursor

@@ -531,6 +531,8 @@ async function syncLocation({
           reader_last_moved_at: doc.last_moved_at,
           reader_saved_at: doc.saved_at,
           reader_updated_at: doc.updated_at,
+          first_opened_at: doc.first_opened_at,
+          last_opened_at: doc.last_opened_at,
           cached_at: new Date().toISOString(),
         },
         {
@@ -546,8 +548,10 @@ async function syncLocation({
     }
 
     if (deferredForBudget) {
+      // Return the current page cursor so we resume from where we stopped,
+      // not from the beginning of this location
       return {
-        nextCursor: cursorValue,
+        nextCursor: pageCursor ? formatPageCursor(pageCursor, updatedAfter) : cursorValue,
         latestUpdatedAt,
         completed: false,
       };

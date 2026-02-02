@@ -1,7 +1,8 @@
 # Fix Plan: Readwise Sync for All Views
 
-> **Status**: READY FOR REVIEW
+> **Status**: IMPLEMENTED (Phases 1-5 complete)
 > **Created**: 2026-02-02
+> **Implemented**: 2026-02-02
 
 ---
 
@@ -236,18 +237,18 @@ After deploying fixes:
 
 ## Verification Checklist
 
-After implementation:
+After implementation (verify after deploying & running migration):
 
-- [ ] Sync cursor bug fixed - `library_cursor` shows page cursor, not null
-- [ ] Migration applied - `cached_documents` has `first_opened_at` column
-- [ ] Sync stores `first_opened_at` values
-- [ ] API returns `firstOpenedAt` field
-- [ ] Highlights filtered out - no `category='highlight'` in any view
-- [ ] Library/Later shows all 1,487 docs (not just 98)
-- [ ] Library/Archive shows docs
-- [ ] Feed/Unseen shows docs where `first_opened_at IS NULL`
-- [ ] Feed/Seen shows docs where `first_opened_at IS NOT NULL`
-- [ ] No regressions in Library/Inbox
+- [x] Sync cursor bug fixed - `library_cursor` shows page cursor, not null (code implemented)
+- [ ] Migration applied - `cached_documents` has `first_opened_at` column (needs deployment)
+- [x] Sync stores `first_opened_at` values (code implemented)
+- [x] API returns `firstOpenedAt` field (code implemented)
+- [x] Highlights filtered out - no `category='highlight'` in any view (code implemented)
+- [ ] Library/Later shows all 1,487 docs (not just 98) (needs deployment + resync)
+- [ ] Library/Archive shows docs (needs deployment + resync)
+- [ ] Feed/Unseen shows docs where `first_opened_at IS NULL` (needs deployment + resync)
+- [ ] Feed/Seen shows docs where `first_opened_at IS NOT NULL` (needs deployment + resync)
+- [ ] No regressions in Library/Inbox (needs deployment + resync)
 
 ---
 

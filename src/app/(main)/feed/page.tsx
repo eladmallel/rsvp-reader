@@ -29,6 +29,8 @@ interface DocumentFromApi {
   imageUrl: string | null;
   publishedDate: string | null;
   createdAt: string;
+  firstOpenedAt: string | null;
+  lastOpenedAt: string | null;
 }
 
 interface DocumentsResponse {
@@ -57,7 +59,9 @@ function documentToArticleListItem(doc: DocumentFromApi): ArticleListItemData {
     createdAt: doc.createdAt,
     preview: doc.summary || undefined,
     imageUrl: doc.imageUrl || undefined,
-    isUnread: doc.readingProgress === 0,
+    // Use firstOpenedAt for seen/unseen classification (not readingProgress)
+    // A document is "unseen" if it has never been opened
+    isUnread: doc.firstOpenedAt === null,
   };
 }
 
