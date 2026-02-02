@@ -95,14 +95,14 @@ cp .env.example .env.development.local
 
 **Required variables for `.env.development.local`:**
 
-| Variable                        | Description                         | Where to Get It                                                                  |
-| ------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Your Supabase project URL           | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API            |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key              | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API            |
-| `SUPABASE_SECRET_KEY`           | Supabase secret key (sb*secret*...) | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API Keys → New |
-| `SYNC_API_KEY`                  | Secret key for sync endpoint        | Generate with: `openssl rand -hex 32`                                            |
+| Variable                               | Description                                   | Where to Get It                                                                  |
+| -------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Your Supabase project URL                     | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API            |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (sb*publishable*...) | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API Keys → New |
+| `SUPABASE_SECRET_KEY`                  | Supabase secret key (sb*secret*...)           | [Supabase Dashboard](https://supabase.com/dashboard) → Settings → API Keys → New |
+| `SYNC_API_KEY`                         | Secret key for sync endpoint                  | Generate with: `openssl rand -hex 32`                                            |
 
-> **Note:** We use the new `SUPABASE_SECRET_KEY` format (`sb_secret_...`) which supports rotation without downtime. The legacy `SUPABASE_SERVICE_ROLE_KEY` is still supported for backward compatibility. See [Supabase API Keys Migration](https://github.com/orgs/supabase/discussions/29260) for details.
+> **Note:** We use the new Supabase API key formats (`sb_publishable_...` and `sb_secret_...`) which support rotation without downtime. Legacy keys (`NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`) are still supported for backward compatibility. See [Supabase API Keys Migration](https://github.com/orgs/supabase/discussions/29260) for details.
 
 **Optional variables:**
 
@@ -380,13 +380,13 @@ npx vercel --prod
 
 Set these in your Vercel project settings:
 
-| Variable                        | Value                                | Notes                                        |
-| ------------------------------- | ------------------------------------ | -------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Your production Supabase URL         | From Supabase dashboard                      |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your production anon key             | From Supabase dashboard                      |
-| `SUPABASE_SECRET_KEY`           | Your secret key (sb*secret*...)      | **Secret** - from Dashboard → API Keys → New |
-| `SYNC_API_KEY`                  | Generate with `openssl rand -hex 32` | **Secret** - protects sync endpoint          |
-| `READWISE_ACCESS_TOKEN`         | Your production Readwise token       | Optional - for sync functionality            |
+| Variable                               | Value                                     | Notes                                        |
+| -------------------------------------- | ----------------------------------------- | -------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Your production Supabase URL              | From Supabase dashboard                      |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your publishable key (sb*publishable*...) | From Dashboard → API Keys → New              |
+| `SUPABASE_SECRET_KEY`                  | Your secret key (sb*secret*...)           | **Secret** - from Dashboard → API Keys → New |
+| `SYNC_API_KEY`                         | Generate with `openssl rand -hex 32`      | **Secret** - protects sync endpoint          |
+| `READWISE_ACCESS_TOKEN`                | Your production Readwise token            | Optional - for sync functionality            |
 
 **Automated Sync:**
 
@@ -611,7 +611,7 @@ cp .env.test.example .env.test
 
 # 3. Verify it has the required variables
 grep "NEXT_PUBLIC_SUPABASE" .env.test
-# Should show URL and ANON_KEY
+# Should show URL and PUBLISHABLE_KEY
 
 # 4. Ensure Supabase is running
 npx supabase start

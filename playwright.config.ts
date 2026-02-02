@@ -70,6 +70,8 @@ export default defineConfig({
       // This ensures tests use local Supabase from .env.test instead of production
       NODE_ENV: 'test',
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      // Support both new publishable key format and legacy anon key
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
       // Support both new secret key format and legacy service_role key
       SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY || '',

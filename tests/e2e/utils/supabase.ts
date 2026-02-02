@@ -11,7 +11,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 // Environment variables (loaded by Playwright config from .env.test)
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Prefer new publishable key format, fall back to legacy anon key
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 // Prefer new secret key format, fall back to legacy service_role key
 const SUPABASE_SECRET_KEY =
   process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -26,8 +28,10 @@ export function ensureSupabaseConfigured(): void {
   if (!SUPABASE_URL) {
     errors.push('NEXT_PUBLIC_SUPABASE_URL is not set');
   }
-  if (!SUPABASE_ANON_KEY) {
-    errors.push('NEXT_PUBLIC_SUPABASE_ANON_KEY is not set');
+  if (!SUPABASE_PUBLISHABLE_KEY) {
+    errors.push(
+      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) is not set'
+    );
   }
 
   if (errors.length > 0) {
@@ -38,7 +42,7 @@ export function ensureSupabaseConfigured(): void {
         `1. Copy .env.test.example to .env.test\n` +
         `2. Start Supabase: npx supabase start\n` +
         `3. Run: npx supabase status\n` +
-        `4. Copy the API URL and anon key to .env.test`
+        `4. Copy the API URL and publishable key to .env.test`
     );
   }
 }
