@@ -34,45 +34,40 @@ The new `sb_secret_...` keys:
 - **November 2025**: Reminders begin, restored projects won't have legacy keys
 - **Late 2026**: Legacy keys removed entirely
 
-## Changes Made
+## Changes Made (2 commits)
 
-### 1. `src/lib/supabase/admin.ts`
+### Commit 1: Core Implementation
 
-- Added `getSecretKey()` function that prefers `SUPABASE_SECRET_KEY` over `SUPABASE_SERVICE_ROLE_KEY`
-- Backward compatible - works with either key format
-- Throws clear error if neither key is set
+- `src/lib/supabase/admin.ts` - Added `getSecretKey()` that prefers `SUPABASE_SECRET_KEY`
+- `.env.example` - Documented new key format, marked legacy as deprecated
+- `.env.test.example` - Updated to use new key
+- `tests/e2e/utils/supabase.ts` - Support both key formats
+- Scripts (`*.ts`, `*.mjs`) - Support both key formats
+- `playwright.config.ts` - Pass through both key formats
 
-### 2. `.env.example`
+### Commit 2: Documentation Updates
 
-- Updated to document new `SUPABASE_SECRET_KEY` as preferred
-- Marked `SUPABASE_SERVICE_ROLE_KEY` as deprecated
-- Added link to Supabase migration guide
+- `README.md` - Updated environment variable tables and troubleshooting
+- `.env.test` - Changed to use `SUPABASE_SECRET_KEY`
+- `docs/decisions/001-supabase-local-development.md` - Added note about new keys
+- `docs/decisions/002-environment-separation-strategy.md` - Added note about new keys
+- `docs/2026-01-28-e2e-auth-test-fixes.md` - Updated key references
+- `tests/e2e/helpers/sync-state.ts` - Support both key formats
+- `tests/e2e/integration-real-data.spec.ts` - Updated docs
+- `scripts/check-latest-docs.mjs` - Support both key formats
 
-### 3. `.env.test.example`
+## Verification
 
-- Updated to use `SUPABASE_SECRET_KEY`
-
-### 4. `tests/e2e/utils/supabase.ts`
-
-- Updated to prefer `SUPABASE_SECRET_KEY` over `SUPABASE_SERVICE_ROLE_KEY`
-- Added `hasSecretKey()` function
-- Kept `hasServiceRoleKey()` as deprecated alias
-
-### 5. Scripts (`scripts/*.ts`, `scripts/*.mjs`)
-
-- Updated all scripts to prefer `SUPABASE_SECRET_KEY`
-- Backward compatible with legacy `SUPABASE_SERVICE_ROLE_KEY`
-
-### 6. `playwright.config.ts`
-
-- Added `SUPABASE_SECRET_KEY` to env passthrough
+- ✅ All 478 unit tests pass
+- ✅ 73 E2E auth tests pass (1 skipped)
+- ✅ Lint passes (0 errors, 2 unrelated warnings)
 
 ## Migration Steps for Users
 
 1. Generate new secret key in Supabase Dashboard:
    `https://supabase.com/dashboard/project/_/settings/api-keys/new`
 
-2. Add to `.env.local`:
+2. Add to `.env.local` or `.env.development.local`:
 
    ```
    SUPABASE_SECRET_KEY=sb_secret_...
@@ -81,6 +76,14 @@ The new `sb_secret_...` keys:
 3. Deploy and verify everything works
 
 4. (Optional) Remove old `SUPABASE_SERVICE_ROLE_KEY` from environment
+
+## Backward Compatibility
+
+The implementation is **fully backward compatible**:
+
+- If `SUPABASE_SECRET_KEY` is set, it's used
+- If only `SUPABASE_SERVICE_ROLE_KEY` is set, it's used as fallback
+- If neither is set, a clear error is thrown
 
 ## Key Differences to Note
 
