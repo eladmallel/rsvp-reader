@@ -39,6 +39,8 @@ const mockCachedDocuments = [
     reader_saved_at: '2026-01-15T09:00:00Z',
     reader_updated_at: '2026-01-15T10:00:00Z',
     cached_at: '2026-01-15T10:00:00Z',
+    first_opened_at: null,
+    last_opened_at: null,
   },
 ];
 
@@ -82,6 +84,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockReturnThis(),
@@ -170,6 +173,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
@@ -220,6 +224,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
@@ -247,6 +252,8 @@ describe('GET /api/reader/documents', () => {
             reader_saved_at: null,
             reader_updated_at: '2026-01-16T23:54:42.132460+00:00',
             cached_at: '2026-01-16T23:54:42.132460+00:00',
+            first_opened_at: null,
+            last_opened_at: null,
           },
         ],
         error: null,
@@ -293,6 +300,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
@@ -337,6 +345,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
@@ -390,6 +399,7 @@ describe('GET /api/reader/documents', () => {
     const mockDocsQuery = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       range: vi.fn().mockResolvedValue({
