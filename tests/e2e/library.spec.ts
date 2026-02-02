@@ -1,3 +1,4 @@
+import { setTheme, waitForDebounce } from './helpers/theme';
 import { test, expect, type TestInfo } from '@playwright/test';
 
 function getScreenshotPath(testInfo: TestInfo, filename: string): string {
@@ -285,7 +286,7 @@ test.describe('Library Page - Connected', () => {
     await page.getByRole('tab', { name: 'Later' }).click();
 
     // Wait for content update
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
 
     // Later tab should be active
     await expect(page.getByRole('tab', { name: 'Later' })).toHaveAttribute('aria-selected', 'true');
@@ -299,7 +300,7 @@ test.describe('Library Page - Connected', () => {
     await page.getByRole('tab', { name: 'Archive' }).click();
 
     // Wait for content update
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
 
     // Archive tab should be active
     await expect(page.getByRole('tab', { name: 'Archive' })).toHaveAttribute(
@@ -325,10 +326,7 @@ test.describe('Library Page - Connected', () => {
 
   test('screenshot: library page - mobile dark', async ({ page }, testInfo) => {
     // Force dark mode
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -340,10 +338,7 @@ test.describe('Library Page - Connected', () => {
 
   test('screenshot: library page - mobile light', async ({ page }, testInfo) => {
     // Switch to light mode
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -383,7 +378,7 @@ test.describe('Feed Page - Connected', () => {
     await page.getByRole('tab', { name: 'Seen', exact: true }).click();
 
     // Wait for content update
-    await page.waitForTimeout(500);
+    await waitForDebounce(page);
 
     // Seen tab should be active
     await expect(page.getByRole('tab', { name: 'Seen', exact: true })).toHaveAttribute(
@@ -397,10 +392,7 @@ test.describe('Feed Page - Connected', () => {
 
   test('screenshot: feed page - mobile dark', async ({ page }, testInfo) => {
     // Force dark mode
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 

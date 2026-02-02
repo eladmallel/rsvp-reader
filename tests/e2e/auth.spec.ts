@@ -1,3 +1,4 @@
+import { setTheme } from './helpers/theme';
 import { test, expect, type TestInfo } from '@playwright/test';
 import {
   ensureSupabaseConfigured,
@@ -122,10 +123,7 @@ test.describe('Signup Page', () => {
   });
 
   test('screenshot: signup page - mobile dark', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -136,10 +134,7 @@ test.describe('Signup Page', () => {
   });
 
   test('screenshot: signup page - mobile light', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -353,10 +348,7 @@ test.describe('Connect Reader Page', () => {
   });
 
   test('screenshot: connect reader - mobile dark', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -367,10 +359,7 @@ test.describe('Connect Reader Page', () => {
   });
 
   test('screenshot: connect reader - mobile light', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -468,10 +457,7 @@ test.describe('Login Page', () => {
   });
 
   test('screenshot: login page - mobile dark', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -482,10 +468,7 @@ test.describe('Login Page', () => {
   });
 
   test('screenshot: login page - mobile light', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 

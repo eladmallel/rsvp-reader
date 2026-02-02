@@ -1,3 +1,4 @@
+import { setTheme, waitForAnimation } from './helpers/theme';
 import { test, expect, type TestInfo } from '@playwright/test';
 
 function getScreenshotPath(testInfo: TestInfo, filename: string): string {
@@ -285,10 +286,7 @@ test.describe('Settings Page', () => {
   });
 
   test('screenshot: settings page - dark mode', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -299,10 +297,7 @@ test.describe('Settings Page', () => {
   });
 
   test('screenshot: settings page - light mode', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -313,17 +308,14 @@ test.describe('Settings Page', () => {
   });
 
   test('screenshot: WPM setting modal - dark mode', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     // Open modal
     const defaultSpeedItem = page.locator('text=Default Speed').locator('..').locator('..');
     await defaultSpeedItem.click();
 
     // Wait for modal animation
-    await page.waitForTimeout(400);
+    await waitForAnimation(page);
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -334,17 +326,14 @@ test.describe('Settings Page', () => {
   });
 
   test('screenshot: WPM setting modal - light mode', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     // Open modal
     const defaultSpeedItem = page.locator('text=Default Speed').locator('..').locator('..');
     await defaultSpeedItem.click();
 
     // Wait for modal animation
-    await page.waitForTimeout(400);
+    await waitForAnimation(page);
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -355,17 +344,14 @@ test.describe('Settings Page', () => {
   });
 
   test('screenshot: Skip Amount modal - dark mode', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'dark');
 
     // Open modal
     const skipAmountItem = page.locator('text=Skip Amount').locator('..').locator('..');
     await skipAmountItem.click();
 
     // Wait for modal animation
-    await page.waitForTimeout(400);
+    await waitForAnimation(page);
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 
@@ -376,17 +362,14 @@ test.describe('Settings Page', () => {
   });
 
   test('screenshot: Font selector modal - light mode', async ({ page }, testInfo) => {
-    await page.evaluate(() => {
-      document.documentElement.setAttribute('data-theme', 'light');
-    });
-    await page.waitForTimeout(300);
+    await setTheme(page, 'light');
 
     // Open modal
     const fontItem = page.locator('text=RSVP Font').locator('..').locator('..');
     await fontItem.click();
 
     // Wait for modal animation
-    await page.waitForTimeout(400);
+    await waitForAnimation(page);
 
     const viewport = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
 

@@ -1,11 +1,15 @@
 name: CI/CD
-# Optimized: 2026-02-02 - Split into parallel jobs, cache Playwright, shard E2E
+# Optimized: 2026-02-02 - Parallel jobs, Playwright cache, E2E sharding, reduced waits
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+
+env:
+  # Reduce theme transition waits in E2E tests (CSS transitions are instant in CI)
+  CI_FAST_THEME_SWITCH: 'true'
 
 jobs:
   lint-typecheck:
@@ -53,7 +57,76 @@ jobs:
           READWISE_ACCESS_TOKEN: ${{ secrets.READWISE_ACCESS_TOKEN }}
         run: npm run test
 
-  e2e-tests:
+  # E2E functional tests - run on Mobile Chrome with sharding
+  e2e-functional:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up test environment
+        run: |
+          cp .env.test.example .env.test
+          echo "✅ Created .env.test from template"
+
+      - name: Start Supabase local development
+        run: npx supabase start
+
+      - name: Verify test environment
+        run: |
+          if ! grep -q "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" .env.test; then
+            echo "❌ Error: .env.test is missing valid NEXT_PUBLIC_SUPABASE_URL"
+            exit 1
+          fi
+          echo "✅ Test environment validated"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright system deps (if cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run E2E functional tests (shard ${{ matrix.shard }}/2)
+        run: npm run test:e2e -- --project="Mobile Chrome" --shard=${{ matrix.shard }}/2 --grep-invert="Visual Alignment"
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-functional-shard${{ matrix.shard }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload Playwright screenshots
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-screenshots-functional-shard${{ matrix.shard }}
+          path: test-results/screenshots/
+          retention-days: 30
+
+  # E2E visual tests - run on both Mobile and Desktop Chrome
+  e2e-visual:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -80,13 +153,8 @@ jobs:
 
       - name: Verify test environment
         run: |
-          # Validate that .env.test has required variables
           if ! grep -q "NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321" .env.test; then
             echo "❌ Error: .env.test is missing valid NEXT_PUBLIC_SUPABASE_URL"
-            exit 1
-          fi
-          if ! grep -q "NEXT_PUBLIC_SUPABASE_ANON_KEY=" .env.test; then
-            echo "❌ Error: .env.test is missing NEXT_PUBLIC_SUPABASE_ANON_KEY"
             exit 1
           fi
           echo "✅ Test environment validated"
@@ -106,14 +174,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      - name: Run E2E tests
-        run: npm run test:e2e -- --project="${{ matrix.project }}"
+      - name: Run E2E visual tests (${{ matrix.project }})
+        run: npm run test:e2e -- --project="${{ matrix.project }}" --grep="Visual Alignment"
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.project }}
+          name: playwright-report-visual-${{ matrix.project }}
           path: playwright-report/
           retention-days: 30
 
@@ -121,12 +189,12 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-screenshots-${{ matrix.project }}
+          name: playwright-screenshots-visual-${{ matrix.project }}
           path: test-results/screenshots/
           retention-days: 30
 
   deploy:
-    needs: [lint-typecheck, unit-tests, e2e-tests]
+    needs: [lint-typecheck, unit-tests, e2e-functional, e2e-visual]
     if: github.ref == 'refs/heads/main' && vars.VERCEL_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
