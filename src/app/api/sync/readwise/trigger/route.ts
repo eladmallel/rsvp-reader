@@ -15,6 +15,9 @@ import type { Database } from '@/lib/supabase/types';
 
 type SyncState = Database['public']['Tables']['readwise_sync_state']['Row'];
 
+// Lock is considered stale after 5 minutes (sync should never take this long)
+const STALE_LOCK_MS = 5 * 60 * 1000;
+
 export async function POST() {
   // 1. Authenticate user via session
   const supabase = await createClient();
@@ -73,14 +76,33 @@ export async function POST() {
     return NextResponse.json({ error: 'Readwise not connected' }, { status: 400 });
   }
 
-  // 3. Check if already syncing
+  const now = new Date();
+
+  // 3. Check if already syncing (but allow if lock is stale)
   if (state.in_progress) {
-    console.log('[SYNC TRIGGER] Sync already in progress');
-    return NextResponse.json({ error: 'Sync already in progress' }, { status: 400 });
+    const lockAge = state.lock_acquired_at
+      ? now.getTime() - new Date(state.lock_acquired_at).getTime()
+      : Infinity; // No lock_acquired_at means lock is definitely stale
+
+    if (lockAge < STALE_LOCK_MS) {
+      console.log('[SYNC TRIGGER] Sync already in progress (lock age:', lockAge, 'ms)');
+      return NextResponse.json({ error: 'Sync already in progress' }, { status: 400 });
+    }
+
+    // Lock is stale - force release it before continuing
+    console.log('[SYNC TRIGGER] Detected stale lock (age:', lockAge, 'ms) - releasing');
+    const { error: releaseError } = await adminSupabase
+      .from('readwise_sync_state')
+      .update({ in_progress: false, lock_acquired_at: null })
+      .eq('user_id', user.id);
+
+    if (releaseError) {
+      console.error('[SYNC TRIGGER] Failed to release stale lock:', releaseError);
+      return NextResponse.json({ error: 'Failed to release stale lock' }, { status: 500 });
+    }
   }
 
   // 4. Check rate limiting
-  const now = new Date();
   if (state.next_allowed_at && new Date(state.next_allowed_at) > now) {
     const waitSeconds = Math.ceil(
       (new Date(state.next_allowed_at).getTime() - now.getTime()) / 1000
@@ -99,7 +121,7 @@ export async function POST() {
   const nowIso = now.toISOString();
   const { data: locked, error: lockError } = await adminSupabase
     .from('readwise_sync_state')
-    .update({ in_progress: true })
+    .update({ in_progress: true, lock_acquired_at: nowIso })
     .eq('user_id', user.id)
     .eq('in_progress', false)
     .or(`next_allowed_at.is.null,next_allowed_at.lte.${nowIso}`)
@@ -147,6 +169,7 @@ async function syncUserAsync(
       .update({
         ...update,
         in_progress: false,
+        lock_acquired_at: null,
         last_sync_at: nowIso,
       })
       .eq('user_id', userId);
@@ -164,6 +187,7 @@ async function syncUserAsync(
       .from('readwise_sync_state')
       .update({
         in_progress: false,
+        lock_acquired_at: null,
         next_allowed_at: new Date(now.getTime() + WINDOW_MS).toISOString(),
       })
       .eq('user_id', userId);

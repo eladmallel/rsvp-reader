@@ -291,6 +291,7 @@ export type Database = {
           last_429_at: string | null;
           last_sync_at: string | null;
           library_cursor: string | null;
+          lock_acquired_at: string | null;
           next_allowed_at: string | null;
           shortlist_cursor: string | null;
           user_id: string;
@@ -306,6 +307,7 @@ export type Database = {
           last_429_at?: string | null;
           last_sync_at?: string | null;
           library_cursor?: string | null;
+          lock_acquired_at?: string | null;
           next_allowed_at?: string | null;
           shortlist_cursor?: string | null;
           user_id: string;
@@ -321,6 +323,7 @@ export type Database = {
           last_429_at?: string | null;
           last_sync_at?: string | null;
           library_cursor?: string | null;
+          lock_acquired_at?: string | null;
           next_allowed_at?: string | null;
           shortlist_cursor?: string | null;
           user_id?: string;

@@ -12,6 +12,9 @@ type SyncStateWithUser = SyncState & {
   } | null;
 };
 
+// Lock is considered stale after 5 minutes (sync should never take this long)
+const STALE_LOCK_MS = 5 * 60 * 1000;
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.SYNC_API_KEY;
   const token =
@@ -29,13 +32,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const now = new Date();
   const nowIso = now.toISOString();
 
+  // Calculate stale lock threshold
+  const staleLockThreshold = new Date(now.getTime() - STALE_LOCK_MS).toISOString();
+
+  // Query for:
+  // 1. Not in progress AND (no rate limit OR rate limit expired)
+  // 2. OR in_progress with stale lock (lock_acquired_at is null or older than threshold)
   const { data: states, error } = await supabase
     .from('readwise_sync_state')
     .select(
-      'user_id, library_cursor, inbox_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, users (reader_access_token, reader_access_token_encrypted)'
+      'user_id, library_cursor, inbox_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, lock_acquired_at, users (reader_access_token, reader_access_token_encrypted)'
     )
-    .eq('in_progress', false)
-    .or(`next_allowed_at.is.null,next_allowed_at.lte.${nowIso}`);
+    .or(
+      `and(in_progress.eq.false,or(next_allowed_at.is.null,next_allowed_at.lte.${nowIso})),and(in_progress.eq.true,or(lock_acquired_at.is.null,lock_acquired_at.lte.${staleLockThreshold}))`
+    );
 
   if (error) {
     console.error('Failed to fetch sync state:', error);
@@ -62,9 +72,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       continue;
     }
 
+    // For stale locks, we need to reset them first
+    if (state.in_progress) {
+      console.log('[SYNC] Releasing stale lock for user:', state.user_id);
+      await supabase
+        .from('readwise_sync_state')
+        .update({ in_progress: false, lock_acquired_at: null })
+        .eq('user_id', state.user_id);
+    }
+
     const { data: lockedState, error: lockError } = await supabase
       .from('readwise_sync_state')
-      .update({ in_progress: true })
+      .update({ in_progress: true, lock_acquired_at: nowIso })
       .eq('user_id', state.user_id)
       .eq('in_progress', false)
       .or(`next_allowed_at.is.null,next_allowed_at.lte.${nowIso}`)
@@ -88,6 +107,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         .update({
           ...update,
           in_progress: false,
+          lock_acquired_at: null,
           last_sync_at: nowIso,
         })
         .eq('user_id', lockedState.user_id);
@@ -105,6 +125,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         .from('readwise_sync_state')
         .update({
           in_progress: false,
+          lock_acquired_at: null,
           next_allowed_at: new Date(now.getTime() + WINDOW_MS).toISOString(),
         })
         .eq('user_id', lockedState.user_id);

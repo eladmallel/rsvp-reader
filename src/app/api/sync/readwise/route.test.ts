@@ -64,15 +64,15 @@ describe('GET /api/sync/readwise', () => {
       window_started_at: null,
       window_request_count: 0,
       last_429_at: null,
+      lock_acquired_at: null,
       users: { reader_access_token: 'token-123' },
     };
 
     const lockedState = { ...state, in_progress: true };
 
+    // New query structure: select().or() instead of select().eq().or()
     const mockSelect = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
-      }),
+      or: vi.fn().mockResolvedValue({ data: [state], error: null }),
     });
 
     const lockChain = {
@@ -145,15 +145,15 @@ describe('GET /api/sync/readwise', () => {
       window_started_at: null,
       window_request_count: 0,
       last_429_at: null,
+      lock_acquired_at: null,
       users: { reader_access_token: 'token-override' },
     };
 
     const lockedState = { ...state, in_progress: true };
 
+    // New query structure: select().or() instead of select().eq().or()
     const mockSelect = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
-      }),
+      or: vi.fn().mockResolvedValue({ data: [state], error: null }),
     });
 
     const lockChain = {
@@ -225,15 +225,15 @@ describe('GET /api/sync/readwise', () => {
       window_started_at: null,
       window_request_count: 0,
       last_429_at: null,
+      lock_acquired_at: null,
       users: { reader_access_token: 'token-456' },
     };
 
     const lockedState = { ...state, in_progress: true };
 
+    // New query structure: select().or() instead of select().eq().or()
     const mockSelect = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
-      }),
+      or: vi.fn().mockResolvedValue({ data: [state], error: null }),
     });
 
     const lockChain = {
@@ -298,15 +298,15 @@ describe('GET /api/sync/readwise', () => {
       window_started_at: null,
       window_request_count: 0,
       last_429_at: null,
+      lock_acquired_at: null,
       users: { reader_access_token: 'token-default' },
     };
 
     const lockedState = { ...state, in_progress: true };
 
+    // New query structure: select().or() instead of select().eq().or()
     const mockSelect = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
-      }),
+      or: vi.fn().mockResolvedValue({ data: [state], error: null }),
     });
 
     const lockChain = {
@@ -369,15 +369,15 @@ describe('GET /api/sync/readwise', () => {
       window_started_at: null,
       window_request_count: 0,
       last_429_at: null,
+      lock_acquired_at: null,
       users: { reader_access_token: 'token-custom' },
     };
 
     const lockedState = { ...state, in_progress: true };
 
+    // New query structure: select().or() instead of select().eq().or()
     const mockSelect = vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        or: vi.fn().mockResolvedValue({ data: [state], error: null }),
-      }),
+      or: vi.fn().mockResolvedValue({ data: [state], error: null }),
     });
 
     const lockChain = {
