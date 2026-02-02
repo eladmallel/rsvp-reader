@@ -11,7 +11,12 @@
  *   - NEXT_PUBLIC_SUPABASE_URL
  *   - SUPABASE_SERVICE_ROLE_KEY
  */
+import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+
+// Load .env.local first, then .env as fallback
+config({ path: '.env.local' });
+config({ path: '.env' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
