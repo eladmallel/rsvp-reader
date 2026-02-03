@@ -1,7 +1,11 @@
 # React & Next.js Best Practices Audit
 
+> **📦 ARCHIVED:** This audit is complete. Archived on 2026-02-02.
+>
+> **Summary:** 11 items completed, 1 N/A (React.cache - not applicable to client-component architecture), 1 deferred (SWR - see [Decision 005](../../decisions/005-defer-swr-migration.md)), 1 pending low-priority item (barrel imports - verify with bundle analyzer if needed).
+
 **Generated:** 2026-01-23
-**Last Updated:** 2026-01-23
+**Archived:** 2026-02-02
 **Based on:** Vercel React Best Practices Guidelines
 **Codebase:** RSVP Reader (Next.js 16 + React 19)
 
@@ -9,22 +13,22 @@
 
 ## Progress Tracking
 
-| Item | Description                                      | Status     | Date       |
-| ---- | ------------------------------------------------ | ---------- | ---------- |
-| 1.1  | Parallelize auth checks                          | ✅ Done    | 2026-01-23 |
-| 1.2  | Add AbortController (library sync polling)       | ✅ Done    | 2026-01-23 |
-| 1.2  | Add AbortController (RSVP article fetch)         | ✅ Done    | 2026-01-23 |
-| 1.2  | Add AbortController (feed page)                  | ✅ Done    | 2026-01-23 |
-| 5.1  | Memoize time calculations in RSVPPlayer          | ✅ Done    | 2026-01-23 |
-| 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done    | 2026-01-23 |
-| 2.0  | Bundle analyzer setup                            | ✅ Done    | 2026-01-23 |
-| 2.2  | Dynamic imports for heavy components             | ✅ Done    | 2026-01-23 |
-| 6.1  | Extract inline SVGs                              | ✅ Done    | 2026-01-23 |
-| 2.1  | Direct imports over barrel files                 | 🔲 Pending | -          |
-| 3.1  | Add React.cache() for server deduplication       | ⚠️ N/A     | 2026-01-23 |
-| 4.1  | Consider SWR for data fetching                   | 🔲 Pending | -          |
-| 5.3  | Memoize handlers in ArticleListItem              | ✅ Done    | 2026-01-23 |
-| 7.1  | Memoize date formatting in ArticleListItem       | ✅ Done    | 2026-01-23 |
+| Item | Description                                      | Status      | Date       |
+| ---- | ------------------------------------------------ | ----------- | ---------- |
+| 1.1  | Parallelize auth checks                          | ✅ Done     | 2026-01-23 |
+| 1.2  | Add AbortController (library sync polling)       | ✅ Done     | 2026-01-23 |
+| 1.2  | Add AbortController (RSVP article fetch)         | ✅ Done     | 2026-01-23 |
+| 1.2  | Add AbortController (feed page)                  | ✅ Done     | 2026-01-23 |
+| 5.1  | Memoize time calculations in RSVPPlayer          | ✅ Done     | 2026-01-23 |
+| 5.2  | Memoize source/text extraction in RsvpPageClient | ✅ Done     | 2026-01-23 |
+| 2.0  | Bundle analyzer setup                            | ✅ Done     | 2026-01-23 |
+| 2.2  | Dynamic imports for heavy components             | ✅ Done     | 2026-01-23 |
+| 6.1  | Extract inline SVGs                              | ✅ Done     | 2026-01-23 |
+| 2.1  | Direct imports over barrel files                 | 🔲 Pending  | -          |
+| 3.1  | Add React.cache() for server deduplication       | ⚠️ N/A      | 2026-01-23 |
+| 4.1  | Consider SWR for data fetching                   | ⏸️ Deferred | 2026-02-02 |
+| 5.3  | Memoize handlers in ArticleListItem              | ✅ Done     | 2026-01-23 |
+| 7.1  | Memoize date formatting in ArticleListItem       | ✅ Done     | 2026-01-23 |
 
 ---
 
@@ -218,7 +222,26 @@ React.cache() is specifically designed for Server Components where multiple comp
 
 ## Priority 4: MEDIUM-HIGH - Client-Side Data Fetching
 
-### 4.1 Consider SWR for Data Fetching
+### 4.1 Consider SWR for Data Fetching ⏸️ DEFERRED
+
+**Status:** ⏸️ Deferred (2026-02-02)
+
+**Decision:** After evaluation, we decided to defer SWR migration indefinitely. See [Decision Record 005](../../decisions/005-defer-swr-migration.md) for full rationale.
+
+**Key reasons:**
+
+- AbortController cleanup already implemented across all pages
+- Existing patterns work well and are explicit/debuggable
+- Marginal ROI (~40-50 lines per file) doesn't justify migration effort
+- SWR adds 13KB to bundle
+- Caching benefits questionable for a reading app that wants fresh content
+
+**Archived plan:** [SWR Migration Plan](./SWR-MIGRATION-PLAN.md)
+
+---
+
+<details>
+<summary>Original analysis (collapsed)</summary>
 
 **Files:** All pages with `useEffect` + `fetch` pattern
 
@@ -277,6 +300,8 @@ function LibraryPage() {
 ```
 
 **Impact:** Automatic request deduplication, caching, and cleaner code. Also enables stale-while-revalidate pattern.
+
+</details>
 
 ---
 
@@ -467,45 +492,22 @@ The codebase already follows several best practices:
 
 ## Implementation Priority
 
-| Priority | Issue                         | Effort | Impact | Status     |
-| -------- | ----------------------------- | ------ | ------ | ---------- |
-| 1        | Parallelize auth checks       | Low    | High   | ✅ Done    |
-| 2        | Add AbortController           | Medium | High   | ✅ Done    |
-| 3        | Bundle analyzer setup         | Low    | Medium | ✅ Done    |
-| 4        | Dynamic imports for modals    | Low    | Medium | ✅ Done    |
-| 5        | Direct imports (verify first) | Low    | Medium | 🔲 Pending |
-| 6        | Add React.cache()             | Medium | Medium | ⚠️ N/A     |
-| 7        | Consider SWR                  | High   | High   | 🔲 Pending |
-| 8        | Memoize time calculations     | Low    | Low    | ✅ Done    |
-| 9        | Memoize source extraction     | Low    | Low    | ✅ Done    |
-| 10       | Extract inline SVGs           | Low    | Low    | ✅ Done    |
-| 11       | Memoize date formatting       | Low    | Low    | ✅ Done    |
+| Priority | Issue                         | Effort | Impact | Status      |
+| -------- | ----------------------------- | ------ | ------ | ----------- |
+| 1        | Parallelize auth checks       | Low    | High   | ✅ Done     |
+| 2        | Add AbortController           | Medium | High   | ✅ Done     |
+| 3        | Bundle analyzer setup         | Low    | Medium | ✅ Done     |
+| 4        | Dynamic imports for modals    | Low    | Medium | ✅ Done     |
+| 5        | Direct imports (verify first) | Low    | Medium | 🔲 Pending  |
+| 6        | Add React.cache()             | Medium | Medium | ⚠️ N/A      |
+| 7        | Consider SWR                  | High   | High   | ⏸️ Deferred |
+| 8        | Memoize time calculations     | Low    | Low    | ✅ Done     |
+| 9        | Memoize source extraction     | Low    | Low    | ✅ Done     |
+| 10       | Extract inline SVGs           | Low    | Low    | ✅ Done     |
+| 11       | Memoize date formatting       | Low    | Low    | ✅ Done     |
 
 ---
 
-## Next Steps (For Next Session)
+## Remaining Item
 
-### Immediate (Quick Wins)
-
-1. ✅ **Add AbortController to feed page** - Same pattern as library page, apply to `src/app/(main)/feed/page.tsx`
-2. ✅ **Bundle analyzer setup** - Configure and run bundle analysis
-3. ✅ **Dynamic imports for modals** - Add `next/dynamic` for `PlayerSettingsPanel` and settings components
-4. **Review bundle analysis reports** - Open `.next/analyze/client.html` to check barrel import impact (manual task)
-
-### Medium Term
-
-4. ✅ **Extract inline SVGs** - Move repeated SVG icons to module-level constants
-5. **Direct imports** - If bundle analysis shows issues, switch from barrel imports to direct imports
-6. **Memoize handlers in ArticleListItem** - Add `useCallback` to handler functions (verify with React Profiler first)
-
-### Consider Later
-
-7. **Add React.cache()** - Create `src/lib/supabase/cached.ts` for server-side request deduplication
-8. **Evaluate SWR** - Consider starting with Library page to test benefits of SWR
-
-### How to Continue
-
-1. Read this file for context
-2. Start with "Immediate" items above
-3. Update the Progress Tracking table as items are completed
-4. Run `npm run test && npm run lint && npm run type-check` before committing
+**2.1 Direct imports over barrel files** - Low priority. If bundle size becomes a concern, run `npm run build:analyze` and check if barrel imports are causing tree-shaking issues. The React Compiler may already optimize this adequately.

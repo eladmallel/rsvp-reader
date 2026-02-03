@@ -8,7 +8,6 @@
 ## Reference
 
 - [LEARNINGS.md](./LEARNINGS.md) - Patterns and insights
-- [REACT-BEST-PRACTICES-AUDIT.md](./REACT-BEST-PRACTICES-AUDIT.md) - Code audit
 
 ## Design
 
@@ -37,6 +36,7 @@
 - [002 - Environment Separation](./decisions/002-environment-separation-strategy.md)
 - [003 - E2E Test Resilience](./decisions/003-e2e-test-resilience-patterns.md)
 - [004 - Design-First Workflow](./decisions/004-design-first-development-workflow.md)
+- [005 - Defer SWR Migration](./decisions/005-defer-swr-migration.md)
 
 ## Working Memory
 
@@ -45,3 +45,5 @@
 ## Archive
 
 - [archive/2026-01/](./archive/2026-01/) - January 2026
+  - [REACT-BEST-PRACTICES-AUDIT.md](./archive/2026-01/REACT-BEST-PRACTICES-AUDIT.md) - Completed code audit
+  - [SWR-MIGRATION-PLAN.md](./archive/2026-01/SWR-MIGRATION-PLAN.md) - Deferred migration plan
