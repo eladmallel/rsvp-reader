@@ -388,10 +388,15 @@ export async function syncUser({
     }
   }
 
-  if (budget.used() >= maxRequests) {
-    nextAllowedAt = window.windowStartedAt
-      ? new Date(window.windowStartedAt.getTime() + WINDOW_MS).toISOString()
-      : new Date(now.getTime() + WINDOW_MS).toISOString();
+  // Always set next_allowed_at based on when the rate limit window expires
+  // This ensures consistent behavior and prevents early syncs with partial budget
+  const windowExpiresAt = window.windowStartedAt
+    ? new Date(window.windowStartedAt.getTime() + WINDOW_MS).toISOString()
+    : new Date(now.getTime() + WINDOW_MS).toISOString();
+
+  // Only wait for window expiry if budget was used
+  if (budget.used() > 0 && !nextAllowedAt) {
+    nextAllowedAt = windowExpiresAt;
   }
 
   console.log('[syncUser] Returning updates:', {
