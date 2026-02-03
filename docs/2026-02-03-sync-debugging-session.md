@@ -341,3 +341,58 @@ Options:
 - [ ] Inbox sync can run without blocking other locations
 - [ ] No serverless function timeouts
 - [ ] Sync runs successfully on cron schedule
+
+---
+
+## Session Closure (End of Day)
+
+### Key Learning: Fast Feedback Loops
+
+This debugging session highlighted the importance of **reproducing bugs locally first**. Remote debugging via Vercel logs and production database queries is slow and error-prone:
+
+- Deploy → trigger → check logs → analyze cycle takes 5-10 minutes per iteration
+- Log output is often truncated or delayed
+- No ability to set breakpoints or inspect state
+- Easy to miss subtle issues in log output
+
+**Local debugging is 10-100x faster**. The project has local Supabase via Docker configured, which should be used for initial bug reproduction.
+
+### Next Steps (Priority Order)
+
+1. **Reproduce locally**: Set up local environment with Docker Supabase and reproduce the cursor persistence issue
+2. **Debug interactively**: Use debugger/breakpoints to trace exactly where cursor gets lost in `syncUser` → route handler → DB update flow
+3. **Verify fix locally**: Once fixed, verify the cursor properly persists through multiple sync rounds
+4. **Deploy and verify**: Only after local verification, deploy to production
+
+### How to Reproduce Locally
+
+```bash
+# Start local Supabase
+npx supabase start
+
+# Run dev server
+npm run dev
+
+# In another terminal, trigger sync locally
+# (will need to configure local env vars for Readwise API token)
+```
+
+### Files Created for Debugging
+
+- `scripts/query-sync-state.mjs` - Query sync state and document counts from Supabase
+- `scripts/reset-sync-for-full-resync.mjs` - Reset sync state for testing full resync
+
+### Documentation Updates
+
+- Updated `AGENTS.md` with new Section 6 "Debugging with Fast Feedback Loops"
+- Renumbered all subsequent sections (7-14)
+
+### Commits Made This Session
+
+- Batch upserts implementation
+- Fixed admin client (createClient vs createServerClient)
+- Added maxDuration=60 to route
+- Fixed rate limit window reset
+- Added cursor fallback for mid-page budget exhaustion
+- Debug logging improvements
+- Documentation updates

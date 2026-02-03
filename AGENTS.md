@@ -159,7 +159,51 @@ E2E tests automatically detect and use a free port. No manual server management 
 
 ---
 
-## 6. Open Questions
+## 6. Debugging with Fast Feedback Loops
+
+### Always Reproduce Locally First
+
+**This is critical.** When debugging issues:
+
+1. **Reproduce the bug locally** before attempting to fix it
+2. Use local database (Supabase via Docker) when possible
+3. Add logging, breakpoints, and assertions liberally
+4. Only move to production debugging if the bug cannot be reproduced locally
+
+### Why This Matters
+
+- Local debugging is 10-100x faster than deploy-test-check-logs cycles
+- You get full stack traces, not truncated cloud logs
+- You can use debuggers, add breakpoints, inspect state
+- No waiting for deployments, rate limits, or log streaming delays
+
+### When Debugging Production-Only Issues
+
+If a bug only appears in production:
+
+1. First, try to reproduce locally with production data (if safe/allowed)
+2. Document why it can't be reproduced locally
+3. Add comprehensive logging to production code
+4. Deploy, trigger the issue, capture logs
+5. Remove debug logging after fixing
+
+### Local Development Setup
+
+The project uses Docker for local Supabase:
+
+```bash
+# Start local Supabase
+npx supabase start
+
+# Run with local DB
+npm run dev
+```
+
+See `supabase/` directory for local database configuration.
+
+---
+
+## 7. Open Questions
 
 ### Track Uncertainties
 
@@ -193,7 +237,7 @@ E2E tests automatically detect and use a free port. No manual server management 
 
 ---
 
-## 7. UI/UX Quality
+## 8. UI/UX Quality
 
 ### Feedback Loops (Required for UI/UX)
 
@@ -226,7 +270,7 @@ If screenshots reveal problems:
 
 ---
 
-## 8. Screenshots Organization
+## 9. Screenshots Organization
 
 ### Save All E2E Screenshots
 
@@ -261,7 +305,7 @@ test-results/
 
 ---
 
-## 9. Project Scripts
+## 10. Project Scripts
 
 ### Create Scripts for Everything
 
@@ -293,7 +337,7 @@ test-results/
 
 ---
 
-## 10. README.md Maintenance
+## 11. README.md Maintenance
 
 ### Keep README Badass
 
@@ -329,7 +373,7 @@ Include latest screenshots:
 
 ---
 
-## 11. Working Memory
+## 12. Working Memory
 
 ### Write Working Memory Files
 
@@ -385,7 +429,7 @@ Include latest screenshots:
 
 ---
 
-## 12. Pre-Flight Checklist
+## 13. Pre-Flight Checklist
 
 ### Before Starting Any Task
 
@@ -415,7 +459,7 @@ Include latest screenshots:
 
 ---
 
-## 13. Summary of Key Files
+## 14. Summary of Key Files
 
 | File                       | Purpose                        |
 | -------------------------- | ------------------------------ |
