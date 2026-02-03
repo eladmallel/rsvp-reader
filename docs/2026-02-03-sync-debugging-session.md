@@ -396,3 +396,67 @@ npm run dev
 - Added cursor fallback for mid-page budget exhaustion
 - Debug logging improvements
 - Documentation updates
+
+---
+
+## Session Continuation (2026-02-03 Evening)
+
+### Root Cause Identified
+
+The fundamental issue was **cursor format confusion**. When budget exhaustion occurred during the first page of sync (before getting a page cursor), the code saved `latestUpdatedAt` as a raw timestamp like `2026-01-29T12:13:49.510622+00:00`.
+
+On the next sync, `isTimestamp()` returned `true` for this cursor, causing the location to be treated as "complete" even though initial backfill wasn't done. This caused subsequent syncs to skip the location entirely.
+
+### The Fix (commit 7c83d18)
+
+Two-pronged solution:
+
+1. **Prevent new corrupted cursors**: Always use page cursor format when deferring, even with empty page cursor:
+
+   ```javascript
+   const nextPage = response.nextPageCursor || pageCursor || '';
+   const resumeCursor = formatPageCursor(nextPage, latestUpdatedAt || updatedAfter);
+   ```
+
+   This produces `page:|updated:2026-01-29T12:13:49` instead of raw timestamp.
+
+2. **Auto-fix existing corrupted cursors**: Added `fixCorruptedCursors()` function that:
+   - Detects timestamp cursors during initial backfill (when `initial_backfill_done` is false)
+   - Resets corrupted cursors to `null` to restart sync for affected locations
+   - Logs warning when corruption is detected
+
+### Verification
+
+**Local testing confirmed the fix works:**
+
+- Corrupted cursors detected and reset: `Detected corrupted cursors during initial backfill: inbox, library, archive, shortlist`
+- Library sync now continues across multiple rounds with page cursors
+- Initial backfill completed successfully after ~13 sync rounds
+- All locations synced: inbox (182), library (169), archive (348), feed (483), shortlist
+
+**Production deployment:**
+
+- Fix merged to main and deployed to Vercel
+- Production syncs triggered successfully (status: ok)
+- Production cursors should auto-fix on next sync
+
+### Success Criteria Status
+
+- [x] All sync cursors have timestamps (completed initial sync) - **VERIFIED LOCALLY**
+- [x] Library view shows documents - **169 docs locally**
+- [x] Feed view shows documents - **483 docs locally**
+- [x] Archive view shows documents - **348 docs locally**
+- [x] No serverless function timeouts - **VERIFIED**
+- [x] Sync runs successfully - **VERIFIED**
+- [ ] Production verification pending - Needs manual database check
+
+### Key Commits
+
+- `7c83d18` - Fix cursor format confusion (the main fix)
+- `881634f` - Merge to main
+
+### Lessons Learned
+
+1. **Local reproduction is critical**: The issue was immediately identifiable locally by checking cursor values
+2. **Format matters**: Using distinguishable formats for different states (page cursor vs timestamp) prevents confusion
+3. **Auto-recovery**: Adding self-healing logic for known bug patterns prevents user-facing issues
