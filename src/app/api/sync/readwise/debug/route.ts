@@ -79,9 +79,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     .eq('location', 'feed')
     .limit(5);
 
+  // Test the exact query the API would use for the feed page
+  const testUserId = '486cfa76-4fcd-4ac0-870e-f06e4486d7c8';
+  const {
+    data: feedApiTest,
+    count: feedCount,
+    error: feedError,
+  } = await supabase
+    .from('cached_documents')
+    .select('*', { count: 'exact' })
+    .eq('user_id', testUserId)
+    .eq('location', 'feed')
+    .neq('category', 'highlight')
+    .order('reader_last_moved_at', { ascending: false })
+    .order('reader_updated_at', { ascending: false })
+    .order('reader_created_at', { ascending: false })
+    .limit(5);
+
   return NextResponse.json({
     syncStates: result,
     sampleFeedDocs: sampleFeedDocs || [],
     allUsers: (allUsers || []).map((u) => ({ id: u.id, email: u.email })),
+    feedApiTest: {
+      count: feedCount,
+      error: feedError?.message,
+      sampleDocs: (feedApiTest || []).map((d) => ({
+        id: d.reader_document_id,
+        title: d.title,
+        location: d.location,
+      })),
+    },
   });
 }
