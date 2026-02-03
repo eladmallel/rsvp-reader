@@ -24,6 +24,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       'user_id, inbox_cursor, library_cursor, feed_cursor, archive_cursor, shortlist_cursor, initial_backfill_done, window_request_count, last_sync_at'
     );
 
+  // Also get all users to check for mismatches
+  const { data: allUsers } = await supabase.from('users').select('id, email');
+
   if (syncError) {
     return NextResponse.json({ error: 'Failed to fetch sync state' }, { status: 500 });
   }
@@ -69,5 +72,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     totalDocuments: Object.values(counts[state.user_id] || {}).reduce((a, b) => a + b, 0),
   }));
 
-  return NextResponse.json({ syncStates: result });
+  // Get sample feed documents to verify data
+  const { data: sampleFeedDocs } = await supabase
+    .from('cached_documents')
+    .select('reader_document_id, title, location, first_opened_at, category')
+    .eq('location', 'feed')
+    .limit(5);
+
+  return NextResponse.json({
+    syncStates: result,
+    sampleFeedDocs: sampleFeedDocs || [],
+    allUsers: (allUsers || []).map((u) => ({ id: u.id, email: u.email })),
+  });
 }
