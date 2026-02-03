@@ -631,10 +631,17 @@ async function syncLocation({
     }
 
     if (deferredForBudget) {
-      // Return the current page cursor so we resume from where we stopped,
-      // not from the beginning of this location
+      // Return a cursor to resume from where we stopped.
+      // If we have a pageCursor, use it. Otherwise, use latestUpdatedAt
+      // (if we processed any docs) to avoid re-fetching everything.
+      const resumeCursor = pageCursor
+        ? formatPageCursor(pageCursor, updatedAfter)
+        : (latestUpdatedAt ?? cursorValue);
+      console.log(
+        `[syncLocation] ${location}: Deferred due to budget, resumeCursor: ${resumeCursor?.substring(0, 40)}`
+      );
       return {
-        nextCursor: pageCursor ? formatPageCursor(pageCursor, updatedAfter) : cursorValue,
+        nextCursor: resumeCursor,
         latestUpdatedAt,
         completed: false,
       };
