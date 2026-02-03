@@ -462,8 +462,10 @@ async function syncLocation({
   console.log(
     `[syncLocation] Syncing location: ${location}, mode: ${mode}, cursor: ${cursorValue}`
   );
+  console.log(`[syncLocation] ${location}: Parsing cursor...`);
 
   const cursorState = parseCursor(cursorValue);
+  console.log(`[syncLocation] ${location}: Starting fetch loop, pageSize: ${getPageSize()}`);
   const updatedAfter =
     mode === 'incremental'
       ? (cursorState.updatedAfter ??

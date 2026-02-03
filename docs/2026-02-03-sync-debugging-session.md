@@ -276,14 +276,53 @@ Individual DB upserts for each document caused 200 round trips per page. With 20
 2. **Configurable budget**: Added `READWISE_SYNC_MAX_REQUESTS_OVERRIDE` env var
 3. **Function timeout**: Set `maxDuration: 60` in vercel.json
 
+### Execution Log
+
+**12:35 - Merged batch upsert fix** (commit d14c767)
+
+**13:00-13:45 - Extended debugging session**
+
+Issues discovered and fixed:
+
+1. ✅ **vercel.json functions config** - wrong path format was breaking deployments, removed
+2. ✅ **Admin client using wrong Supabase client** - was using `createServerClient` from @supabase/ssr instead of `createClient` from @supabase/supabase-js
+3. ✅ **maxDuration not set** - added `export const maxDuration = 60` to route file
+4. ✅ **Rate limit window not resetting** - fixed to always set next_allowed_at to window expiry
+5. ✅ **Cursor lost when budget exhausted mid-page** - now uses latestUpdatedAt as fallback
+
+**Current State (13:45)**
+
+- Sync runs and uses budget (14-20 requests per sync)
+- Batch upserts appear to complete (logs show "Documents batch complete")
+- BUT: library_cursor stays null, document count stays at 630
+- Documents' cached_at timestamps DO update (proving batch upsert works)
+- The 630 documents are from previous syncs, not new ones
+
+**Hypothesis**
+The sync is re-fetching and re-upserting the same ~100 documents repeatedly because:
+
+1. The cursor isn't being saved correctly
+2. Budget runs out before completing even one page
+3. On next sync, it starts from scratch again
+
+**Key Commits**
+
+- `b7b6036` - Batch upserts
+- `f0a5a7b` - Fixed admin client
+- `5232167` - Added maxDuration=60
+- `ce45c9d` - Fixed rate limit window
+- `987685b` - Fixed cursor fallback
+
 ### Next Steps
 
-1. **Deploy**: Merge fix to main and deploy to Vercel
-2. **Optional**: Set `READWISE_SYNC_MAX_REQUESTS_OVERRIDE=10` in Vercel if timeouts persist
-3. **Trigger sync**: `curl "https://rsvp-reader-gray.vercel.app/api/sync/readwise?token=D84C2663-B231-4265-B364-629BE626F208"`
-4. **Monitor**: Watch Vercel logs for batch upsert messages
-5. **Verify**: Query database to check cursor progress
-6. **Cleanup**: Remove `READWISE_SYNC_LOCATION_OVERRIDE` once all locations complete
+The fundamental issue is that library_cursor isn't being persisted despite the sync appearing to work. Need to investigate why `updates.library_cursor` is undefined when syncUser returns.
+
+Options:
+
+1. Add more granular logging to trace exactly where cursor gets lost
+2. Test locally with the production database to debug interactively
+3. Simplify sync to only process fewer documents per sync
+4. Check if there's an issue with how the route handler saves updates
 
 ## Questions to Answer
 
