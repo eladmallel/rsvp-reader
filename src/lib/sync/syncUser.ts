@@ -223,6 +223,9 @@ export async function syncUser({
           mode: 'initial',
           cursorValue: state.library_cursor,
         });
+        console.log(
+          `[syncUser] Library sync result - nextCursor: ${libraryResult.nextCursor?.substring(0, 40)}..., completed: ${libraryResult.completed}`
+        );
         updates.library_cursor = libraryResult.nextCursor;
         updates.window_request_count = budget.used();
         libraryComplete = libraryResult.completed;
@@ -390,6 +393,13 @@ export async function syncUser({
       ? new Date(window.windowStartedAt.getTime() + WINDOW_MS).toISOString()
       : new Date(now.getTime() + WINDOW_MS).toISOString();
   }
+
+  console.log('[syncUser] Returning updates:', {
+    library_cursor: updates.library_cursor?.substring(0, 40),
+    archive_cursor: updates.archive_cursor?.substring(0, 40),
+    feed_cursor: updates.feed_cursor?.substring(0, 40),
+    initial_backfill_done: updates.initial_backfill_done,
+  });
 
   return {
     ...updates,
