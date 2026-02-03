@@ -264,17 +264,26 @@ GROUP BY location;
 }
 ```
 
-## Next Session TODO
+## Fix Applied (2026-02-03)
 
-1. **Immediate**: Query database to check if library_cursor updated
-2. **Verify**: Check document counts in cached_documents
-3. **Investigate**: Review Vercel function timeout configuration
-4. **Decide**: Choose solution for timeout issue (reduce budget, increase timeout, or split chunks)
-5. **Implement**: Apply chosen solution
-6. **Monitor**: Watch sync progress until all cursors complete
-7. **Test**: Verify all views (Library, Feed, Archive, Inbox) display correctly
-8. **Cleanup**: Remove READWISE_SYNC_LOCATION_OVERRIDE once all locations synced
-9. **Document**: Update working memory with final state and learnings
+### Root Cause
+
+Individual DB upserts for each document caused 200 round trips per page. With 20 pages per sync, that's 4000 DB operations, hitting Supabase's 5-minute statement timeout.
+
+### Solution Implemented (commit b7b6036)
+
+1. **Batch upserts**: Collect all docs from a page and batch upsert (2 DB ops per page instead of 200)
+2. **Configurable budget**: Added `READWISE_SYNC_MAX_REQUESTS_OVERRIDE` env var
+3. **Function timeout**: Set `maxDuration: 60` in vercel.json
+
+### Next Steps
+
+1. **Deploy**: Merge fix to main and deploy to Vercel
+2. **Optional**: Set `READWISE_SYNC_MAX_REQUESTS_OVERRIDE=10` in Vercel if timeouts persist
+3. **Trigger sync**: `curl "https://rsvp-reader-gray.vercel.app/api/sync/readwise?token=D84C2663-B231-4265-B364-629BE626F208"`
+4. **Monitor**: Watch Vercel logs for batch upsert messages
+5. **Verify**: Query database to check cursor progress
+6. **Cleanup**: Remove `READWISE_SYNC_LOCATION_OVERRIDE` once all locations complete
 
 ## Questions to Answer
 
