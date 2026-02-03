@@ -41,7 +41,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const { data: states, error } = await supabase
     .from('readwise_sync_state')
     .select(
-      'user_id, library_cursor, inbox_cursor, feed_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, lock_acquired_at, users (reader_access_token, reader_access_token_encrypted)'
+      'user_id, library_cursor, inbox_cursor, feed_cursor, archive_cursor, shortlist_cursor, next_allowed_at, last_sync_at, in_progress, initial_backfill_done, window_started_at, window_request_count, last_429_at, lock_acquired_at, users (reader_access_token, reader_access_token_encrypted)'
     )
     .or(
       `and(in_progress.eq.false,or(next_allowed_at.is.null,next_allowed_at.lte.${nowIso})),and(in_progress.eq.true,or(lock_acquired_at.is.null,lock_acquired_at.lte.${staleLockThreshold}))`
