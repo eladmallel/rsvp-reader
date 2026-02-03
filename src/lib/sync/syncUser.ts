@@ -124,38 +124,14 @@ export async function syncUser({
   userToken: string;
   now: Date;
 }): Promise<Database['public']['Tables']['readwise_sync_state']['Update']> {
-  console.log('[syncUser] Starting sync for user:', state.user_id);
-  console.log('[syncUser] Initial backfill done:', state.initial_backfill_done);
-  console.log(
-    '[syncUser] Cursors - inbox:',
-    state.inbox_cursor,
-    'library:',
-    state.library_cursor,
-    'feed:',
-    state.feed_cursor,
-    'archive:',
-    state.archive_cursor,
-    'shortlist:',
-    state.shortlist_cursor
-  );
-
   const readerClient = createReaderClient(userToken);
   const window = normalizeWindow(state.window_started_at, state.window_request_count, now);
   const maxRequests = getMaxRequestsPerMinute();
   const budget = new RequestBudget(window.windowRequestCount, maxRequests);
-  const { locations: allowedLocations, overridden } = getAllowedSyncLocations();
+  const { locations: allowedLocations, overridden: _overridden } = getAllowedSyncLocations();
   const isLocationAllowed = (location: SyncLocation) => allowedLocations.includes(location);
 
-  if (overridden) {
-    console.log('[syncUser] Limiting sync locations to:', allowedLocations.join(', '));
-  }
-
-  console.log(
-    `[syncUser] Budget - max: ${maxRequests}, used: ${budget.used()}, remaining: ${budget.remaining()}`
-  );
-
   if (!budget.canRequest()) {
-    console.log('[syncUser] No budget remaining, returning early');
     return {
       next_allowed_at: window.windowStartedAt
         ? new Date(window.windowStartedAt.getTime() + WINDOW_MS).toISOString()
@@ -235,9 +211,6 @@ export async function syncUser({
           mode: 'initial',
           cursorValue: state.library_cursor,
         });
-        console.log(
-          `[syncUser] Library sync result - nextCursor: ${libraryResult.nextCursor?.substring(0, 40)}..., completed: ${libraryResult.completed}`
-        );
         updates.library_cursor = libraryResult.nextCursor;
         updates.window_request_count = budget.used();
         libraryComplete = libraryResult.completed;
@@ -411,13 +384,6 @@ export async function syncUser({
     nextAllowedAt = windowExpiresAt;
   }
 
-  console.log('[syncUser] Returning updates:', {
-    library_cursor: updates.library_cursor?.substring(0, 40),
-    archive_cursor: updates.archive_cursor?.substring(0, 40),
-    feed_cursor: updates.feed_cursor?.substring(0, 40),
-    initial_backfill_done: updates.initial_backfill_done,
-  });
-
   return {
     ...updates,
     next_allowed_at: nextAllowedAt,
@@ -471,13 +437,7 @@ async function syncLocation({
   mode: 'initial' | 'incremental';
   cursorValue: string | null;
 }): Promise<SyncLocationResult> {
-  console.log(
-    `[syncLocation] Syncing location: ${location}, mode: ${mode}, cursor: ${cursorValue}`
-  );
-  console.log(`[syncLocation] ${location}: Parsing cursor...`);
-
   const cursorState = parseCursor(cursorValue);
-  console.log(`[syncLocation] ${location}: Starting fetch loop, pageSize: ${getPageSize()}`);
   const updatedAfter =
     mode === 'incremental'
       ? (cursorState.updatedAfter ??
@@ -491,13 +451,9 @@ async function syncLocation({
 
   while (true) {
     if (!budget.canRequest()) {
-      console.log(`[syncLocation] ${location}: Budget exhausted, processed ${totalDocs} docs`);
       break;
     }
 
-    console.log(
-      `[syncLocation] ${location}: Fetching page (budget remaining: ${budget.remaining()})`
-    );
     const response = await budget.track(() =>
       readerClient.listDocuments({
         location,
@@ -508,7 +464,6 @@ async function syncLocation({
       })
     );
 
-    console.log(`[syncLocation] ${location}: Got ${response.results.length} documents`);
     let deferredForBudget = false;
 
     // Collect docs for batch upsert
@@ -612,10 +567,6 @@ async function syncLocation({
 
     // Batch upsert articles (only the ones we processed before budget exhaustion)
     if (articleBatch.length > 0) {
-      const articlePayloadSize = JSON.stringify(articleBatch).length;
-      console.log(
-        `[syncLocation] ${location}: Batch upserting ${articleBatch.length} articles (~${Math.round(articlePayloadSize / 1024)}KB)`
-      );
       const { error: cacheError } = await supabase.from('cached_articles').upsert(articleBatch, {
         onConflict: 'user_id,reader_document_id',
       });
@@ -624,15 +575,10 @@ async function syncLocation({
         console.error(`[syncLocation] ${location}: Articles batch failed:`, cacheError);
         throw new Error(`Failed to batch cache articles: ${cacheError.message}`);
       }
-      console.log(`[syncLocation] ${location}: Articles batch complete`);
     }
 
     // Batch upsert document metadata
     if (documentBatch.length > 0) {
-      const docPayloadSize = JSON.stringify(documentBatch).length;
-      console.log(
-        `[syncLocation] ${location}: Batch upserting ${documentBatch.length} documents (~${Math.round(docPayloadSize / 1024)}KB)`
-      );
       const { error: metaError } = await supabase.from('cached_documents').upsert(documentBatch, {
         onConflict: 'user_id,reader_document_id',
       });
@@ -641,25 +587,14 @@ async function syncLocation({
         console.error(`[syncLocation] ${location}: Documents batch failed:`, metaError);
         throw new Error(`Failed to batch cache documents: ${metaError.message}`);
       }
-      console.log(`[syncLocation] ${location}: Documents batch complete`);
     }
 
     if (deferredForBudget) {
       // Return a cursor to resume from where we stopped.
       // IMPORTANT: Always use page cursor format to avoid being mistaken for "completed"
       // (raw timestamps are interpreted as "location sync complete" by isTimestamp())
-      //
-      // Priority for page cursor:
-      // 1. response.nextPageCursor - if we fetched but didn't process all docs
-      // 2. pageCursor - from previous iteration
-      // 3. Empty string - forces page cursor format even without a page
-      //
-      // For updatedAfter, use latestUpdatedAt if we processed docs, otherwise original
       const nextPage = response.nextPageCursor || pageCursor || '';
       const resumeCursor = formatPageCursor(nextPage, latestUpdatedAt || updatedAfter);
-      console.log(
-        `[syncLocation] ${location}: Deferred due to budget, resumeCursor: ${resumeCursor?.substring(0, 40)}`
-      );
       return {
         nextCursor: resumeCursor,
         latestUpdatedAt,
@@ -668,17 +603,12 @@ async function syncLocation({
     }
 
     if (!response.nextPageCursor) {
-      console.log(`[syncLocation] ${location}: No more pages, completed`);
       completed = true;
       break;
     }
 
     pageCursor = response.nextPageCursor;
   }
-
-  console.log(
-    `[syncLocation] ${location}: Finished - total docs: ${totalDocs}, completed: ${completed}`
-  );
 
   if (completed) {
     const fallbackCursor = latestUpdatedAt ?? updatedAfter ?? new Date().toISOString();
