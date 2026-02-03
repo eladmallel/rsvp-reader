@@ -7,9 +7,20 @@ import { createReaderClient, ReaderApiException } from '@/lib/reader';
 import { htmlToPlainText } from '@/lib/reader/html';
 import type { Database, Json } from '@/lib/supabase/types';
 
-export const MAX_REQUESTS_PER_MINUTE = 20;
+export const DEFAULT_MAX_REQUESTS_PER_MINUTE = 20;
 export const WINDOW_MS = 60 * 1000;
 const DEFAULT_PAGE_SIZE = 100;
+
+export function getMaxRequestsPerMinute(): number {
+  const override = process.env.READWISE_SYNC_MAX_REQUESTS_OVERRIDE;
+  if (override) {
+    const parsed = parseInt(override, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return DEFAULT_MAX_REQUESTS_PER_MINUTE;
+}
 
 export function getPageSize(): number {
   const override = process.env.READWISE_SYNC_PAGE_SIZE_OVERRIDE;
@@ -130,7 +141,8 @@ export async function syncUser({
 
   const readerClient = createReaderClient(userToken);
   const window = normalizeWindow(state.window_started_at, state.window_request_count, now);
-  const budget = new RequestBudget(window.windowRequestCount, MAX_REQUESTS_PER_MINUTE);
+  const maxRequests = getMaxRequestsPerMinute();
+  const budget = new RequestBudget(window.windowRequestCount, maxRequests);
   const { locations: allowedLocations, overridden } = getAllowedSyncLocations();
   const isLocationAllowed = (location: SyncLocation) => allowedLocations.includes(location);
 
@@ -138,7 +150,9 @@ export async function syncUser({
     console.log('[syncUser] Limiting sync locations to:', allowedLocations.join(', '));
   }
 
-  console.log('[syncUser] Budget - used:', budget.used(), 'remaining:', budget.remaining());
+  console.log(
+    `[syncUser] Budget - max: ${maxRequests}, used: ${budget.used()}, remaining: ${budget.remaining()}`
+  );
 
   if (!budget.canRequest()) {
     console.log('[syncUser] No budget remaining, returning early');
@@ -371,7 +385,7 @@ export async function syncUser({
     }
   }
 
-  if (budget.used() >= MAX_REQUESTS_PER_MINUTE) {
+  if (budget.used() >= maxRequests) {
     nextAllowedAt = window.windowStartedAt
       ? new Date(window.windowStartedAt.getTime() + WINDOW_MS).toISOString()
       : new Date(now.getTime() + WINDOW_MS).toISOString();
@@ -468,6 +482,45 @@ async function syncLocation({
     console.log(`[syncLocation] ${location}: Got ${response.results.length} documents`);
     let deferredForBudget = false;
 
+    // Collect docs for batch upsert
+    const articleBatch: Array<{
+      user_id: string;
+      reader_document_id: string;
+      html_content: string | null;
+      plain_text: string | null;
+      word_count: number | null;
+      reader_updated_at: string;
+      cached_at: string;
+    }> = [];
+
+    const documentBatch: Array<{
+      user_id: string;
+      reader_document_id: string;
+      title: string | null;
+      author: string | null;
+      source: string | null;
+      site_name: string | null;
+      url: string;
+      source_url: string | null;
+      category: string;
+      location: string | null;
+      tags: Json;
+      word_count: number | null;
+      reading_progress: number;
+      summary: string | null;
+      image_url: string | null;
+      published_date: string | null;
+      reader_created_at: string;
+      reader_last_moved_at: string | null;
+      reader_saved_at: string | null;
+      reader_updated_at: string;
+      first_opened_at: string | null;
+      last_opened_at: string | null;
+      cached_at: string;
+    }> = [];
+
+    const cachedAt = new Date().toISOString();
+
     for (const doc of response.results) {
       totalDocs++;
       let html =
@@ -488,63 +541,68 @@ async function syncLocation({
 
       const plainText = html ? htmlToPlainText(html) : null;
 
-      // Cache article content
-      const { error: cacheError } = await supabase.from('cached_articles').upsert(
-        {
-          user_id: userId,
-          reader_document_id: doc.id,
-          html_content: html,
-          plain_text: plainText,
-          word_count: doc.word_count,
-          reader_updated_at: doc.updated_at,
-          cached_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'user_id,reader_document_id',
-        }
-      );
+      // Add to batch instead of immediate upsert
+      articleBatch.push({
+        user_id: userId,
+        reader_document_id: doc.id,
+        html_content: html,
+        plain_text: plainText,
+        word_count: doc.word_count,
+        reader_updated_at: doc.updated_at,
+        cached_at: cachedAt,
+      });
 
-      if (cacheError) {
-        throw new Error(`Failed to cache article content ${doc.id}`);
-      }
-
-      // Cache document metadata for library view
-      const { error: metaError } = await supabase.from('cached_documents').upsert(
-        {
-          user_id: userId,
-          reader_document_id: doc.id,
-          title: doc.title,
-          author: doc.author,
-          source: doc.source,
-          site_name: doc.site_name,
-          url: doc.url,
-          source_url: doc.source_url,
-          category: doc.category,
-          location: doc.location,
-          tags: (doc.tags ?? {}) as unknown as Json,
-          word_count: doc.word_count,
-          reading_progress: doc.reading_progress,
-          summary: doc.summary,
-          image_url: doc.image_url,
-          published_date: doc.published_date,
-          reader_created_at: doc.created_at,
-          reader_last_moved_at: doc.last_moved_at,
-          reader_saved_at: doc.saved_at,
-          reader_updated_at: doc.updated_at,
-          first_opened_at: doc.first_opened_at,
-          last_opened_at: doc.last_opened_at,
-          cached_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'user_id,reader_document_id',
-        }
-      );
-
-      if (metaError) {
-        throw new Error(`Failed to cache document metadata ${doc.id}`);
-      }
+      documentBatch.push({
+        user_id: userId,
+        reader_document_id: doc.id,
+        title: doc.title,
+        author: doc.author,
+        source: doc.source,
+        site_name: doc.site_name,
+        url: doc.url,
+        source_url: doc.source_url,
+        category: doc.category,
+        location: doc.location,
+        tags: (doc.tags ?? {}) as unknown as Json,
+        word_count: doc.word_count,
+        reading_progress: doc.reading_progress,
+        summary: doc.summary,
+        image_url: doc.image_url,
+        published_date: doc.published_date,
+        reader_created_at: doc.created_at,
+        reader_last_moved_at: doc.last_moved_at,
+        reader_saved_at: doc.saved_at,
+        reader_updated_at: doc.updated_at,
+        first_opened_at: doc.first_opened_at,
+        last_opened_at: doc.last_opened_at,
+        cached_at: cachedAt,
+      });
 
       latestUpdatedAt = maxIso(latestUpdatedAt, doc.updated_at);
+    }
+
+    // Batch upsert articles (only the ones we processed before budget exhaustion)
+    if (articleBatch.length > 0) {
+      console.log(`[syncLocation] ${location}: Batch upserting ${articleBatch.length} articles`);
+      const { error: cacheError } = await supabase.from('cached_articles').upsert(articleBatch, {
+        onConflict: 'user_id,reader_document_id',
+      });
+
+      if (cacheError) {
+        throw new Error(`Failed to batch cache articles: ${cacheError.message}`);
+      }
+    }
+
+    // Batch upsert document metadata
+    if (documentBatch.length > 0) {
+      console.log(`[syncLocation] ${location}: Batch upserting ${documentBatch.length} documents`);
+      const { error: metaError } = await supabase.from('cached_documents').upsert(documentBatch, {
+        onConflict: 'user_id,reader_document_id',
+      });
+
+      if (metaError) {
+        throw new Error(`Failed to batch cache documents: ${metaError.message}`);
+      }
     }
 
     if (deferredForBudget) {
