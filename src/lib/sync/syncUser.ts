@@ -583,26 +583,36 @@ async function syncLocation({
 
     // Batch upsert articles (only the ones we processed before budget exhaustion)
     if (articleBatch.length > 0) {
-      console.log(`[syncLocation] ${location}: Batch upserting ${articleBatch.length} articles`);
+      const articlePayloadSize = JSON.stringify(articleBatch).length;
+      console.log(
+        `[syncLocation] ${location}: Batch upserting ${articleBatch.length} articles (~${Math.round(articlePayloadSize / 1024)}KB)`
+      );
       const { error: cacheError } = await supabase.from('cached_articles').upsert(articleBatch, {
         onConflict: 'user_id,reader_document_id',
       });
 
       if (cacheError) {
+        console.error(`[syncLocation] ${location}: Articles batch failed:`, cacheError);
         throw new Error(`Failed to batch cache articles: ${cacheError.message}`);
       }
+      console.log(`[syncLocation] ${location}: Articles batch complete`);
     }
 
     // Batch upsert document metadata
     if (documentBatch.length > 0) {
-      console.log(`[syncLocation] ${location}: Batch upserting ${documentBatch.length} documents`);
+      const docPayloadSize = JSON.stringify(documentBatch).length;
+      console.log(
+        `[syncLocation] ${location}: Batch upserting ${documentBatch.length} documents (~${Math.round(docPayloadSize / 1024)}KB)`
+      );
       const { error: metaError } = await supabase.from('cached_documents').upsert(documentBatch, {
         onConflict: 'user_id,reader_document_id',
       });
 
       if (metaError) {
+        console.error(`[syncLocation] ${location}: Documents batch failed:`, metaError);
         throw new Error(`Failed to batch cache documents: ${metaError.message}`);
       }
+      console.log(`[syncLocation] ${location}: Documents batch complete`);
     }
 
     if (deferredForBudget) {
