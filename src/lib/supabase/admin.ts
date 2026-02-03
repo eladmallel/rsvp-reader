@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 /**
@@ -29,10 +29,10 @@ function getSecretKey(): string {
 }
 
 /**
- * Admin client with secret key - bypasses RLS.
+ * Admin client with service role key - bypasses RLS.
  *
- * Uses the new Supabase secret key format (sb_secret_...) when available,
- * which supports independent rotation without downtime.
+ * Uses createClient from @supabase/supabase-js (not @supabase/ssr) to ensure
+ * proper service role authentication that bypasses Row Level Security.
  *
  * ONLY use for server-side operations that need elevated privileges:
  * - Cron jobs iterating over all users
@@ -42,14 +42,10 @@ function getSecretKey(): string {
  * Never expose to the client.
  */
 export function createAdminClient() {
-  return createServerClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, getSecretKey(), {
-    cookies: {
-      getAll() {
-        return [];
-      },
-      setAll() {
-        // No-op for admin client
-      },
+  return createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, getSecretKey(), {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
   });
 }
