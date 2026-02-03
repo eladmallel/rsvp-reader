@@ -4,6 +4,10 @@ import { syncUser, WINDOW_MS } from '@/lib/sync/syncUser';
 import { decrypt } from '@/lib/crypto/encryption';
 import type { Database } from '@/lib/supabase/types';
 
+// Increase function timeout to 60 seconds (max for Vercel Pro)
+// Required because sync can fetch many pages and batch upsert large payloads
+export const maxDuration = 60;
+
 type SyncState = Database['public']['Tables']['readwise_sync_state']['Row'];
 type SyncStateWithUser = SyncState & {
   users: {
