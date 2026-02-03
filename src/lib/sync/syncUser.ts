@@ -165,17 +165,29 @@ export async function syncUser({
     };
   }
 
-  const inboxDone = isTimestamp(state.inbox_cursor);
-  const libraryDone = isTimestamp(state.library_cursor);
-  const feedDone = isTimestamp(state.feed_cursor);
-  const archiveDone = isTimestamp(state.archive_cursor);
-  const shortlistDone = isTimestamp(state.shortlist_cursor);
+  // Detect and fix corrupted cursors: during initial backfill, a timestamp cursor
+  // without a page prefix means the location was incorrectly marked as complete
+  // (this was a bug where budget exhaustion saved raw timestamps instead of page cursors)
+  const fixedCursors = fixCorruptedCursors({
+    initialBackfillDone: state.initial_backfill_done ?? false,
+    inboxCursor: state.inbox_cursor,
+    libraryCursor: state.library_cursor,
+    feedCursor: state.feed_cursor,
+    archiveCursor: state.archive_cursor,
+    shortlistCursor: state.shortlist_cursor,
+  });
+
+  const inboxDone = isTimestamp(fixedCursors.inboxCursor);
+  const libraryDone = isTimestamp(fixedCursors.libraryCursor);
+  const feedDone = isTimestamp(fixedCursors.feedCursor);
+  const archiveDone = isTimestamp(fixedCursors.archiveCursor);
+  const shortlistDone = isTimestamp(fixedCursors.shortlistCursor);
   const updates: Database['public']['Tables']['readwise_sync_state']['Update'] = {
-    inbox_cursor: state.inbox_cursor,
-    library_cursor: state.library_cursor,
-    feed_cursor: state.feed_cursor,
-    archive_cursor: state.archive_cursor,
-    shortlist_cursor: state.shortlist_cursor,
+    inbox_cursor: fixedCursors.inboxCursor,
+    library_cursor: fixedCursors.libraryCursor,
+    feed_cursor: fixedCursors.feedCursor,
+    archive_cursor: fixedCursors.archiveCursor,
+    shortlist_cursor: fixedCursors.shortlistCursor,
     initial_backfill_done: state.initial_backfill_done,
     window_started_at: window.windowStartedAt?.toISOString() ?? null,
     window_request_count: budget.used(),
@@ -634,11 +646,17 @@ async function syncLocation({
 
     if (deferredForBudget) {
       // Return a cursor to resume from where we stopped.
-      // If we have a pageCursor, use it. Otherwise, use latestUpdatedAt
-      // (if we processed any docs) to avoid re-fetching everything.
-      const resumeCursor = pageCursor
-        ? formatPageCursor(pageCursor, updatedAfter)
-        : (latestUpdatedAt ?? cursorValue);
+      // IMPORTANT: Always use page cursor format to avoid being mistaken for "completed"
+      // (raw timestamps are interpreted as "location sync complete" by isTimestamp())
+      //
+      // Priority for page cursor:
+      // 1. response.nextPageCursor - if we fetched but didn't process all docs
+      // 2. pageCursor - from previous iteration
+      // 3. Empty string - forces page cursor format even without a page
+      //
+      // For updatedAfter, use latestUpdatedAt if we processed docs, otherwise original
+      const nextPage = response.nextPageCursor || pageCursor || '';
+      const resumeCursor = formatPageCursor(nextPage, latestUpdatedAt || updatedAfter);
       console.log(
         `[syncLocation] ${location}: Deferred due to budget, resumeCursor: ${resumeCursor?.substring(0, 40)}`
       );
@@ -738,4 +756,82 @@ function maxIso(a: string | null, b: string | null): string | null {
   }
 
   return new Date(a) > new Date(b) ? a : b;
+}
+
+/**
+ * Detect and fix corrupted cursors from a previous bug where budget exhaustion
+ * saved raw timestamps instead of page cursor format.
+ *
+ * During initial backfill, if a cursor is a raw timestamp (not a page cursor),
+ * it means the location was incorrectly marked as complete. We detect this by
+ * checking if ANY location still has work to do (initial_backfill_done is false)
+ * but has a timestamp cursor.
+ *
+ * The fix is to reset such cursors to null, forcing a re-sync from scratch.
+ * This is slightly wasteful but ensures correctness.
+ */
+function fixCorruptedCursors({
+  initialBackfillDone,
+  inboxCursor,
+  libraryCursor,
+  feedCursor,
+  archiveCursor,
+  shortlistCursor,
+}: {
+  initialBackfillDone: boolean;
+  inboxCursor: string | null;
+  libraryCursor: string | null;
+  feedCursor: string | null;
+  archiveCursor: string | null;
+  shortlistCursor: string | null;
+}): {
+  inboxCursor: string | null;
+  libraryCursor: string | null;
+  feedCursor: string | null;
+  archiveCursor: string | null;
+  shortlistCursor: string | null;
+} {
+  // If backfill is done, cursors are valid (incremental sync mode)
+  if (initialBackfillDone) {
+    return { inboxCursor, libraryCursor, feedCursor, archiveCursor, shortlistCursor };
+  }
+
+  // During initial backfill, check for corrupted cursors
+  // A corrupted cursor is a timestamp that isn't a page cursor
+  // (This happens when budget exhaustion saved raw timestamps)
+  const isCorruptedCursor = (cursor: string | null): boolean => {
+    if (!cursor) return false;
+    if (cursor.startsWith(PAGE_CURSOR_PREFIX)) return false;
+    // If it's a valid timestamp, it's corrupted (should be a page cursor during backfill)
+    return !Number.isNaN(Date.parse(cursor));
+  };
+
+  // Check if any cursors are corrupted
+  const cursorsToFix = {
+    inbox: isCorruptedCursor(inboxCursor),
+    library: isCorruptedCursor(libraryCursor),
+    feed: isCorruptedCursor(feedCursor),
+    archive: isCorruptedCursor(archiveCursor),
+    shortlist: isCorruptedCursor(shortlistCursor),
+  };
+
+  const hasCorruption = Object.values(cursorsToFix).some(Boolean);
+
+  if (hasCorruption) {
+    const corrupted = Object.entries(cursorsToFix)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+    console.warn(
+      `[syncUser] Detected corrupted cursors during initial backfill: ${corrupted.join(', ')}. ` +
+        `Resetting to restart sync for affected locations.`
+    );
+  }
+
+  return {
+    inboxCursor: cursorsToFix.inbox ? null : inboxCursor,
+    libraryCursor: cursorsToFix.library ? null : libraryCursor,
+    feedCursor: cursorsToFix.feed ? null : feedCursor,
+    archiveCursor: cursorsToFix.archive ? null : archiveCursor,
+    shortlistCursor: cursorsToFix.shortlist ? null : shortlistCursor,
+  };
 }
