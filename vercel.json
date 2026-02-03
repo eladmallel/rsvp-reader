@@ -1,6 +1,6 @@
 {
   "functions": {
-    "app/api/sync/readwise/route.ts": {
+    "api/sync/readwise": {
       "maxDuration": 60
     }
   },
